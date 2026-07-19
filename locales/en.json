@@ -1,0 +1,57 @@
+{
+  "common": {
+    "shop_now": "Shop Now",
+    "quick_view": "Quick View",
+    "discover_more": "Discover More"
+  },
+  "header": {
+    "home": "Home",
+    "collections": "Collections",
+    "rings": "Rings",
+    "necklaces": "Necklaces",
+    "bracelets": "Bracelets",
+    "earrings": "Earrings",
+    "search": "Search",
+    "wishlist": "Wishlist",
+    "cart": "Cart"
+  },
+  "hero": {
+    "small_text": "BAHER SILVER",
+    "heading": "Designed To Amaze",
+    "paragraph": "Luxury 925 Silver Jewelry crafted with elegance and timeless beauty.",
+    "button": "Shop Collection"
+  },
+  "categories": {
+    "title": "Shop By Category"
+  },
+  "featured": {
+    "title": "Featured Collection"
+  },
+  "banner": {
+    "title": "Crafted To Inspire.",
+    "button": "Discover More"
+  },
+  "new_arrivals": {
+    "title": "New Arrivals"
+  },
+  "best_sellers": {
+    "title": "Best Sellers"
+  },
+  "about": {
+    "title": "About Baher",
+    "story": "Baher Silver embodies the essence of minimal luxury. Each piece is meticulously crafted from premium 925 sterling silver to deliver timeless elegance and enduring beauty. Our collections are designed for those who appreciate refined aesthetics and impeccable quality."
+  },
+  "instagram": {
+    "title": "Follow Us @BaherSilver"
+  },
+  "footer": {
+    "newsletter_title": "Join Our Newsletter",
+    "newsletter_desc": "Subscribe to receive updates, access to exclusive deals, and more.",
+    "email_placeholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "quick_links": "Quick Links",
+    "customer_service": "Customer Service",
+    "social_media": "Social Media",
+    "rights": "© 2026 Baher Silver. All rights reserved."
+  }
+}
