@@ -46,8 +46,8 @@ export const Table = ({ children }: { children: React.ReactNode }) => (
     </table>
   </div>
 );
-export const Th = ({ children, className }: { children: React.ReactNode, className?: string }) => <th className={`px-4 py-3 font-medium text-white bg-[#121212] border-b border-white/5 ${className || ''}`}>{children}</th>;
-export const Td = ({ children, className }: { children: React.ReactNode, className?: string }) => <td className={`px-4 py-3 border-b border-white/5 bg-[#0A0A0A] ${className || ''}`}>{children}</td>;
+export const Th = ({ children, className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => <th className={`px-4 py-3 font-medium text-white bg-[#121212] border-b border-white/5 ${className || ''}`} {...props}>{children}</th>;
+export const Td = ({ children, className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => <td className={`px-4 py-3 border-b border-white/5 bg-[#0A0A0A] ${className || ''}`} {...props}>{children}</td>;
 
 export const DataCard = ({ title, children }: { title: string, children: React.ReactNode }) => (
   <div className="bg-[#121212] border border-white/5 rounded-lg overflow-hidden">
