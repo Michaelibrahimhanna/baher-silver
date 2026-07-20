@@ -22,7 +22,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     <html lang="en" dir="ltr" className={`${manrope.variable} ${alexandria.variable} ${cormorant.variable}`}>
       <body className="font-manrope flex flex-col min-h-screen">
         <Header dict={dict} locale={locale} />
-        <main className="flex-grow pt-20">
+        <main className="flex-grow">
           {children}
         </main>
         <Footer dict={dict} locale={locale} />
