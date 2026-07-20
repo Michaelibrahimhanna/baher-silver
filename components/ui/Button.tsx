@@ -33,7 +33,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={classes}
         {...props}
       >
-        <span className="relative z-10 transition-colors duration-500 group-hover:text-black">{props.children}</span>
+        <span className="relative z-10 transition-colors duration-500 group-hover:text-black">{props.children as React.ReactNode}</span>
         {variant === 'primary' && (
           <div className="absolute inset-0 bg-white translate-y-[100%] group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-0" />
         )}
