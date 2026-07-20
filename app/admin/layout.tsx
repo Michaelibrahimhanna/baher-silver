@@ -4,6 +4,8 @@ import * as React from 'react';
 import { Sidebar } from '@/components/admin/Sidebar';
 import { TopNav } from '@/components/admin/TopNav';
 import { BaherBrainPanel } from '@/components/admin/BaherBrainPanel';
+import { SystemStatusBar } from '@/components/admin/SystemStatusBar';
+import { QuickActions } from '@/components/admin/QuickActions';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
@@ -22,7 +24,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {children}
           </div>
         </main>
+        <SystemStatusBar />
         <BaherBrainPanel isOpen={isBrainOpen} onClose={() => setIsBrainOpen(false)} />
+        <QuickActions />
       </div>
     </div>
   );

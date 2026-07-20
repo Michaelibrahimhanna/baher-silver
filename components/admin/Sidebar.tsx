@@ -30,6 +30,7 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean, setIsOpen: (v:
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart, count: 12 },
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Design System', href: '/admin/design-system', icon: Paintbrush },
+    { name: 'UX Kit', href: '/admin/ux-kit', icon: LayoutDashboard },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
