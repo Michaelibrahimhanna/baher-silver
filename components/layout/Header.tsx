@@ -4,8 +4,9 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Search, Heart, ShoppingBag, Menu } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function Header({ dict, locale }: { dict: any; locale: string }) {
+export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [hidden, setHidden] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const { scrollY } = useScroll();

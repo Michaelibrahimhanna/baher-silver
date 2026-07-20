@@ -93,7 +93,7 @@ export default function CatalogHome() {
                 <Button variant="secondary" className="w-full text-xs py-1.5 h-auto">Generate with Baher Brain</Button>
               </div>
               <div className="p-4 bg-black/40 rounded border border-white/5">
-                <p className="text-sm text-white mb-2">High demand predicted for "Gold Plated Bracelets".</p>
+                <p className="text-sm text-white mb-2">High demand predicted for &quot;Gold Plated Bracelets&quot;.</p>
                 <Button variant="secondary" className="w-full text-xs py-1.5 h-auto">Review Inventory</Button>
               </div>
             </div>

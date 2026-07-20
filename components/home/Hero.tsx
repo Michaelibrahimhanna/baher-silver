@@ -4,8 +4,9 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function Hero({ dict }: { dict: any }) {
+export function Hero({ dict }: { dict: Dictionary }) {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 250]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0]);

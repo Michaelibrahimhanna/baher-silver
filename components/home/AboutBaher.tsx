@@ -4,8 +4,9 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Container } from '@/components/ui/Container';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function AboutBaher({ dict }: { dict: any }) {
+export function AboutBaher({ dict }: { dict: Dictionary }) {
   return (
     <section className="py-32 bg-brand-white">
       <Container>

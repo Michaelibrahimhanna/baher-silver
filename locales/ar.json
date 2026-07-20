@@ -4,6 +4,12 @@
     "quick_view": "نظرة سريعة",
     "discover_more": "اكتشف المزيد"
   },
+  "badges": {
+    "new": "جديد",
+    "limited": "حصري",
+    "best_seller": "الأكثر مبيعاً",
+    "handmade": "صناعة يدوية"
+  },
   "header": {
     "home": "الرئيسية",
     "collections": "التشكيلات",

@@ -4,8 +4,9 @@ import { Container } from '@/components/ui/Container';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { ImageCard } from '@/components/ui/ImageCard';
 import { getAllCategories } from '@/lib/categories';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function Categories({ dict, locale }: { dict: any; locale: 'en' | 'ar' }) {
+export function Categories({ dict, locale }: { dict: Dictionary; locale: 'en' | 'ar' }) {
   const categories = getAllCategories();
 
   return (

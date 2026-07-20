@@ -5,8 +5,9 @@ import { Container } from '@/components/ui/Container';
 import { SectionTitle } from '@/components/ui/SectionTitle';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getNewArrivals } from '@/lib/products';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function NewArrivals({ dict, locale }: { dict: any; locale: 'en' | 'ar' }) {
+export function NewArrivals({ dict, locale }: { dict: Dictionary; locale: 'en' | 'ar' }) {
   const products = getNewArrivals();
 
   return (

@@ -14,7 +14,7 @@ export default function MissionControl() {
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-[#121212] border border-white/5 p-6 rounded-lg">
-          <h3 className="text-xs tracking-widest uppercase text-[#888888] mb-2">Today's Revenue</h3>
+          <h3 className="text-xs tracking-widest uppercase text-[#888888] mb-2">Today&apos;s Revenue</h3>
           <p className="text-3xl font-serif text-white">$14,250</p>
         </div>
         <div className="bg-[#121212] border border-white/5 p-6 rounded-lg">

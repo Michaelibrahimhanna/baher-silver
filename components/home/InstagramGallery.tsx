@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
+import type { Dictionary } from '@/lib/dictionary';
 
 const IMAGES = [
   'https://images.unsplash.com/photo-1599643478514-4a4204b41b18?q=80&w=400',
@@ -10,7 +11,7 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=400',
 ];
 
-export function InstagramGallery({ dict }: { dict: any }) {
+export function InstagramGallery({ dict }: { dict: Dictionary }) {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       <div className="w-full flex flex-col items-center text-center mb-12">

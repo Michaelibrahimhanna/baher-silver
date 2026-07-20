@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { ProductCard } from '@/components/product/ProductCard';
 import { getFeaturedProducts } from '@/lib/products';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function FeaturedCollection({ dict, locale }: { dict: any; locale: string }) {
+export function FeaturedCollection({ dict, locale }: { dict: Dictionary; locale: string }) {
   const products = getFeaturedProducts();
 
   return (

@@ -4,6 +4,12 @@
     "quick_view": "Quick View",
     "discover_more": "Discover More"
   },
+  "badges": {
+    "new": "NEW",
+    "limited": "LIMITED",
+    "best_seller": "BEST SELLER",
+    "handmade": "HANDMADE"
+  },
   "header": {
     "home": "Home",
     "collections": "Collections",

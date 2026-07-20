@@ -26,6 +26,7 @@ const EditorSection = ({ title, children, defaultOpen = true }: { title: string,
 };
 
 import { useProduct, useCreateProduct, useUpdateProduct } from '@/lib/hooks/useCatalog';
+import type { Product } from '@/types/catalog';
 import { useParams, useRouter } from 'next/navigation';
 import { Toast } from '@/components/admin/ui';
 
@@ -43,15 +44,16 @@ export default function ProductEditor() {
   const [description, setDescription] = React.useState('');
   const [showToast, setShowToast] = React.useState(false);
 
-  React.useEffect(() => {
-    if (product) {
-      setName(product.name_en || '');
-      setDescription(product.description_en || '');
-    }
-  }, [product]);
+  const [prevProductId, setPrevProductId] = React.useState<string | null>(null);
+  
+  if (product && product.id !== prevProductId) {
+    setPrevProductId(product.id);
+    setName(product.name_en || '');
+    setDescription(product.description_en || '');
+  }
 
   const handleSave = async () => {
-    const payload = { name_en: name, description_en: description, status: 'draft' };
+    const payload: Partial<Product> = { name_en: name, description_en: description, status: 'draft' };
     try {
       if (isNew) {
         const newProd = await createMutation.mutateAsync(payload);
@@ -109,7 +111,7 @@ export default function ProductEditor() {
               <div>
                 <label className="text-xs text-[#888888] mb-1.5 block">Product Title</label>
                 <div className="flex gap-2">
-                  <Input value={name} onChange={(e: any) => setName(e.target.value)} className="flex-1" />
+                  <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} className="flex-1" />
                   <Button variant="secondary" className="px-3" title="Generate with AI"><Sparkles className="w-4 h-4 text-white" /></Button>
                 </div>
               </div>
@@ -118,7 +120,7 @@ export default function ProductEditor() {
                   <span>Luxury Description</span>
                   <button className="text-white hover:underline flex items-center gap-1 text-[10px]"><Sparkles className="w-3 h-3" /> Generate with Baher Brain</button>
                 </label>
-                <Textarea value={description} onChange={(e: any) => setDescription(e.target.value)} className="min-h-[150px]" placeholder="Craft a story of elegance..." />
+                <Textarea value={description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} className="min-h-[150px]" placeholder="Craft a story of elegance..." />
               </div>
             </div>
           </EditorSection>

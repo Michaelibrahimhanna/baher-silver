@@ -6,14 +6,15 @@ import { Search, Plus, SlidersHorizontal, Settings2, Download, MoreHorizontal, L
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useProducts } from '@/lib/hooks/useCatalog';
+import type { Product } from '@/types/catalog';
 
 export default function ProductsPage() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
   
   const { data: products, isLoading, isError } = useProducts();
 
-  const handleRowClick = (product: any) => {
+  const handleRowClick = (product: Product) => {
     setSelectedProduct(product);
     setDrawerOpen(true);
   };
@@ -87,9 +88,9 @@ export default function ProductsPage() {
                   </Td>
                 </tr>
               )}
-              {!isLoading && products?.map((product: any) => (
+              {!isLoading && products?.map((product: Product) => (
                 <tr key={product.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => handleRowClick(product)}>
-                  <Td onClick={(e: any) => e.stopPropagation()}><input type="checkbox" className="accent-white" /></Td>
+                  <Td onClick={(e: React.MouseEvent) => e.stopPropagation()}><input type="checkbox" className="accent-white" /></Td>
                   <Td>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-white/5 rounded flex-shrink-0 overflow-hidden">
@@ -107,7 +108,7 @@ export default function ProductsPage() {
                   <Td><Badge variant={product.status === 'published' ? 'success' : 'warning'}>{product.status || 'draft'}</Badge></Td>
                   <Td className="text-white">-- <span className="text-xs text-[#888888]">Live Inventory Pending</span></Td>
                   <Td className="text-white font-mono">--</Td>
-                  <Td onClick={(e: any) => e.stopPropagation()}>
+                  <Td onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                     <button className="text-[#555555] hover:text-white transition-colors"><MoreHorizontal className="w-5 h-5" /></button>
                   </Td>
                 </tr>

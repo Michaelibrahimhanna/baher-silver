@@ -4,8 +4,9 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
+import type { Dictionary } from '@/lib/dictionary';
 
-export function LuxuryBanner({ dict }: { dict: any }) {
+export function LuxuryBanner({ dict }: { dict: Dictionary }) {
   return (
     <section className="relative py-32 overflow-hidden flex items-center justify-center bg-brand-black">
       <div className="absolute inset-0 z-0">

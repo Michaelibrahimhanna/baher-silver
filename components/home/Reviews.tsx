@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
+import type { Dictionary } from '@/lib/dictionary';
 
 const REVIEWS = [
   { text: "The craftsmanship is unparalleled. It truly feels like a bespoke piece of art.", author: "Sarah M.", location: "Dubai" },
@@ -9,7 +10,7 @@ const REVIEWS = [
   { text: "The QR Gift feature made this the most memorable anniversary present ever.", author: "James T.", location: "New York" }
 ];
 
-export function Reviews({ dict }: { dict: any }) {
+export function Reviews({ dict }: { dict: Dictionary }) {
   return (
     <section className="py-24 md:py-32 bg-background relative overflow-hidden border-t border-border">
       <div className="w-full max-w-screen-xl mx-auto px-6 lg:px-12 flex flex-col items-center text-center">
@@ -34,7 +35,7 @@ export function Reviews({ dict }: { dict: any }) {
                 </svg>
               </div>
               <p className="text-lg md:text-xl font-serif text-foreground leading-relaxed mb-6">
-                "{review.text}"
+                &quot;{review.text}&quot;
               </p>
               <div className="flex flex-col items-center">
                 <span className="text-xs font-medium uppercase tracking-widest text-primary mb-1">{review.author}</span>

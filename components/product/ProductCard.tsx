@@ -4,6 +4,7 @@ import * as React from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '@/lib/types';
+import type { Dictionary } from '@/lib/dictionary';
 
 export function ProductCard({
   product,
@@ -12,7 +13,7 @@ export function ProductCard({
 }: {
   product: Product;
   locale: string;
-  dict: any;
+  dict: Dictionary;
 }) {
   const [isLoaded, setIsLoaded] = React.useState(false);
   const name = product.name[locale as 'en' | 'ar'] || product.name['en'];
