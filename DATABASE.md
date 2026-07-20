@@ -90,3 +90,35 @@ This document serves as the comprehensive schema and architecture manual for the
 - All tables have **Row Level Security** enabled.
 - **Public**: Has read-only access to published, non-deleted catalog entities.
 - **Admin**: Has full CRUD access across all tables via `auth.is_admin()` policy.
+
+---
+
+## Accounts Domain (Sprint 1)
+
+## 12. `profiles`
+**Purpose**: Extends `auth.users` to store application-specific user data. Connects Auth to the Business Logic.
+- `id` (UUID): PK, references `auth.users(id)`.
+- `is_guest` (Boolean): Allows seamless guest checkout which can be converted to registered.
+- `display_name`, `email_verified`, `phone_verified`, `last_login_at`, `account_status`, `failed_login_attempts`, `locked_until`, `marketing_consent`, `accepted_terms_at`, `accepted_privacy_at`: Detailed KYC & Auth tracking.
+
+## 13. `addresses`
+**Purpose**: Multiple addresses per profile (shipping/billing).
+- Includes geo-targeting (`latitude`, `longitude`) and granular delivery details (`building`, `floor`, `apartment`, `landmark`, `delivery_notes`).
+
+## 14. RBAC (Roles & Permissions)
+**Purpose**: Defines Admin Dashboard access limits. Profiles support both customers and employees.
+- `roles`: Defined roles (Super Admin, Admin, Manager, Sales, Customer Service, Warehouse, Factory, Customer).
+- `permissions`: Individual rights.
+- `user_roles` & `role_permissions`: Pivot tables.
+
+## 15. `wishlists` & `wishlist_items`
+**Purpose**: Users can save products. `created_from` tracks origin (App, Web). `wishlist_items` maps to `variant_id`.
+
+## 16. `customer_preferences` & `notification_settings`
+**Purpose**: Tailored shopping experience and CRM triggers.
+- Tracks `favorite_categories`, `favorite_materials`, `favorite_occasions` via UUID arrays.
+- Includes `whatsapp_updates`, `email_promotions`, etc.
+
+## 17. `customer_activity` & `login_sessions`
+**Purpose**: Non-audited analytics for AI integration and BI tools.
+- Tracks `device`, `browser`, `platform`, `country`, `logout_at`, `last_activity_at`.
