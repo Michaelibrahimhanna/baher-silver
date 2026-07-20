@@ -2,12 +2,21 @@
 
 import * as React from 'react';
 import { Button, Input, Table, Th, Td, Badge, Pagination, Filter } from '@/components/admin/ui';
-import { Search, Plus, SlidersHorizontal, Settings2, Download, MoreHorizontal, LayoutGrid } from 'lucide-react';
+import { Search, Plus, SlidersHorizontal, Settings2, Download, MoreHorizontal, LayoutGrid, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useProducts } from '@/lib/hooks/useCatalog';
 
 export default function ProductsPage() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+  
+  const { data: products, isLoading, isError } = useProducts();
+
+  const handleRowClick = (product: any) => {
+    setSelectedProduct(product);
+    setDrawerOpen(true);
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700 h-full flex flex-col">
@@ -48,7 +57,7 @@ export default function ProductsPage() {
               <tr>
                 <Th className="w-12"><input type="checkbox" className="accent-white" /></Th>
                 <Th>Product Name</Th>
-                <Th>SKU</Th>
+                <Th>Brand / Material</Th>
                 <Th>Status</Th>
                 <Th>Inventory</Th>
                 <Th>Price</Th>
@@ -56,23 +65,49 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {Array.from({ length: 10 }).map((_, i) => (
-                <tr key={i} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => setDrawerOpen(true)}>
-                  <Td onClick={e => e.stopPropagation()}><input type="checkbox" className="accent-white" /></Td>
+              {isLoading && (
+                <tr>
+                  <Td colSpan={7} className="text-center py-12 text-[#555555]">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                    Loading catalog data...
+                  </Td>
+                </tr>
+              )}
+              {isError && (
+                <tr>
+                  <Td colSpan={7} className="text-center py-12 text-red-500">
+                    Failed to load catalog. Please check database connection.
+                  </Td>
+                </tr>
+              )}
+              {!isLoading && products?.length === 0 && (
+                <tr>
+                  <Td colSpan={7} className="text-center py-12 text-[#888888]">
+                    No products found. Create your first product to get started.
+                  </Td>
+                </tr>
+              )}
+              {!isLoading && products?.map((product: any) => (
+                <tr key={product.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => handleRowClick(product)}>
+                  <Td onClick={(e: any) => e.stopPropagation()}><input type="checkbox" className="accent-white" /></Td>
                   <Td>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/5 rounded flex-shrink-0"></div>
+                      <div className="w-10 h-10 bg-white/5 rounded flex-shrink-0 overflow-hidden">
+                        {/* Placeholder for primary image */}
+                      </div>
                       <div>
-                        <p className="text-white font-medium">Elegance Silver Ring {i+1}</p>
-                        <p className="text-xs text-[#888888]">Rings • Silver 925</p>
+                        <p className="text-white font-medium">{product.name_en || 'Untitled Product'}</p>
+                        <p className="text-xs text-[#888888] font-mono">{product.slug}</p>
                       </div>
                     </div>
                   </Td>
-                  <Td className="text-[#888888] font-mono text-xs">BH-R-925-{100+i}</Td>
-                  <Td><Badge variant={i % 3 === 0 ? "warning" : "success"}>{i % 3 === 0 ? 'Draft' : 'Published'}</Badge></Td>
-                  <Td className="text-white">45 <span className="text-xs text-[#888888]">in 2 variants</span></Td>
-                  <Td className="text-white font-mono">$1,250.00</Td>
-                  <Td onClick={e => e.stopPropagation()}>
+                  <Td className="text-[#888888] text-xs">
+                    {product.brand?.name_en || 'No Brand'} • {product.material?.name_en || 'No Material'}
+                  </Td>
+                  <Td><Badge variant={product.status === 'published' ? 'success' : 'warning'}>{product.status || 'draft'}</Badge></Td>
+                  <Td className="text-white">-- <span className="text-xs text-[#888888]">Live Inventory Pending</span></Td>
+                  <Td className="text-white font-mono">--</Td>
+                  <Td onClick={(e: any) => e.stopPropagation()}>
                     <button className="text-[#555555] hover:text-white transition-colors"><MoreHorizontal className="w-5 h-5" /></button>
                   </Td>
                 </tr>
@@ -85,7 +120,7 @@ export default function ProductsPage() {
 
       {/* Product Preview Drawer */}
       <AnimatePresence>
-        {drawerOpen && (
+        {drawerOpen && selectedProduct && (
           <>
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -104,26 +139,28 @@ export default function ProductsPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 <div className="aspect-square bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[#555555]">Image Preview</div>
                 <div>
-                  <h2 className="text-2xl font-serif text-white">Elegance Silver Ring</h2>
-                  <p className="text-sm text-[#888888] font-mono mt-1">BH-R-925-100</p>
+                  <h2 className="text-2xl font-serif text-white">{selectedProduct.name_en || 'Untitled Product'}</h2>
+                  <p className="text-sm text-[#888888] font-mono mt-1">{selectedProduct.slug || 'no-slug'}</p>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-[#888888]">Price</span>
-                    <span className="text-white font-mono">$1,250.00</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span className="text-[#888888]">Inventory</span>
-                    <span className="text-white">45 units</span>
-                  </div>
-                  <div className="flex justify-between border-b border-white/5 pb-2">
                     <span className="text-[#888888]">Status</span>
-                    <Badge variant="success">Published</Badge>
+                    <Badge variant={selectedProduct.status === 'published' ? 'success' : 'warning'}>{selectedProduct.status || 'draft'}</Badge>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-[#888888]">Brand</span>
+                    <span className="text-white">{selectedProduct.brand?.name_en || 'None'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-white/5 pb-2">
+                    <span className="text-[#888888]">Material</span>
+                    <span className="text-white">{selectedProduct.material?.name_en || 'None'}</span>
                   </div>
                 </div>
               </div>
               <div className="p-4 border-t border-white/5 bg-[#0A0A0A] flex gap-3">
-                <Link href="/admin/catalog/products/1" className="flex-1"><Button variant="primary" className="w-full">Full Edit</Button></Link>
+                <Link href={`/admin/catalog/products/${selectedProduct.id}`} className="flex-1">
+                  <Button variant="primary" className="w-full">Full Edit</Button>
+                </Link>
               </div>
             </motion.div>
           </>

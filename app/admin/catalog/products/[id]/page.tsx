@@ -25,25 +25,80 @@ const EditorSection = ({ title, children, defaultOpen = true }: { title: string,
   );
 };
 
+import { useProduct, useCreateProduct, useUpdateProduct } from '@/lib/hooks/useCatalog';
+import { useParams, useRouter } from 'next/navigation';
+import { Toast } from '@/components/admin/ui';
+
 export default function ProductEditor() {
+  const params = useParams();
+  const router = useRouter();
+  const id = params?.id as string;
+  const isNew = id === 'new';
+
+  const { data: product, isLoading } = useProduct(id);
+  const createMutation = useCreateProduct();
+  const updateMutation = useUpdateProduct();
+
+  const [name, setName] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [showToast, setShowToast] = React.useState(false);
+
+  React.useEffect(() => {
+    if (product) {
+      setName(product.name_en || '');
+      setDescription(product.description_en || '');
+    }
+  }, [product]);
+
+  const handleSave = async () => {
+    const payload = { name_en: name, description_en: description, status: 'draft' };
+    try {
+      if (isNew) {
+        const newProd = await createMutation.mutateAsync(payload);
+        router.push(`/admin/catalog/products/${newProd.id}`);
+      } else {
+        await updateMutation.mutateAsync({ id, updates: payload });
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (isLoading && !isNew) return <div className="p-12 text-center text-[#888888]">Loading product data...</div>;
+
   return (
-    <div className="max-w-5xl mx-auto pb-32 animate-in fade-in duration-700">
+    <div className="max-w-5xl mx-auto pb-32 animate-in fade-in duration-700 relative">
+      {showToast && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <Toast title="Product Saved" description="Your changes have been saved to the database." />
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/admin/catalog/products" className="w-10 h-10 flex items-center justify-center rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-serif text-white">Elegance Silver Ring</h1>
+          <h1 className="text-3xl font-serif text-white">{isNew ? 'New Product' : name || 'Untitled Product'}</h1>
           <div className="flex items-center gap-3 mt-1 text-sm text-[#888888]">
-            <span>Draft Mode</span>
+            <span>{product?.status || 'Draft'} Mode</span>
             <span className="w-1 h-1 rounded-full bg-[#555555]"></span>
-            <span>Last saved 2m ago</span>
+            <span>{isNew ? 'Not saved' : 'Saved remotely'}</span>
           </div>
         </div>
         <div className="ml-auto flex gap-3">
           <Button variant="ghost" className="gap-2"><Eye className="w-4 h-4" /> Preview</Button>
-          <Button variant="primary" className="gap-2"><Save className="w-4 h-4" /> Save Product</Button>
+          <Button 
+            variant="primary" 
+            className="gap-2" 
+            onClick={handleSave}
+            disabled={createMutation.isPending || updateMutation.isPending}
+          >
+            <Save className="w-4 h-4" /> 
+            {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save Product'}
+          </Button>
         </div>
       </div>
 
@@ -54,7 +109,7 @@ export default function ProductEditor() {
               <div>
                 <label className="text-xs text-[#888888] mb-1.5 block">Product Title</label>
                 <div className="flex gap-2">
-                  <Input defaultValue="Elegance Silver Ring" className="flex-1" />
+                  <Input value={name} onChange={(e: any) => setName(e.target.value)} className="flex-1" />
                   <Button variant="secondary" className="px-3" title="Generate with AI"><Sparkles className="w-4 h-4 text-white" /></Button>
                 </div>
               </div>
@@ -63,7 +118,7 @@ export default function ProductEditor() {
                   <span>Luxury Description</span>
                   <button className="text-white hover:underline flex items-center gap-1 text-[10px]"><Sparkles className="w-3 h-3" /> Generate with Baher Brain</button>
                 </label>
-                <Textarea className="min-h-[150px]" placeholder="Craft a story of elegance..." />
+                <Textarea value={description} onChange={(e: any) => setDescription(e.target.value)} className="min-h-[150px]" placeholder="Craft a story of elegance..." />
               </div>
             </div>
           </EditorSection>
