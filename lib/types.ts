@@ -9,6 +9,8 @@ export interface Product {
   category: string;
   isNew?: boolean;
   isBestSeller?: boolean;
+  isLimited?: boolean;
+  isHandmade?: boolean;
 }
 
 export interface Category {
