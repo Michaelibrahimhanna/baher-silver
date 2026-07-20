@@ -1,5 +1,6 @@
 import { getDictionary } from '@/lib/dictionary';
 import { Hero } from '@/components/home/Hero';
+import { FeaturedCollection } from '@/components/home/FeaturedCollection';
 
 export default async function RootPage() {
   const locale = 'en';
@@ -8,6 +9,7 @@ export default async function RootPage() {
   return (
     <>
       <Hero dict={dict} />
+      <FeaturedCollection dict={dict} locale={locale} />
     </>
   );
 }
