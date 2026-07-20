@@ -11,6 +11,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const [isBrainOpen, setIsBrainOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    const handleOpenBrain = () => setIsBrainOpen(true);
+    window.addEventListener('open-baher-brain', handleOpenBrain);
+    return () => window.removeEventListener('open-baher-brain', handleOpenBrain);
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#0A0A0A] text-[#F5F5F5] font-sans selection:bg-white/20">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />

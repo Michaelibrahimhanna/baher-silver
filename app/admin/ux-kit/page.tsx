@@ -2,7 +2,7 @@ export const metadata = {
   title: 'Baher OS | UX Kit',
 };
 
-import { DataCard, Table, Th, Td, Badge, Button, Input, Toast } from '@/components/admin/ui';
+import { DataCard, Table, Td, Badge, Button, Toast } from '@/components/admin/ui';
 import { Info } from 'lucide-react';
 
 export default function UXKit() {

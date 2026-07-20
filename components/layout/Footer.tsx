@@ -2,7 +2,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import type { Dictionary } from '@/lib/dictionary';
 
-export function Footer({ dict, locale }: { dict: Dictionary; locale: string }) {
+export function Footer({ locale }: { locale: string }) {
   return (
     <footer className="bg-background pt-24 pb-12 border-t border-border">
       <div className="w-full max-w-screen-2xl mx-auto px-6 lg:px-12">

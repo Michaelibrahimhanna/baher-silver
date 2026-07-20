@@ -5,6 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Send } from 'lucide-react';
 
 export function BaherBrainPanel({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
+  const [aiContext, setAiContext] = React.useState<{ actionName: string; context: Record<string, unknown> } | null>(null);
+
+  React.useEffect(() => {
+    const handleOpenBrain = (e: CustomEvent) => {
+      setAiContext(e.detail);
+      // We can't change isOpen from here, we need the layout to know.
+      // So we'll dispatch another event to toggle it, or layout listens to it too.
+    };
+    window.addEventListener('open-baher-brain', handleOpenBrain as EventListener);
+    return () => window.removeEventListener('open-baher-brain', handleOpenBrain as EventListener);
+  }, []);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -39,6 +50,21 @@ export function BaherBrainPanel({ isOpen, onClose }: { isOpen: boolean, onClose:
                 <p className="text-sm font-light">I am Baher Brain, your ERP intelligence.</p>
                 <p className="text-xs mt-2">Ask me to generate reports, analyze sales, or draft product descriptions.</p>
               </div>
+
+              {aiContext && (
+                <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-sm">
+                  <div className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" /> Feature coming soon
+                  </div>
+                  <p className="text-green-400 mb-2">✓ Context received successfully</p>
+                  <p className="text-white/70">
+                    <span className="font-semibold text-white">Action:</span> {aiContext.actionName}
+                  </p>
+                  <div className="mt-4 max-h-48 overflow-y-auto bg-black/40 p-2 rounded text-xs text-[#888888]">
+                    <pre>{JSON.stringify(aiContext.context, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="p-4 border-t border-white/5 bg-[#0A0A0A]">

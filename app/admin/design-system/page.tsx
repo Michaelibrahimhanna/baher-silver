@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { 
-  Button, Input, Textarea, Select, MultiSelect, Table, Th, Td, DataCard, KPICard, ChartPlaceholder, 
+  Button, Input, Textarea, Select, MultiSelect, Table, Th, Td, DataCard, KPICard, 
   Badge, Pill, EmptyState, Skeleton, Toast, Tabs, Breadcrumbs, Pagination, SearchComponent, Filter,
   ModalPlaceholder, DrawerPlaceholder
 } from '@/components/admin/ui';

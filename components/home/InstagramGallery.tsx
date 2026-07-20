@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import * as React from 'react';
@@ -11,7 +12,7 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=400',
 ];
 
-export function InstagramGallery({ dict }: { dict: Dictionary }) {
+export function InstagramGallery() {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       <div className="w-full flex flex-col items-center text-center mb-12">
@@ -31,7 +32,7 @@ export function InstagramGallery({ dict }: { dict: Dictionary }) {
             viewport={{ once: true }}
             transition={{ duration: 1, delay: idx * 0.1 }}
           >
-            <img 
+            <img
               src={src} 
               alt="Instagram feed" 
               className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"

@@ -27,8 +27,8 @@ export default async function HomePage({
       <NewArrivals dict={dict} locale={locale} />
       <BestSellers dict={dict} locale={locale} />
       <AboutBaher dict={dict} />
-      <InstagramGallery dict={dict} />
-      <Newsletter dict={dict} />
+      <InstagramGallery />
+      <Newsletter />
     </>
   );
 }

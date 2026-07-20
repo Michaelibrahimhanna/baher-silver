@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Dictionary } from '@/lib/dictionary';
 
-export function Newsletter({ dict }: { dict: Dictionary }) {
+export function Newsletter() {
   return (
     <section className="py-24 md:py-32 bg-secondary/20 relative overflow-hidden border-t border-border border-b">
       <div className="w-full max-w-xl mx-auto px-6 text-center">

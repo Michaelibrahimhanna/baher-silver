@@ -4,7 +4,7 @@ import * as React from 'react';
 import { motion } from 'framer-motion';
 import type { Dictionary } from '@/lib/dictionary';
 
-export function QRGift({ dict }: { dict: Dictionary }) {
+export function QRGift() {
   return (
     <section className="py-24 md:py-32 bg-primary text-primary-foreground relative overflow-hidden">
       <div className="w-full max-w-screen-xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row-reverse items-center gap-16">

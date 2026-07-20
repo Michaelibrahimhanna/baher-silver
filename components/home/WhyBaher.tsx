@@ -1,10 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import type { Dictionary } from '@/lib/dictionary';
 
-export function WhyBaher({ dict }: { dict: Dictionary }) {
+export function WhyBaher() {
   return (
     <section className="py-24 md:py-32 bg-secondary/10 relative overflow-hidden">
       <div className="w-full max-w-screen-xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center gap-16">

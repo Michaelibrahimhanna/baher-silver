@@ -16,12 +16,12 @@ export default async function RootPage() {
     <>
       <Hero dict={dict} />
       <FeaturedCollection dict={dict} locale={locale} />
-      <WhyBaher dict={dict} />
+      <WhyBaher />
       <BestSellers dict={dict} locale={locale} />
-      <QRGift dict={dict} />
-      <Reviews dict={dict} />
-      <InstagramGallery dict={dict} />
-      <Newsletter dict={dict} />
+      <QRGift />
+      <Reviews />
+      <InstagramGallery />
+      <Newsletter />
     </>
   );
 }

@@ -68,6 +68,7 @@ export interface ProductVariant {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
+  product?: { name_en: string };
 }
 
 export interface Product {

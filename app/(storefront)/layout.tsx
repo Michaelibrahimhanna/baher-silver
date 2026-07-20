@@ -13,7 +13,7 @@ export default async function StorefrontLayout({ children }: { children: ReactNo
       <main className="flex-grow">
         {children}
       </main>
-      <Footer dict={dict} locale={locale} />
+      <Footer locale={locale} />
     </>
   );
 }

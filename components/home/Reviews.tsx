@@ -10,7 +10,7 @@ const REVIEWS = [
   { text: "The QR Gift feature made this the most memorable anniversary present ever.", author: "James T.", location: "New York" }
 ];
 
-export function Reviews({ dict }: { dict: Dictionary }) {
+export function Reviews() {
   return (
     <section className="py-24 md:py-32 bg-background relative overflow-hidden border-t border-border">
       <div className="w-full max-w-screen-xl mx-auto px-6 lg:px-12 flex flex-col items-center text-center">

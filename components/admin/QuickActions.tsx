@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Plus, Package, Users, Settings } from 'lucide-react';
+import { Search, Plus, Package, Users, Settings } from 'lucide-react';
 
 export function QuickActions() {
   const [isOpen, setIsOpen] = React.useState(false);

@@ -1,14 +1,22 @@
 import * as React from 'react';
-import { ChevronRight, Search, X, Check, Loader2, Info } from 'lucide-react';
+import { ChevronRight, Search, X, Check, Info } from 'lucide-react';
 
-export const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' }>(({ className, variant = 'primary', ...props }, ref) => {
-  const base = "inline-flex items-center justify-center text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-md px-4 py-2";
+export const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger', size?: 'default' | 'sm' | 'md' | 'lg' | 'icon' }>(({ className, variant = 'primary', size = 'default', ...props }, ref) => {
+  const base = "inline-flex items-center justify-center text-sm font-medium transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none rounded-md";
   const variants = {
     primary: "bg-white text-black hover:bg-white/90",
     secondary: "bg-white/10 text-white hover:bg-white/20 border border-white/5",
-    ghost: "text-[#888888] hover:text-white hover:bg-white/5"
+    ghost: "text-[#888888] hover:text-white hover:bg-white/5",
+    danger: "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20"
   };
-  return <button ref={ref} className={`${base} ${variants[variant]} ${className}`} {...props} />;
+  const sizes = {
+    default: "px-4 py-2",
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2",
+    lg: "px-6 py-3",
+    icon: "p-2 aspect-square"
+  };
+  return <button ref={ref} className={`${base} ${variants[variant]} ${sizes[size]} ${className || ''}`} {...props} />;
 });
 Button.displayName = "Button";
 

@@ -1,122 +1,140 @@
 'use client';
 
 import * as React from 'react';
-import { Button, Input, Table, Th, Td, Badge, Pagination, Filter } from '@/components/admin/ui';
-import { Search, Plus, SlidersHorizontal, Settings2, Download, MoreHorizontal, LayoutGrid, Loader2 } from 'lucide-react';
+import { Button, Badge } from '@/components/admin/ui';
+import { Plus, Download, Settings2, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useProducts } from '@/lib/hooks/useCatalog';
+import { useProducts, useDeleteProduct } from '@/lib/hooks/useCatalog';
 import type { Product } from '@/types/catalog';
+import { DataTable } from '@/components/admin/tables/DataTable';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { CrudLayout } from '@/components/admin/crud/CrudLayout';
 
-export default function ProductsPage() {
+function ProductsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL state
+  const page = Number(searchParams?.get('page')) || 1;
+  const search = searchParams?.get('search') || '';
+  const status = searchParams?.get('status') || '';
+  const pageSize = 10;
+
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   
-  const { data: products, isLoading, isError } = useProducts();
+  const { data: result, isLoading } = useProducts({ page, pageSize, search, status });
+  const products = result?.data || [];
+  const totalCount = result?.count || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  const deleteMutation = useDeleteProduct();
+
+  const handleSearchChange = (query: string) => {
+    const params = new URLSearchParams(searchParams?.toString());
+    if (query) {
+      params.set('search', query);
+    } else {
+      params.delete('search');
+    }
+    params.set('page', '1');
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set('page', newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const handleRowClick = (product: Product) => {
     setSelectedProduct(product);
     setDrawerOpen(true);
   };
 
+  const handleDeleteSelected = async () => {
+    if (confirm(`Are you sure you want to archive ${selectedIds.length} products?`)) {
+      await Promise.all(selectedIds.map(id => deleteMutation.mutateAsync(id)));
+      setSelectedIds([]);
+    }
+  };
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-700 h-full flex flex-col">
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-4xl font-serif text-white tracking-tight">Products</h1>
-          <p className="text-[#888888] font-light mt-1">Manage the entire jewelry catalog.</p>
-        </div>
-        <div className="flex gap-3">
+    <CrudLayout 
+      title="Products" 
+      description="Manage the entire jewelry catalog."
+      headerActions={
+        <>
           <Button variant="secondary" className="gap-2"><Download className="w-4 h-4" /> Export</Button>
           <Link href="/admin/catalog/products/new">
             <Button variant="primary" className="gap-2"><Plus className="w-4 h-4" /> New Product</Button>
           </Link>
-        </div>
-      </div>
-
-      {/* Advanced Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[#121212] border border-white/5 rounded-lg">
-        <div className="flex items-center gap-3 flex-1 min-w-[300px]">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#555555]" />
-            <Input placeholder="Search products by name, SKU, or tag..." className="pl-9 bg-[#0A0A0A] border-white/5" />
-          </div>
-          <Filter />
-          <Button variant="ghost" className="gap-2 px-3 text-[#888888] hover:text-white"><SlidersHorizontal className="w-4 h-4" /> Saved Views</Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" className="px-2 text-[#888888]"><LayoutGrid className="w-4 h-4" /></Button>
-          <Button variant="ghost" className="px-2 text-[#888888]"><Settings2 className="w-4 h-4" /> Columns</Button>
-        </div>
-      </div>
-
-      {/* Data Table */}
-      <div className="bg-[#121212] border border-white/5 rounded-lg flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <Table>
-            <thead>
-              <tr>
-                <Th className="w-12"><input type="checkbox" className="accent-white" /></Th>
-                <Th>Product Name</Th>
-                <Th>Brand / Material</Th>
-                <Th>Status</Th>
-                <Th>Inventory</Th>
-                <Th>Price</Th>
-                <Th className="w-12"></Th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && (
-                <tr>
-                  <Td colSpan={7} className="text-center py-12 text-[#555555]">
-                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                    Loading catalog data...
-                  </Td>
-                </tr>
-              )}
-              {isError && (
-                <tr>
-                  <Td colSpan={7} className="text-center py-12 text-red-500">
-                    Failed to load catalog. Please check database connection.
-                  </Td>
-                </tr>
-              )}
-              {!isLoading && products?.length === 0 && (
-                <tr>
-                  <Td colSpan={7} className="text-center py-12 text-[#888888]">
-                    No products found. Create your first product to get started.
-                  </Td>
-                </tr>
-              )}
-              {!isLoading && products?.map((product: Product) => (
-                <tr key={product.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => handleRowClick(product)}>
-                  <Td onClick={(e: React.MouseEvent) => e.stopPropagation()}><input type="checkbox" className="accent-white" /></Td>
-                  <Td>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/5 rounded flex-shrink-0 overflow-hidden">
-                        {/* Placeholder for primary image */}
-                      </div>
-                      <div>
-                        <p className="text-white font-medium">{product.name_en || 'Untitled Product'}</p>
-                        <p className="text-xs text-[#888888] font-mono">{product.slug}</p>
-                      </div>
-                    </div>
-                  </Td>
-                  <Td className="text-[#888888] text-xs">
-                    {product.brand?.name_en || 'No Brand'} • {product.material?.name_en || 'No Material'}
-                  </Td>
-                  <Td><Badge variant={product.status === 'published' ? 'success' : 'warning'}>{product.status || 'draft'}</Badge></Td>
-                  <Td className="text-white">-- <span className="text-xs text-[#888888]">Live Inventory Pending</span></Td>
-                  <Td className="text-white font-mono">--</Td>
-                  <Td onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                    <button className="text-[#555555] hover:text-white transition-colors"><MoreHorizontal className="w-5 h-5" /></button>
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-        <Pagination />
+        </>
+      }
+    >
+      <div className="animate-in fade-in duration-700">
+        <DataTable
+          data={products}
+          keyExtractor={(p) => p.id}
+          isLoading={isLoading}
+          searchQuery={search}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Search products..."
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalCount}
+          onPageChange={handlePageChange}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          bulkActions={
+            <Button variant="danger" size="sm" onClick={handleDeleteSelected}>Archive Selected</Button>
+          }
+          columns={[
+            {
+              key: 'name_en',
+              title: 'Product',
+              render: (p) => (
+                <div className="flex items-center gap-3 cursor-pointer" onClick={() => handleRowClick(p)}>
+                  <div className="w-10 h-10 bg-white/5 rounded flex-shrink-0 overflow-hidden">
+                    {/* Placeholder for primary image */}
+                  </div>
+                  <div>
+                    <p className="text-white font-medium hover:underline">{p.name_en || 'Untitled Product'}</p>
+                    <p className="text-xs text-[#888888] font-mono">{p.slug}</p>
+                  </div>
+                </div>
+              )
+            },
+            {
+              key: 'taxonomy',
+              title: 'Brand / Material',
+              render: (p) => (
+                <div className="text-[#888888] text-xs">
+                  {p.brand?.name_en || 'No Brand'} • {p.material?.name_en || 'No Material'}
+                </div>
+              )
+            },
+            {
+              key: 'status',
+              title: 'Status',
+              render: (p) => <Badge variant={p.status === 'published' ? 'success' : 'warning'}>{p.status || 'draft'}</Badge>
+            },
+            {
+              key: 'actions',
+              title: '',
+              render: (p) => (
+                <div className="flex justify-end">
+                  <Button variant="ghost" size="icon" onClick={() => handleRowClick(p)}>
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                </div>
+              )
+            }
+          ]}
+        />
       </div>
 
       {/* Product Preview Drawer */}
@@ -167,6 +185,14 @@ export default function ProductsPage() {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </CrudLayout>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <React.Suspense fallback={<div className="p-12 text-center text-[#888888]">Loading products...</div>}>
+      <ProductsContent />
+    </React.Suspense>
   );
 }
