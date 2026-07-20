@@ -17,3 +17,4 @@ CREATE TYPE media_type AS ENUM (
     'care_guide', 'packaging_image', 'lifestyle_image'
 );
 CREATE TYPE audit_action AS ENUM ('INSERT', 'UPDATE', 'DELETE');
+CREATE TYPE warehouse_type AS ENUM ('MAIN', 'BRANCH', 'FACTORY', 'SUPPLIER');

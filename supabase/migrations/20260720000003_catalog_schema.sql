@@ -5,6 +5,7 @@
 CREATE TABLE warehouses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     code VARCHAR(100) NOT NULL UNIQUE,
+    type warehouse_type DEFAULT 'MAIN',
     name_ar VARCHAR(255) NOT NULL,
     name_en VARCHAR(255) NOT NULL,
     country_code VARCHAR(2),
