@@ -2,13 +2,17 @@
 
 import * as React from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import type { Dictionary } from '@/lib/dictionary';
+import { revealVariants, staggerContainer } from '@/lib/motion';
 
 export function Hero({ dict }: { dict: Dictionary }) {
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 250]);
+  const prefersReducedMotion = useReducedMotion();
+  
+  // Parallax is subtle and disabled if reduced motion is preferred
+  const y1 = useTransform(scrollY, [0, 1000], [0, prefersReducedMotion ? 0 : 150]);
   const opacity = useTransform(scrollY, [0, 500], [1, 0]);
 
   return (
@@ -35,32 +39,41 @@ export function Hero({ dict }: { dict: Dictionary }) {
         className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 lg:px-12 flex flex-col items-center text-center mt-20"
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
           className="flex flex-col items-center"
         >
-          <span className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-primary/80 mb-8 font-medium relative flex items-center gap-4">
+          <motion.span 
+            variants={revealVariants}
+            className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-primary/80 mb-8 font-medium relative flex items-center gap-4"
+          >
             <span className="w-8 h-[1px] bg-primary/40 hidden sm:block"></span>
             {dict.hero?.small_text || 'The New Standard'}
             <span className="w-8 h-[1px] bg-primary/40 hidden sm:block"></span>
-          </span>
+          </motion.span>
           
-          <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-primary to-primary/60 mb-8 pb-2 drop-shadow-2xl">
+          <motion.h1 
+            variants={revealVariants}
+            className="text-6xl md:text-8xl lg:text-9xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-primary to-primary/60 mb-8 pb-2 drop-shadow-2xl"
+          >
             {dict.hero?.heading || 'Elegance'} <br className="md:hidden" />
             <span className="italic font-light">Redefined</span>
-          </h1>
+          </motion.h1>
           
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl font-sans tracking-[0.05em] leading-loose mb-12 text-balance">
+          <motion.p 
+            variants={revealVariants}
+            className="text-sm md:text-base text-muted-foreground max-w-xl font-sans tracking-[0.05em] leading-loose mb-12 text-balance"
+          >
             {dict.hero?.paragraph || 'Discover the masterfully crafted 925 Silver collection. Designed for those who accept nothing but perfection.'}
-          </p>
+          </motion.p>
           
-          <div className="relative group">
+          <motion.div variants={revealVariants} className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
             <Button variant="primary" size="lg" className="relative">
               {dict.hero?.button || 'Explore the Collection'}
             </Button>
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>
 

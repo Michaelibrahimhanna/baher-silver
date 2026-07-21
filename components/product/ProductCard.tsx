@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '@/lib/types';
 import type { Dictionary } from '@/lib/dictionary';
+import { revealVariants } from '@/lib/motion';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export function ProductCard({
   product,
@@ -28,10 +30,10 @@ export function ProductCard({
   return (
     <motion.div 
       className="group relative flex flex-col cursor-pointer overflow-hidden"
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial="hidden"
+      whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      variants={revealVariants}
     >
       {/* Image Container */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-secondary/20 mb-6">
@@ -40,10 +42,12 @@ export function ProductCard({
         <AnimatePresence>
           {!isLoaded && (
             <motion.div 
-              className="absolute inset-0 z-20 bg-secondary animate-pulse"
+              className="absolute inset-0 z-20"
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-            />
+            >
+              <Skeleton className="w-full h-full" />
+            </motion.div>
           )}
         </AnimatePresence>
 

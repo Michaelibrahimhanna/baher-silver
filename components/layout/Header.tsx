@@ -9,7 +9,7 @@ import type { Dictionary } from '@/lib/dictionary';
 export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [hidden, setHidden] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
-  const { scrollY } = useScroll();
+  const { scrollY, scrollYProgress } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -91,6 +91,12 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
 
         </div>
       </div>
+      
+      {/* Minimal Scroll Progress Indicator */}
+      <motion.div 
+        className="absolute bottom-0 left-0 h-[1px] bg-primary shadow-[0_0_8px_rgba(229,228,226,0.8)] origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
     </motion.header>
   );
 }
