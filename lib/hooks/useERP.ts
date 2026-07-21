@@ -6,6 +6,7 @@ import { CostEngineService } from '../services/erp/CostEngineService';
 import { MeasurementUnitService } from '../services/erp/MeasurementUnitService';
 import { CurrencyService } from '../services/erp/CurrencyService';
 import { PurchaseOrderService } from '../services/erp/PurchaseOrderService';
+import { WarehouseService } from '../services/erp/WarehouseService';
 import type { Supplier, VariantCost, CostCalculationHistory, PurchaseOrder, PurchaseOrderItem } from '@/types/erp';
 import type { Material } from '@/types/catalog';
 
@@ -81,6 +82,21 @@ export const useCreatePurchaseOrder = () => {
   return useMutation({
     mutationFn: ({ po, items }: { po: Partial<PurchaseOrder>, items: Partial<PurchaseOrderItem>[] }) => PurchaseOrderService.createPurchaseOrder(po, items),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] }),
+  });
+};
+
+// --- Warehouses ---
+export const useWarehouses = () => {
+  return useQuery({
+    queryKey: ['warehouses'],
+    queryFn: () => WarehouseService.getWarehouses(),
+  });
+};
+
+export const useWarehouseTypes = () => {
+  return useQuery({
+    queryKey: ['warehouseTypes'],
+    queryFn: () => WarehouseService.getWarehouseTypes(),
   });
 };
 

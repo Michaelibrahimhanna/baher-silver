@@ -2,6 +2,105 @@ export type MaterialType = 'raw_material' | 'packaging' | 'consumable';
 export type CostType = 'standard' | 'market' | 'purchase' | 'average';
 export type POStatus = 'draft' | 'sent' | 'confirmed' | 'partially_received' | 'received' | 'cancelled';
 
+export interface LookupEntity {
+  id: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type WarehouseType = LookupEntity;
+export type TransferStatus = LookupEntity;
+export type StockTransactionType = LookupEntity;
+
+export interface Warehouse {
+  id: string;
+  code: string;
+  name: string;
+  type_id: string;
+  address?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  
+  // Relations
+  type?: WarehouseType;
+}
+
+export interface WarehouseLocation {
+  id: string;
+  warehouse_id: string;
+  parent_location_id?: string | null;
+  code: string;
+  name: string;
+  description?: string | null;
+  path?: string | null;
+  depth: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface WarehouseTransfer {
+  id: string;
+  reference_number: string;
+  from_warehouse_id?: string | null;
+  to_warehouse_id?: string | null;
+  status_id: string;
+  notes?: string | null;
+  requested_by?: string | null;
+  approved_by?: string | null;
+  rejected_by?: string | null;
+  rejected_at?: string | null;
+  cancelled_by?: string | null;
+  cancelled_at?: string | null;
+  completed_by?: string | null;
+  completed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  
+  // Relations
+  items?: WarehouseTransferItem[];
+}
+
+export interface WarehouseTransferItem {
+  id: string;
+  transfer_id: string;
+  material_id?: string | null;
+  variant_id?: string | null;
+  quantity: number;
+  unit_id: string;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface StockLedgerEntry {
+  id: string;
+  material_id?: string | null;
+  variant_id?: string | null;
+  warehouse_id: string;
+  location_id?: string | null;
+  transaction_type_id: string;
+  quantity: number;
+  unit_id: string;
+  running_balance: number;
+  unit_cost: number;
+  total_cost: number;
+  reference_id?: string | null;
+  reference_type?: string | null;
+  performed_by?: string | null;
+  event_id?: string | null;
+  created_at?: string;
+}
+
 export interface MeasurementUnit {
   id: string;
   code: string;
