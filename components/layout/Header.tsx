@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { Search, Heart, ShoppingBag, Menu } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import type { Dictionary } from '@/lib/dictionary';
+import PredictiveSearch from './PredictiveSearch';
 
 export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [hidden, setHidden] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
   const { scrollY, scrollYProgress } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -77,7 +79,10 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
 
           {/* Icons */}
           <div className="flex-1 flex justify-end items-center space-x-6 rtl:space-x-reverse">
-            <button className="text-foreground/80 hover:text-white transition-all duration-300 group hover:scale-110">
+            <button 
+              onClick={() => setSearchOpen(true)}
+              className="text-foreground/80 hover:text-white transition-all duration-300 group hover:scale-110"
+            >
               <Search className="w-5 h-5 stroke-[1.5]" />
             </button>
             <button className="hidden sm:block text-foreground/80 hover:text-white transition-all duration-300 group hover:scale-110">
@@ -97,6 +102,8 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
         className="absolute bottom-0 left-0 h-[1px] bg-primary shadow-[0_0_8px_rgba(229,228,226,0.8)] origin-left"
         style={{ scaleX: scrollYProgress }}
       />
+      
+      <PredictiveSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </motion.header>
   );
 }
