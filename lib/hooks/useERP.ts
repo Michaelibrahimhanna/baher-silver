@@ -7,7 +7,8 @@ import { MeasurementUnitService } from '../services/erp/MeasurementUnitService';
 import { CurrencyService } from '../services/erp/CurrencyService';
 import { PurchaseOrderService } from '../services/erp/PurchaseOrderService';
 import { WarehouseService } from '../services/erp/WarehouseService';
-import type { Supplier, VariantCost, CostCalculationHistory, PurchaseOrder, PurchaseOrderItem } from '@/types/erp';
+import { InventoryService } from '../services/erp/InventoryService';
+import type { Supplier, VariantCost, CostCalculationHistory, PurchaseOrder, PurchaseOrderItem, InventoryTransaction, InventoryTransactionItem } from '@/types/erp';
 import type { Material } from '@/types/catalog';
 
 // --- Suppliers ---
@@ -97,6 +98,18 @@ export const useWarehouseTypes = () => {
   return useQuery({
     queryKey: ['warehouseTypes'],
     queryFn: () => WarehouseService.getWarehouseTypes(),
+  });
+};
+
+// --- Inventory ---
+export const useProcessInventoryTransaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ transaction, items }: { transaction: Partial<InventoryTransaction>, items: Partial<InventoryTransactionItem>[] }) => InventoryService.processTransaction(transaction, items),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventoryTransactions'] });
+      queryClient.invalidateQueries({ queryKey: ['stockLedger'] });
+    },
   });
 };
 

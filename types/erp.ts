@@ -91,7 +91,7 @@ export interface StockLedgerEntry {
   transaction_type_id: string;
   quantity: number;
   unit_id: string;
-  running_balance: number;
+  balance_after_transaction: number;
   unit_cost: number;
   total_cost: number;
   reference_id?: string | null;
@@ -99,6 +99,73 @@ export interface StockLedgerEntry {
   performed_by?: string | null;
   event_id?: string | null;
   created_at?: string;
+}
+
+export type InventoryTransactionType = LookupEntity;
+export type InventoryTransactionStatus = LookupEntity;
+export type AllocationStatus = LookupEntity;
+
+export interface InventoryTransaction {
+  id: string;
+  transaction_type_id: string;
+  status_id: string;
+  reference_number: string;
+  warehouse_id: string;
+  notes?: string | null;
+  created_by?: string | null;
+  approved_by?: string | null;
+  completed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  items?: InventoryTransactionItem[];
+}
+
+export interface InventoryTransactionItem {
+  id: string;
+  transaction_id: string;
+  material_id?: string | null;
+  variant_id?: string | null;
+  location_id?: string | null;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface InventoryBatch {
+  id: string;
+  material_id?: string | null;
+  variant_id?: string | null;
+  warehouse_id: string;
+  location_id?: string | null;
+  receipt_transaction_id: string;
+  batch_number?: string | null;
+  lot_number?: string | null;
+  supplier_batch_number?: string | null;
+  expiry_date?: string | null;
+  original_quantity: number;
+  remaining_quantity: number;
+  unit_cost: number;
+  receipt_date: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface InventoryAllocation {
+  id: string;
+  material_id?: string | null;
+  variant_id?: string | null;
+  warehouse_id: string;
+  reference_type: string;
+  reference_id: string;
+  quantity: number;
+  priority: number;
+  expires_at?: string | null;
+  status_id: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface MeasurementUnit {
