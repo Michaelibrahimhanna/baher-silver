@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import type { Dictionary } from '@/lib/dictionary';
 
 const REVIEWS = [
   { text: "The craftsmanship is unparalleled. It truly feels like a bespoke piece of art.", author: "Sarah M.", location: "Dubai" },

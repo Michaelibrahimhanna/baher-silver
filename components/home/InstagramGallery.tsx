@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import type { Dictionary } from '@/lib/dictionary';
 
 const IMAGES = [
   'https://images.unsplash.com/photo-1599643478514-4a4204b41b18?q=80&w=400',

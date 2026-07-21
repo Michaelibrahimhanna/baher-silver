@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Link from 'next/link';
-import type { Dictionary } from '@/lib/dictionary';
 
 export function Footer({ locale }: { locale: string }) {
   return (

@@ -18,6 +18,15 @@ export interface Material {
   slug: string;
   name_ar: string;
   name_en: string;
+  type?: 'raw_material' | 'packaging' | 'consumable';
+  purity?: string | null;
+  unit?: 'g' | 'kg' | 'piece';
+  standard_cost?: number;
+  last_purchase_cost?: number;
+  average_cost?: number;
+  market_cost?: number;
+  min_stock?: number;
+  supplier_id?: string | null;
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;

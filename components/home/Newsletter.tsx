@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import type { Dictionary } from '@/lib/dictionary';
 
 export function Newsletter() {
   return (

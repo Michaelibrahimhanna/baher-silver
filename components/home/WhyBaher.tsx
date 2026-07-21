@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { motion } from 'framer-motion';
-import type { Dictionary } from '@/lib/dictionary';
 
 export function WhyBaher() {
   return (
