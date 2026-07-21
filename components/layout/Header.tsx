@@ -38,7 +38,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 w-full z-50 transition-all duration-700 ease-in-out ${
         scrolled 
-          ? 'bg-[#050505]/70 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)]' 
+          ? 'bg-[#050505]/85 backdrop-blur-xl border-b border-white/[0.05] shadow-[0_4px_30px_rgba(0,0,0,0.3)]' 
           : 'bg-transparent border-transparent'
       }`}
     >

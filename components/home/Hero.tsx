@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import type { Dictionary } from '@/lib/dictionary';
-import { revealVariants, staggerContainer } from '@/lib/motion';
 
 export function Hero({ dict }: { dict: Dictionary }) {
   const { scrollY } = useScroll();
@@ -39,42 +38,51 @@ export function Hero({ dict }: { dict: Dictionary }) {
         className="relative z-20 w-full max-w-screen-2xl mx-auto px-6 lg:px-12 flex flex-col items-center text-center mt-20"
       >
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="flex flex-col items-center"
         >
-          <motion.span 
-            variants={revealVariants}
-            className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-primary/80 mb-8 font-medium relative flex items-center gap-4"
-          >
+          <span className="text-[10px] sm:text-xs tracking-[0.4em] uppercase text-primary/80 mb-8 font-medium relative flex items-center gap-4">
             <span className="w-8 h-[1px] bg-primary/40 hidden sm:block"></span>
             {dict.hero?.small_text || 'The New Standard'}
             <span className="w-8 h-[1px] bg-primary/40 hidden sm:block"></span>
-          </motion.span>
+          </span>
           
-          <motion.h1 
-            variants={revealVariants}
-            className="text-6xl md:text-8xl lg:text-9xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-primary to-primary/60 mb-8 pb-2 drop-shadow-2xl"
-          >
+          <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-primary to-primary/60 mb-8 pb-2 drop-shadow-2xl">
             {dict.hero?.heading || 'Elegance'} <br className="md:hidden" />
             <span className="italic font-light">Redefined</span>
-          </motion.h1>
+          </h1>
           
-          <motion.p 
-            variants={revealVariants}
-            className="text-sm md:text-base text-muted-foreground max-w-xl font-sans tracking-[0.05em] leading-loose mb-12 text-balance"
-          >
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl font-sans tracking-[0.05em] leading-loose mb-12 text-balance">
             {dict.hero?.paragraph || 'Discover the masterfully crafted 925 Silver collection. Designed for those who accept nothing but perfection.'}
-          </motion.p>
+          </p>
           
-          <motion.div variants={revealVariants} className="relative group">
+          <div className="relative group">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary/0 via-primary/30 to-primary/0 rounded-full blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
             <Button variant="primary" size="lg" className="relative">
               {dict.hero?.button || 'Explore the Collection'}
             </Button>
-          </motion.div>
+          </div>
         </motion.div>
+      </motion.div>
+
+      {/* Trust Bar */}
+      <motion.div 
+        style={{ opacity }}
+        className="absolute bottom-24 lg:bottom-12 w-full px-6 flex justify-center z-20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 1 }}
+      >
+        <div className="flex flex-wrap justify-center gap-4 lg:gap-12 max-w-screen-xl opacity-70">
+          {['925 Sterling Silver', 'Lifetime Craftsmanship', 'Secure Payment', 'Worldwide Shipping'].map((item, idx) => (
+            <div key={idx} className="flex items-center gap-2">
+              <span className="w-1 h-1 rounded-full bg-primary/50" />
+              <span className="text-[9px] sm:text-[10px] tracking-widest uppercase font-medium">{item}</span>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
       {/* Scroll Indicator */}

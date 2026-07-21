@@ -29,14 +29,14 @@ export function ProductCard({
 
   return (
     <motion.div 
-      className="group relative flex flex-col cursor-pointer overflow-hidden"
+      className="group relative flex flex-col cursor-pointer overflow-hidden p-3 transition-all duration-700 hover:shadow-[0_20px_40px_rgba(0,0,0,0.15)] hover:bg-secondary/5 rounded-sm border border-transparent hover:border-primary/20"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
       variants={revealVariants}
     >
       {/* Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-secondary/20 mb-6">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-secondary/10 mb-6 rounded-sm">
         
         {/* Skeleton Loader */}
         <AnimatePresence>
@@ -67,15 +67,15 @@ export function ProductCard({
           alt={name}
           fill
           onLoad={() => setIsLoaded(true)}
-          className="object-cover transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
+          className="object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
         />
         
-        {/* Cinematic Dark Overlay on Hover */}
-        <div className="absolute inset-0 bg-black/0 transition-colors duration-700 ease-out group-hover:bg-black/20 z-0" />
+        {/* Subtle Light Reflection (Shimmer on hover) */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 transition-opacity duration-700 ease-out group-hover:opacity-100 mix-blend-overlay z-0 pointer-events-none" />
         
         {/* Quick Add CTA */}
-        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-10">
+        <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] z-10">
           <button className="w-full bg-primary text-primary-foreground py-3 text-[11px] tracking-[0.2em] uppercase font-medium hover:bg-white transition-colors duration-300">
             {dict.common?.quick_view || 'Quick View'}
           </button>
