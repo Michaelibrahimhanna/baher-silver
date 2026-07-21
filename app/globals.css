@@ -35,6 +35,26 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* Shadows - Ambient Occlusion */
+  --shadow-luxury-hover: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-luxury-deep: 0 20px 40px rgba(0, 0, 0, 0.15);
+  --shadow-luxury-sticky: 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Easing & Transitions */
+  --ease-luxury: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --animate-luxury-fade-up: luxuryFadeUp 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes luxuryFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer base {
