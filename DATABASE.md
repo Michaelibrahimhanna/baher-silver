@@ -4,7 +4,7 @@ This document serves as the comprehensive schema and architecture manual for the
 
 ## Core Philosophy
 - **Soft Deletes**: Business entities are never physically deleted (managed via `deleted_at`).
-- **Multilingual Support**: Key customer-facing strings store both Arabic (`_ar`) and English (`_en`).
+- **Multilingual Support**: Key customer-facing strings store their translations in dedicated Translation Tables (e.g., `categories` -> `category_translations`). Internal/ERP tables are NOT translated. JSONB should be avoided for core translatable business content.
 - **Extensible**: Strict reliance on UUIDs and separated junctions for maximum future flexibility (e.g., adding CRM, Wholesale).
 
 ---

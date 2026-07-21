@@ -12,10 +12,10 @@ import { Newsletter } from '@/components/home/Newsletter';
 export default async function HomePage({
   params,
 }: {
-  params: Promise<{ lang: string }>;
+  params: Promise<{ locale: string }>;
 }) {
-  const { lang } = await params;
-  const locale = (lang === 'ar' ? 'ar' : 'en') as 'en' | 'ar';
+  const { locale: rawLocale } = await params;
+  const locale = (rawLocale === 'ar' ? 'ar' : 'en') as 'en' | 'ar';
   const dict = await getDictionary(locale);
 
   return (
