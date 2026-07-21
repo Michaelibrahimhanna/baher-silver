@@ -1,6 +1,74 @@
 export type MaterialType = 'raw_material' | 'packaging' | 'consumable';
-export type MaterialUnit = 'g' | 'kg' | 'piece';
 export type CostType = 'standard' | 'market' | 'purchase' | 'average';
+export type POStatus = 'draft' | 'sent' | 'confirmed' | 'partially_received' | 'received' | 'cancelled';
+
+export interface MeasurementUnit {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  base_multiplier: number;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface Currency {
+  id: string;
+  code: string;
+  name: string;
+  symbol?: string | null;
+  decimals: number;
+  exchange_rate: number;
+  exchange_rate_updated_at?: string;
+  is_base_currency: boolean;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  supplier_id: string;
+  currency_id: string;
+  status: POStatus;
+  order_date?: string;
+  expected_delivery?: string | null;
+  subtotal: number;
+  discount: number;
+  tax: number;
+  shipping_cost: number;
+  grand_total: number;
+  notes?: string | null;
+  created_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  
+  // Relations
+  supplier?: Supplier;
+  currency?: Currency;
+  items?: PurchaseOrderItem[];
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchase_order_id: string;
+  material_id: string;
+  quantity: number;
+  unit_id: string;
+  unit_price: number;
+  total_price: number;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  
+  // Relations
+  material?: unknown;
+  unit?: MeasurementUnit;
+}
 
 export interface Supplier {
   id: string;
@@ -10,7 +78,7 @@ export interface Supplier {
   email?: string | null;
   phone?: string | null;
   whatsapp?: string | null;
-  currency: string;
+  currency_id: string;
   tax_number?: string | null;
   address?: string | null;
   city?: string | null;

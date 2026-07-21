@@ -3,7 +3,10 @@ import { SupplierService } from '../services/erp/SupplierService';
 import { MaterialService } from '../services/erp/MaterialService';
 import { BOMService } from '../services/erp/BOMService';
 import { CostEngineService } from '../services/erp/CostEngineService';
-import type { Supplier, VariantCost, CostCalculationHistory } from '@/types/erp';
+import { MeasurementUnitService } from '../services/erp/MeasurementUnitService';
+import { CurrencyService } from '../services/erp/CurrencyService';
+import { PurchaseOrderService } from '../services/erp/PurchaseOrderService';
+import type { Supplier, VariantCost, CostCalculationHistory, PurchaseOrder, PurchaseOrderItem } from '@/types/erp';
 import type { Material } from '@/types/catalog';
 
 // --- Suppliers ---
@@ -38,6 +41,46 @@ export const useUpdateSupplier = () => {
       queryClient.invalidateQueries({ queryKey: ['suppliers'] });
       queryClient.invalidateQueries({ queryKey: ['suppliers', id] });
     },
+  });
+};
+
+// --- Measurement Units ---
+export const useMeasurementUnits = () => {
+  return useQuery({
+    queryKey: ['measurementUnits'],
+    queryFn: () => MeasurementUnitService.getMeasurementUnits(),
+  });
+};
+
+// --- Currencies ---
+export const useCurrencies = () => {
+  return useQuery({
+    queryKey: ['currencies'],
+    queryFn: () => CurrencyService.getCurrencies(),
+  });
+};
+
+// --- Purchase Orders ---
+export const usePurchaseOrders = () => {
+  return useQuery({
+    queryKey: ['purchaseOrders'],
+    queryFn: () => PurchaseOrderService.getPurchaseOrders(),
+  });
+};
+
+export const usePurchaseOrder = (id: string) => {
+  return useQuery({
+    queryKey: ['purchaseOrders', id],
+    queryFn: () => PurchaseOrderService.getPurchaseOrderById(id),
+    enabled: !!id,
+  });
+};
+
+export const useCreatePurchaseOrder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ po, items }: { po: Partial<PurchaseOrder>, items: Partial<PurchaseOrderItem>[] }) => PurchaseOrderService.createPurchaseOrder(po, items),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['purchaseOrders'] }),
   });
 };
 

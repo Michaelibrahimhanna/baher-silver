@@ -19,7 +19,7 @@ const materialSchema = z.object({
   slug: z.string().min(2, 'Slug is required'),
   type: z.enum(['raw_material', 'packaging', 'consumable']).default('raw_material'),
   purity: z.string().optional(),
-  unit: z.enum(['g', 'kg', 'piece']).default('g'),
+  unit_id: z.string().min(1, 'Unit is required'),
   standard_cost: z.number().default(0),
   market_cost: z.number().default(0),
   min_stock: z.number().default(0),
@@ -41,7 +41,7 @@ export default function MaterialsPage() {
   const methods = useForm({
     resolver: zodResolver(materialSchema),
     defaultValues: {
-      name_en: '', name_ar: '', slug: '', type: 'raw_material', purity: '', unit: 'g',
+      name_en: '', name_ar: '', slug: '', type: 'raw_material', purity: '', unit_id: '',
       standard_cost: 0, market_cost: 0, min_stock: 0
     }
   });
@@ -54,7 +54,7 @@ export default function MaterialsPage() {
       slug: item.slug,
       type: item.type || 'raw_material',
       purity: item.purity || '',
-      unit: item.unit || 'g',
+      unit_id: item.unit_id || '',
       standard_cost: item.standard_cost || 0,
       market_cost: item.market_cost || 0,
       min_stock: item.min_stock || 0,
@@ -117,12 +117,12 @@ export default function MaterialsPage() {
             {
               key: 'avg_cost',
               title: 'Avg Cost',
-              render: (item) => <span className="text-white">{item.average_cost?.toFixed(2) || '0.00'} / {item.unit}</span>
+              render: (item) => <span className="text-white">{item.average_cost?.toFixed(2) || '0.00'} / {item.unit_id}</span>
             },
             {
               key: 'market_cost',
               title: 'Market Cost',
-              render: (item) => <span className="text-[#888888]">{item.market_cost?.toFixed(2) || '0.00'} / {item.unit}</span>
+              render: (item) => <span className="text-[#888888]">{item.market_cost?.toFixed(2) || '0.00'} / {item.unit_id}</span>
             },
             {
               key: 'actions',
@@ -152,12 +152,12 @@ export default function MaterialsPage() {
                   <FormField name="slug" label="Slug" />
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField name="type" label="Material Type" />
-                    <FormField name="unit" label="Unit of Measure" />
+                    <FormField name="purity" label="Purity/Grade" />
+                    <FormField name="unit_id" label="Unit ID" />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <FormField name="purity" label="Purity (e.g. 925)" />
+                    <FormField name="type" label="Material Type" />
                     <FormField name="min_stock" label="Min Stock Alert" />
                   </div>
 

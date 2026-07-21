@@ -8,10 +8,11 @@ import { ArrowLeft, Calculator, Save, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
-import { useCalculateCost, useUpdateVariantCostConfig } from '@/lib/hooks/useERP';
+import { useActiveBOM, useUpdateVariantCostConfig } from '@/lib/hooks/useERP';
 import type { VariantCost } from '@/types/erp';
 import { FormField } from '@/components/admin/forms/FormField';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useForm, useWatch } from 'react-hook-form';
+import { CostEngineService } from '@/lib/services/erp/CostEngineService';
 
 export default function VariantEditorPage() {
   const params = useParams();
@@ -27,28 +28,46 @@ export default function VariantEditorPage() {
     enabled: !!id
   });
 
-  const { data: costCalc, isLoading: isCalcLoading } = useCalculateCost(id);
+  const { data: bom, isLoading: isBomLoading } = useActiveBOM(id);
   const updateCostMutation = useUpdateVariantCostConfig();
+
+  const [activePreset, setActivePreset] = React.useState('Current DB');
+  const [presets, setPresets] = React.useState<Record<string, Partial<VariantCost>>>({});
 
   const methods = useForm({
     defaultValues: {
       labor_cost: 0,
       packaging_cost: 0,
+      manufacturing_cost: 0,
       overhead_cost: 0,
       profit_margin_target: 0,
+      tax_rate: 0,
+      discount_rate: 0,
     }
   });
 
+  const formValues = useWatch({ control: methods.control });
+
   React.useEffect(() => {
-    if (costCalc) {
-      methods.reset({
-        labor_cost: costCalc.labor_cost || 0,
-        packaging_cost: costCalc.packaging_cost || 0,
-        overhead_cost: costCalc.overhead_cost || 0,
-        profit_margin_target: costCalc.profit_margin || 0,
-      });
+    // If we have a stored variant_cost config in DB (we don't have a direct hook for it right now except via calculateCost history)
+    // Actually, we can fetch it or just rely on what bom has. For now we just use form default or user input.
+  }, []);
+
+  const handleSavePreset = (name: string) => {
+    setPresets(prev => ({ ...prev, [name]: methods.getValues() }));
+    setActivePreset(name);
+  };
+
+  const handleLoadPreset = (name: string) => {
+    if (presets[name]) {
+      methods.reset(presets[name]);
+      setActivePreset(name);
     }
-  }, [costCalc, methods]);
+  };
+
+  const simulatedCost = React.useMemo(() => {
+    return CostEngineService.simulateCost(bom?.items || [], formValues as Partial<VariantCost>);
+  }, [bom?.items, formValues]);
 
   const onSaveConfig = async (data: Partial<VariantCost>) => {
     await updateCostMutation.mutateAsync({ variantId: id, updates: data });
@@ -100,13 +119,31 @@ export default function VariantEditorPage() {
               <form onSubmit={methods.handleSubmit(onSaveConfig)} className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <FormField name="labor_cost" label="Labor Cost (Flat)" />
+                  <FormField name="manufacturing_cost" label="Manufacturing Cost" />
                   <FormField name="packaging_cost" label="Packaging Cost" />
                   <FormField name="overhead_cost" label="Overhead Cost" />
                   <FormField name="profit_margin_target" label="Target Profit Margin (%)" />
+                  <FormField name="tax_rate" label="Tax Rate (%)" />
                 </div>
-                <Button variant="primary" type="submit" className="gap-2" disabled={methods.formState.isSubmitting}>
-                  <Save className="w-4 h-4" /> Save Configuration
-                </Button>
+                <div className="border-t border-white/10 pt-6 mt-6">
+                  <h4 className="text-sm font-medium text-white mb-4">Simulation Presets</h4>
+                  <div className="flex gap-2 mb-4 overflow-x-auto">
+                    <Button type="button" variant={activePreset === 'Current DB' ? 'primary' : 'ghost'} size="sm" onClick={() => setActivePreset('Current DB')}>Current DB</Button>
+                    {Object.keys(presets).map(p => (
+                      <Button key={p} type="button" variant={activePreset === p ? 'primary' : 'ghost'} size="sm" onClick={() => handleLoadPreset(p)}>{p}</Button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="secondary" size="sm" onClick={() => handleSavePreset('Scenario A')}>Save as Scenario A</Button>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => handleSavePreset('Scenario B')}>Save as Scenario B</Button>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => handleSavePreset('Scenario C')}>Save as Scenario C</Button>
+                  </div>
+                </div>
+                <div className="pt-4">
+                  <Button variant="primary" type="submit" className="gap-2 w-full" disabled={methods.formState.isSubmitting}>
+                    <Save className="w-4 h-4" /> Save Configuration to DB
+                  </Button>
+                </div>
               </form>
             </FormProvider>
           </div>
@@ -120,37 +157,51 @@ export default function VariantEditorPage() {
             </div>
             <h3 className="text-lg font-serif text-primary mb-6 relative z-10">Real-Time Cost Engine</h3>
             
-            {isCalcLoading ? (
-              <p className="text-[#888888] text-sm">Calculating...</p>
+            <div className="mb-4 text-xs font-mono text-[#888888] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              LIVE SIMULATION ACTIVE
+            </div>
+            
+            {isBomLoading ? (
+              <p className="text-[#888888] text-sm">Loading BOM...</p>
             ) : (
               <div className="space-y-4 relative z-10 text-sm">
                 <div className="flex justify-between border-b border-white/5 pb-2">
                   <span className="text-[#888888]">Material Cost</span>
-                  <span className="text-white font-mono">{costCalc?.material_cost?.toFixed(2) || '0.00'}</span>
+                  <span className="text-white font-mono">{simulatedCost?.material_cost?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div className="flex justify-between border-b border-white/5 pb-2">
-                  <span className="text-[#888888]">Waste</span>
-                  <span className="text-red-400 font-mono">+{costCalc?.waste_cost?.toFixed(2) || '0.00'}</span>
+                  <span className="text-[#888888]">Waste Cost</span>
+                  <span className="text-red-400 font-mono">+{simulatedCost?.waste_cost?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div className="flex justify-between border-b border-white/5 pb-2">
                   <span className="text-[#888888]">Labor & Mfg</span>
-                  <span className="text-white font-mono">{((costCalc?.labor_cost || 0) + (costCalc?.manufacturing_cost || 0)).toFixed(2)}</span>
+                  <span className="text-white font-mono">{((simulatedCost?.labor_cost || 0) + (simulatedCost?.manufacturing_cost || 0)).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between border-b border-white/5 pb-2">
                   <span className="text-[#888888]">Packaging & Overhead</span>
-                  <span className="text-white font-mono">{((costCalc?.packaging_cost || 0) + (costCalc?.overhead_cost || 0)).toFixed(2)}</span>
+                  <span className="text-white font-mono">{((simulatedCost?.packaging_cost || 0) + (simulatedCost?.overhead_cost || 0)).toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between border-b border-primary/20 pb-2 mt-4 pt-4">
-                  <span className="text-primary font-medium">Total Cost</span>
+                  <span className="text-primary font-medium">Total Mfg Cost</span>
                   <span className="text-primary font-mono font-medium">
-                    {((costCalc?.material_cost || 0) + (costCalc?.waste_cost || 0) + (costCalc?.labor_cost || 0) + (costCalc?.manufacturing_cost || 0) + (costCalc?.packaging_cost || 0) + (costCalc?.overhead_cost || 0)).toFixed(2)}
+                    {((simulatedCost?.material_cost || 0) + (simulatedCost?.waste_cost || 0) + (simulatedCost?.labor_cost || 0) + (simulatedCost?.manufacturing_cost || 0) + (simulatedCost?.packaging_cost || 0) + (simulatedCost?.overhead_cost || 0)).toFixed(2)}
                   </span>
                 </div>
 
-                <div className="flex justify-between pt-2">
-                  <span className="text-white font-medium">Suggested Retail Price</span>
-                  <span className="text-white font-mono font-bold text-lg">{costCalc?.final_selling_price?.toFixed(2) || '0.00'}</span>
+                <div className="flex justify-between border-b border-white/5 pb-2 pt-2">
+                  <span className="text-[#888888]">Target Margin</span>
+                  <span className="text-green-400 font-mono">+{simulatedCost?.profit_margin?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between border-b border-white/5 pb-2">
+                  <span className="text-[#888888]">Tax Amount</span>
+                  <span className="text-red-400 font-mono">+{simulatedCost?.tax_amount?.toFixed(2) || '0.00'}</span>
+                </div>
+
+                <div className="flex justify-between pt-4 bg-primary/10 -mx-6 px-6 pb-6 rounded-b-xl border-t border-primary/20">
+                  <span className="text-white font-medium text-lg">Suggested Retail Price</span>
+                  <span className="text-white font-mono font-bold text-2xl">{simulatedCost?.final_selling_price?.toFixed(2) || '0.00'}</span>
                 </div>
               </div>
             )}

@@ -78,8 +78,8 @@ export default function SupplierDetailPage() {
           <h3 className="text-lg font-serif text-white mb-6">Business Details</h3>
           <div className="space-y-4 text-sm">
             <div className="grid grid-cols-3 border-b border-white/5 pb-2">
-              <span className="text-[#888888]">Currency</span>
-              <span className="col-span-2 text-white font-mono">{supplier.currency}</span>
+              <span className="text-[#888888]">Currency ID</span>
+              <span className="col-span-2 text-white font-mono">{supplier.currency_id}</span>
             </div>
             <div className="grid grid-cols-3 border-b border-white/5 pb-2">
               <span className="text-[#888888]">Tax Number</span>

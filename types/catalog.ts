@@ -20,7 +20,7 @@ export interface Material {
   name_en: string;
   type?: 'raw_material' | 'packaging' | 'consumable';
   purity?: string | null;
-  unit?: 'g' | 'kg' | 'piece';
+  unit_id?: string | null;
   standard_cost?: number;
   last_purchase_cost?: number;
   average_cost?: number;

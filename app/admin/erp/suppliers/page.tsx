@@ -20,7 +20,7 @@ const supplierSchema = z.object({
   email: z.string().email('Invalid email').optional().or(z.literal('')).nullable(),
   phone: z.string().optional().nullable(),
   whatsapp: z.string().optional().nullable(),
-  currency: z.string().default('EGP'),
+  currency_id: z.string().min(1, 'Currency is required'),
   tax_number: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
@@ -50,7 +50,7 @@ export default function SuppliersPage() {
     resolver: zodResolver(supplierSchema),
     defaultValues: {
       code: '', name: '', contact_name: '', email: '', phone: '', whatsapp: '',
-      currency: 'EGP', tax_number: '', address: '', city: '', country: '',
+      currency_id: '', tax_number: '', address: '', city: '', country: '',
       payment_terms: '', lead_time_days: 0, rating: 0, notes: '', is_active: true
     }
   });
@@ -59,7 +59,7 @@ export default function SuppliersPage() {
     setEditingId(null);
     methods.reset({
       code: '', name: '', contact_name: '', email: '', phone: '', whatsapp: '',
-      currency: 'EGP', tax_number: '', address: '', city: '', country: '',
+      currency_id: '', tax_number: '', address: '', city: '', country: '',
       payment_terms: '', lead_time_days: 0, rating: 0, notes: '', is_active: true
     });
     setDrawerOpen(true);
@@ -74,7 +74,7 @@ export default function SuppliersPage() {
       email: item.email || '',
       phone: item.phone || '',
       whatsapp: item.whatsapp || '',
-      currency: item.currency || 'EGP',
+      currency_id: item.currency_id || '',
       tax_number: item.tax_number || '',
       address: item.address || '',
       city: item.city || '',

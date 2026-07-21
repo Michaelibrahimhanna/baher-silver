@@ -33,11 +33,19 @@ export class CostEngineService {
       profit_margin_target: 0
     };
 
+    return {
+      ...this.simulateCost(bom?.items || [], config),
+      variant_id: variantId,
+      bom_id: bom?.id || null,
+    } as CostCalculationHistory;
+  }
+
+  static simulateCost(items: BOMItem[], config: Partial<VariantCost>): Partial<CostCalculationHistory> {
     let material_cost = 0;
     let waste_cost = 0;
 
-    if (bom && bom.items) {
-      bom.items.forEach((item: BOMItem) => {
+    if (items) {
+      items.forEach((item: BOMItem) => {
         const material = item.material as Material | undefined;
         const materialAvgCost = material?.average_cost || 0;
         const itemMatCost = Number(item.quantity) * Number(materialAvgCost);
@@ -48,32 +56,30 @@ export class CostEngineService {
       });
     }
 
-    const mfgCost = Number(config.labor_cost) + Number(config.manufacturing_cost) + Number(config.packaging_cost) + Number(config.overhead_cost);
+    const mfgCost = Number(config.labor_cost || 0) + Number(config.manufacturing_cost || 0) + Number(config.packaging_cost || 0) + Number(config.overhead_cost || 0);
     const totalMfgCost = material_cost + waste_cost + mfgCost;
     
-    const profit_margin = totalMfgCost * (Number(config.profit_margin_target) / 100);
+    const profit_margin = totalMfgCost * (Number(config.profit_margin_target || 0) / 100);
     const priceBeforeTax = totalMfgCost + profit_margin;
-    const tax_amount = priceBeforeTax * (Number(config.tax_rate) / 100);
-    const discount_amount = priceBeforeTax * (Number(config.discount_rate) / 100);
+    const tax_amount = priceBeforeTax * (Number(config.tax_rate || 0) / 100);
+    const discount_amount = priceBeforeTax * (Number(config.discount_rate || 0) / 100);
     
     const final_selling_price = priceBeforeTax + tax_amount - discount_amount;
 
     const calculation: Partial<CostCalculationHistory> = {
-      variant_id: variantId,
-      bom_id: bom?.id || null,
       material_cost,
-      labor_cost: Number(config.labor_cost),
-      manufacturing_cost: Number(config.manufacturing_cost),
-      packaging_cost: Number(config.packaging_cost),
+      labor_cost: Number(config.labor_cost || 0),
+      manufacturing_cost: Number(config.manufacturing_cost || 0),
+      packaging_cost: Number(config.packaging_cost || 0),
       waste_cost,
-      overhead_cost: Number(config.overhead_cost),
+      overhead_cost: Number(config.overhead_cost || 0),
       tax_amount,
       discount_amount,
       profit_margin,
       final_selling_price,
     };
 
-    return calculation as CostCalculationHistory;
+    return calculation;
   }
 
   static async saveCalculationSnapshot(calculation: Partial<CostCalculationHistory>): Promise<CostCalculationHistory> {
