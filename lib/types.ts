@@ -5,11 +5,11 @@ export interface ProductVariant {
 }
 
 export interface ProductDetails {
-  description: { en: string; ar: string };
-  materials: { en: string; ar: string }[];
-  careGuide: { en: string; ar: string };
-  shippingReturns: { en: string; ar: string };
-  certificate: { en: string; ar: string };
+  description?: { en: string; ar: string };
+  materials?: { en: string; ar: string }[];
+  careGuide?: { en: string; ar: string };
+  shippingReturns?: { en: string; ar: string };
+  certificate?: { en: string; ar: string };
 }
 
 export type StockStatus = 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK' | 'MADE_TO_ORDER';
