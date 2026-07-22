@@ -272,7 +272,7 @@ export default function EnterpriseProductEditor() {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'general' | 'media' | 'silver' | 'pricing' | 'inventory' | 'seo' | 'preview')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xs text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'bg-primary/20 text-primary border border-primary/40 shadow-[0_0_15px_rgba(229,228,226,0.2)]'
