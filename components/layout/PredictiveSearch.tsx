@@ -5,34 +5,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { searchProducts, products } from "@/lib/products";
+import { usePathname } from "next/navigation";
 
 interface PredictiveSearchProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const mockRecentSearches = ["Silver Ring", "Gold Plated", "Drop Earrings"];
-const mockTrendingSearches = ["Zircon Bracelet", "Minimalist Chain", "Engagement Rings"];
-
-const mockProducts = [
-  {
-    id: "p1",
-    slug: "classic-silver-ring",
-    name: "Classic Silver Ring",
-    price: 120,
-    image: "https://images.unsplash.com/photo-1605100804763-247f6612d543?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "p2",
-    slug: "elegance-drop-earrings",
-    name: "Elegance Drop Earrings",
-    price: 95,
-    image: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  }
-];
-
 export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchProps) {
   const [query, setQuery] = useState("");
+  const pathname = usePathname();
+  const locale = pathname.startsWith('/ar') ? 'ar' : 'en';
+  const isAr = locale === 'ar';
+
+  const mockRecentSearches = isAr 
+    ? ["خاتم فضة", "قلادة سلسلة", "أقراط قطرة"] 
+    : ["Silver Ring", "Chain Necklace", "Drop Earrings"];
+
+  const mockTrendingSearches = isAr 
+    ? ["سوار زركون", "خواتم خطوبة", "فضة 925"] 
+    : ["Zircon Bracelet", "Engagement Rings", "925 Silver"];
+
+  const searchResults = query.trim().length > 0 
+    ? searchProducts(query) 
+    : products.slice(0, 4);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -57,18 +54,22 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
           className="fixed inset-0 z-50 flex flex-col bg-[#050505]/95 backdrop-blur-2xl"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-6 py-6 border-b border-white/10">
             <div className="flex items-center flex-1 max-w-4xl mx-auto gap-4">
-              <Search className="w-6 h-6 text-primary/70" />
+              <Search className="w-6 h-6 text-primary/70 shrink-0" />
               <input
                 type="text"
-                placeholder="Search for jewelry, collections..."
+                placeholder={isAr ? "ابحث عن خواتم، قلائد، أساور..." : "Search for jewelry, collections..."}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 text-2xl font-light bg-transparent text-foreground outline-none placeholder:text-muted-foreground focus:ring-0 border-none"
+                className="flex-1 text-xl md:text-2xl font-light bg-transparent text-foreground outline-none placeholder:text-muted-foreground focus:ring-0 border-none"
                 autoFocus
               />
-              <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+              <button 
+                onClick={onClose} 
+                className="p-2 hover:bg-white/5 rounded-full transition-colors shrink-0"
+                aria-label="Close search"
+              >
                 <X className="w-6 h-6 text-muted-foreground hover:text-white transition-colors" />
               </button>
             </div>
@@ -83,16 +84,16 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                 {query.length === 0 && (
                   <>
                     <div className="space-y-4">
-                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        Recent Searches
+                        {isAr ? "الأكثر بحثاً مؤخراً" : "Recent Searches"}
                       </h3>
                       <ul className="space-y-3">
                         {mockRecentSearches.map((term, idx) => (
                           <li key={idx}>
                             <button
                               onClick={() => setQuery(term)}
-                              className="text-lg text-foreground/80 hover:text-primary transition-colors font-serif"
+                              className="text-base text-foreground/80 hover:text-primary transition-colors font-serif"
                             >
                               {term}
                             </button>
@@ -102,16 +103,16 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                     </div>
                     
                     <div className="space-y-4">
-                      <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                         <TrendingUp className="w-4 h-4" />
-                        Trending Now
+                        {isAr ? "شائع الآن" : "Trending Now"}
                       </h3>
                       <ul className="space-y-3">
                         {mockTrendingSearches.map((term, idx) => (
                           <li key={idx}>
                             <button
                               onClick={() => setQuery(term)}
-                              className="text-lg text-foreground/80 hover:text-primary transition-colors font-serif"
+                              className="text-base text-foreground/80 hover:text-primary transition-colors font-serif"
                             >
                               {term}
                             </button>
@@ -125,34 +126,43 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
 
               {/* Right Column: Suggested Products */}
               <div className="md:col-span-8 space-y-6">
-                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                  Suggested Products
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  {query.length > 0 
+                    ? (isAr ? `نتائج البحث (${searchResults.length})` : `Search Results (${searchResults.length})`)
+                    : (isAr ? "منتجات مقترحة" : "Suggested Products")}
                 </h3>
-                <div className="grid grid-cols-2 gap-6">
-                  {mockProducts.map((product) => (
-                    <Link
-                      key={product.id}
-                      href={`/en/product/${product.slug}`}
-                      onClick={onClose}
-                      className="group flex gap-4 items-center hover:bg-white/5 p-2 rounded-sm transition-colors border border-transparent hover:border-white/10"
-                    >
-                      <div className="relative w-20 h-20 bg-secondary/10 rounded-sm overflow-hidden shrink-0">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                          {product.name}
-                        </h4>
-                        <p className="text-sm text-muted-foreground mt-1 tracking-widest">${product.price}</p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                {searchResults.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8">
+                    {isAr ? "لم يتم العثور على منتجات تطابق بحثك." : "No products found matching your search."}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {searchResults.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/${locale}/product/${product.slug}`}
+                        onClick={onClose}
+                        className="group flex gap-4 items-center hover:bg-white/5 p-3 rounded-sm transition-colors border border-transparent hover:border-white/10"
+                      >
+                        <div className="relative w-16 h-16 bg-secondary/10 rounded-sm overflow-hidden shrink-0">
+                          <Image
+                            src={product.image}
+                            alt={product.name[locale]}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            sizes="64px"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                            {product.name[locale]}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-1 tracking-widest">${product.price}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

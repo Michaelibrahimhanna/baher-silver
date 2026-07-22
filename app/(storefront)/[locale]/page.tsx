@@ -6,6 +6,7 @@ import { LuxuryBanner } from '@/components/home/LuxuryBanner';
 import { NewArrivals } from '@/components/home/NewArrivals';
 import { BestSellers } from '@/components/home/BestSellers';
 import { AboutBaher } from '@/components/home/AboutBaher';
+import { WhyBaher } from '@/components/home/WhyBaher';
 import { InstagramGallery } from '@/components/home/InstagramGallery';
 import { Newsletter } from '@/components/home/Newsletter';
 
@@ -26,9 +27,10 @@ export default async function HomePage({
       <LuxuryBanner dict={dict} />
       <NewArrivals dict={dict} locale={locale} />
       <BestSellers dict={dict} locale={locale} />
+      <WhyBaher dict={dict} locale={locale} />
       <AboutBaher dict={dict} />
-      <InstagramGallery />
-      <Newsletter />
+      <InstagramGallery dict={dict} />
+      <Newsletter dict={dict} />
     </>
   );
 }

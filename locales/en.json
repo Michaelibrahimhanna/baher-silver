@@ -2,7 +2,8 @@
   "common": {
     "shop_now": "Shop Now",
     "quick_view": "Quick View",
-    "discover_more": "Discover More"
+    "discover_more": "Discover More",
+    "language": "العربية"
   },
   "badges": {
     "new": "NEW",
@@ -20,13 +21,51 @@
     "search": "Search",
     "wishlist": "Wishlist",
     "cart": "Cart",
-    "account": "Account"
+    "account": "Account",
+    "journal": "Journal",
+    "admin": "Admin Dashboard"
   },
   "hero": {
     "small_text": "BAHER SILVER",
     "heading": "Designed To Amaze",
     "paragraph": "Luxury 925 Silver Jewelry crafted with elegance and timeless beauty.",
     "button": "Shop Collection"
+  },
+  "why_baher": {
+    "heritage": "Our Heritage",
+    "title_line1": "Mastery in",
+    "title_line2": "925 Silver",
+    "description": "For generations, Baher Silver has pursued the pinnacle of craftsmanship. Every piece is forged with passion, combining timeless elegance with modern minimalist sensibilities.",
+    "discover_story": "Discover Our Story"
+  },
+  "instagram": {
+    "handle": "@bahersilver",
+    "join_community": "Join our community",
+    "feed_alt": "Instagram feed item"
+  },
+  "collections": {
+    "title": "Signature Collections",
+    "subtitle": "Curated selections of fine 925 sterling silver jewelry for every occasion.",
+    "explore": "Explore Collection",
+    "pieces": "Pieces"
+  },
+  "wishlist": {
+    "title": "Your Wishlist",
+    "empty_title": "Your wishlist is empty",
+    "empty_desc": "Save your favorite pieces here to review later.",
+    "explore_catalog": "Explore Catalog"
+  },
+  "search": {
+    "placeholder": "Search rings, necklaces, bracelets...",
+    "popular": "Popular Searches",
+    "no_results": "No products found matching your search.",
+    "results_count": "results found"
+  },
+  "journal": {
+    "title": "The Baher Journal",
+    "subtitle": "Insights into silver artistry, care guides, and jewelry styling.",
+    "read_article": "Read Article",
+    "back_to_journal": "Back to Journal"
   },
   "checkout": {
     "title": "Accordion Enterprise Checkout",
@@ -86,9 +125,6 @@
   "about": {
     "title": "About Baher",
     "story": "Baher Silver embodies the essence of minimal luxury. Each piece is meticulously crafted from premium 925 sterling silver to deliver timeless elegance and enduring beauty. Our collections are designed for those who appreciate refined aesthetics and impeccable quality."
-  },
-  "instagram": {
-    "title": "Follow Us @BaherSilver"
   },
   "footer": {
     "newsletter_title": "Join Our Newsletter",

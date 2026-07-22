@@ -1,8 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import * as React from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
+import type { Dictionary } from '@/lib/dictionary';
 
 const IMAGES = [
   'https://images.unsplash.com/photo-1599643478514-4a4204b41b18?q=80&w=400',
@@ -11,13 +12,15 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=400',
 ];
 
-export function InstagramGallery() {
+export function InstagramGallery({ dict }: { dict?: Dictionary }) {
   return (
     <section className="py-24 bg-background relative overflow-hidden">
       <div className="w-full flex flex-col items-center text-center mb-12">
-        <h2 className="text-2xl font-serif text-primary mb-2">@bahersilver</h2>
-        <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
-          Join our community
+        <h2 className="text-2xl font-serif text-primary mb-2">
+          {dict?.instagram?.handle || '@bahersilver'}
+        </h2>
+        <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground font-semibold">
+          {dict?.instagram?.join_community || 'Join our community'}
         </span>
       </div>
 
@@ -31,10 +34,12 @@ export function InstagramGallery() {
             viewport={{ once: true }}
             transition={{ duration: 1, delay: idx * 0.1 }}
           >
-            <img
+            <Image
               src={src} 
-              alt="Instagram feed" 
-              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              alt={dict?.instagram?.feed_alt || `Instagram feed item ${idx + 1}`}
+              fill
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              sizes="(max-width: 768px) 50vw, 25vw"
             />
             <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/30 flex items-center justify-center">
               <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-500" fill="currentColor" viewBox="0 0 24 24">

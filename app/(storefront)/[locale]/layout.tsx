@@ -44,7 +44,7 @@ export default async function StorefrontRootLayout({
           <main className="flex-grow">
             {children}
           </main>
-          <Footer locale={resolvedLocale} />
+          <Footer dict={dict} locale={resolvedLocale} />
         </Providers>
       </body>
     </html>
