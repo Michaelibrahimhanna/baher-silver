@@ -19,13 +19,53 @@
     "earrings": "أقراط",
     "search": "بحث",
     "wishlist": "قائمة الأمنيات",
-    "cart": "عربة التسوق"
+    "cart": "عربة التسوق",
+    "account": "حسابي"
   },
   "hero": {
     "small_text": "باهر للفضة",
     "heading": "صُمم ليبهر",
     "paragraph": "مجوهرات فضية فاخرة عيار 925 مصممة بأناقة وجمال خالد.",
     "button": "تسوق التشكيلة"
+  },
+  "checkout": {
+    "title": "الدفع السريع والتأمين Enterprise",
+    "contact_title": "بيانات التواصل (زائر / حساب)",
+    "guest_checkout": "متابعة كزائر (Guest)",
+    "sign_in": "تسجيل الدخول (Sign In)",
+    "email_label": "البريد الإلكتروني",
+    "phone_label": "رقم المحمول للتنبيهات",
+    "shipping_title": "عنوان الشحن وإقليم التوصيل",
+    "payment_title": "وسيلة الدفع المؤمّنة",
+    "order_summary": "ملخص المنتجات والأصل",
+    "subtotal": "المجموع الفرعي",
+    "discount": "خصم الكوبون",
+    "shipping_fee": "رسوم الشحن",
+    "taxes": "ضريبة القيمة المضافة (١٤٪ VAT)",
+    "total": "المجموع الإجمالي",
+    "place_order": "تأكيد وإتمام الطلب",
+    "processing": "جاري معالجة الطلب...",
+    "coupon_code": "رمز الكوبون",
+    "apply": "تطبيق"
+  },
+  "account": {
+    "dashboard_title": "بوابة حساب العميل ونظام الولاء المكافآت",
+    "welcome": "مرحباً بعودتك",
+    "loyalty_tier": "مستوى الولاء",
+    "points_balance": "رصيد نقاط المكافآت المتاح",
+    "redeem_points": "استبدال النقاط بخصم مباشر",
+    "saved_addresses": "عناوين الشحن المحفوظة",
+    "order_history": "سجل الطلبات والتتبع",
+    "referral_program": "برنامج الإحالة والمشاركة",
+    "referral_code": "كود الإحالة الخاص بك:"
+  },
+  "order": {
+    "success_title": "تم تأكيد طلبك بنجاح!",
+    "order_number": "رقم الطلب التجاري:",
+    "timeline_title": "تتبع حالة الطلب السحابية",
+    "invoice_title": "الفاتورة الضريبية الرقمية",
+    "qr_title": "الإيصال الرقمي المشفر ZATCA / E-Receipt",
+    "return_catalog": "العودة للمتجر والكتالوج"
   },
   "categories": {
     "title": "تسوق حسب الفئة"

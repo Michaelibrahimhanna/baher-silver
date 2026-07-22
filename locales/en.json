@@ -19,13 +19,53 @@
     "earrings": "Earrings",
     "search": "Search",
     "wishlist": "Wishlist",
-    "cart": "Cart"
+    "cart": "Cart",
+    "account": "Account"
   },
   "hero": {
     "small_text": "BAHER SILVER",
     "heading": "Designed To Amaze",
     "paragraph": "Luxury 925 Silver Jewelry crafted with elegance and timeless beauty.",
     "button": "Shop Collection"
+  },
+  "checkout": {
+    "title": "Accordion Enterprise Checkout",
+    "contact_title": "Contact & Identification",
+    "guest_checkout": "Guest Checkout",
+    "sign_in": "Sign In to Account",
+    "email_label": "Email Address",
+    "phone_label": "Mobile Phone",
+    "shipping_title": "Shipping Address & Zone",
+    "payment_title": "Provider-Agnostic Payment Method",
+    "order_summary": "Order Summary",
+    "subtotal": "Subtotal",
+    "discount": "Coupon Discount",
+    "shipping_fee": "Shipping Fee",
+    "taxes": "Taxes (14% Standard VAT)",
+    "total": "Total Amount",
+    "place_order": "Place Order & Pay",
+    "processing": "Processing Order...",
+    "coupon_code": "Coupon code",
+    "apply": "Apply"
+  },
+  "account": {
+    "dashboard_title": "Customer Loyalty & Account Portal",
+    "welcome": "Welcome back",
+    "loyalty_tier": "Loyalty Tier",
+    "points_balance": "Available Loyalty Points",
+    "redeem_points": "Redeem Points for Discount",
+    "saved_addresses": "Saved Shipping Addresses",
+    "order_history": "Order History & Tracking",
+    "referral_program": "Referral Program",
+    "referral_code": "Your Referral Code:"
+  },
+  "order": {
+    "success_title": "Order Placed Successfully!",
+    "order_number": "Business Order Number:",
+    "timeline_title": "Live Order State Machine Timeline",
+    "invoice_title": "Enterprise Tax Invoice",
+    "qr_title": "Signed E-Receipt QR Verification",
+    "return_catalog": "Return to Catalog"
   },
   "categories": {
     "title": "Shop By Category"
