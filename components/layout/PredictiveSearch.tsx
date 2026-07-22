@@ -51,7 +51,7 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed inset-0 z-50 flex flex-col bg-[#050505]/95 backdrop-blur-2xl"
+          className="fixed inset-0 z-50 flex flex-col bg-[#050505]/95 backdrop-blur-2xl text-foreground"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-6 border-b border-white/10">
@@ -59,7 +59,7 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
               <Search className="w-6 h-6 text-primary/70 shrink-0" />
               <input
                 type="text"
-                placeholder={isAr ? "ابحث عن خواتم، قلائد، أساور..." : "Search for jewelry, collections..."}
+                placeholder={isAr ? "ابحث عن مجوهرات، خواتم، قلائد..." : "Search for jewelry, collections..."}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="flex-1 text-xl md:text-2xl font-light bg-transparent text-foreground outline-none placeholder:text-muted-foreground focus:ring-0 border-none"
@@ -137,30 +137,33 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {searchResults.map((product) => (
-                      <Link
-                        key={product.id}
-                        href={`/${locale}/product/${product.slug}`}
-                        onClick={onClose}
-                        className="group flex gap-4 items-center hover:bg-white/5 p-3 rounded-sm transition-colors border border-transparent hover:border-white/10"
-                      >
-                        <div className="relative w-16 h-16 bg-secondary/10 rounded-sm overflow-hidden shrink-0">
-                          <Image
-                            src={product.image}
-                            alt={product.name[locale]}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            sizes="64px"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-                            {product.name[locale]}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-1 tracking-widest">${product.price}</p>
-                        </div>
-                      </Link>
-                    ))}
+                    {searchResults.map((product) => {
+                      const name = product.name[locale as 'en'|'ar'] || product.name.en;
+                      return (
+                        <Link
+                          key={product.id}
+                          href={`/${locale}/product/${product.slug}`}
+                          onClick={onClose}
+                          className="group flex gap-4 items-center hover:bg-white/5 p-3 rounded-sm transition-colors border border-transparent hover:border-white/10"
+                        >
+                          <div className="relative w-16 h-16 bg-secondary/10 rounded-sm overflow-hidden shrink-0">
+                            <Image
+                              src={product.image}
+                              alt={name}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                              {name}
+                            </h4>
+                            <p className="text-xs text-primary font-semibold mt-1 tracking-widest">${product.price}</p>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>

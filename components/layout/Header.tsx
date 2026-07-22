@@ -43,12 +43,16 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
     router.push(newPath);
   };
 
+  const isAr = locale === 'ar';
+
   const navLinks = [
-    { name: dict.header?.home || 'Home', href: `/${locale}` },
-    { name: dict.header?.collections || 'Collections', href: `/${locale}/collections` },
-    { name: dict.header?.rings || 'Rings', href: `/${locale}/category/rings` },
-    { name: dict.header?.necklaces || 'Necklaces', href: `/${locale}/category/necklaces` },
-    { name: dict.header?.journal || 'Journal', href: `/${locale}/journal` },
+    { name: dict.header?.home || (isAr ? 'الرئيسية' : 'Home'), href: `/${locale}` },
+    { name: dict.header?.collections || (isAr ? 'المجموعات' : 'Collections'), href: `/${locale}/collections` },
+    { name: dict.header?.rings || (isAr ? 'خواتم' : 'Rings'), href: `/${locale}/category/rings` },
+    { name: dict.header?.necklaces || (isAr ? 'قلائد' : 'Necklaces'), href: `/${locale}/category/necklaces` },
+    { name: dict.header?.bracelets || (isAr ? 'أساور' : 'Bracelets'), href: `/${locale}/category/bracelets` },
+    { name: dict.header?.earrings || (isAr ? 'أقراط' : 'Earrings'), href: `/${locale}/category/earrings` },
+    { name: dict.header?.journal || (isAr ? 'المجلة' : 'Journal'), href: `/${locale}/journal` },
   ];
 
   return (
@@ -61,7 +65,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 w-full z-50 transition-all duration-700 ease-in-out ${
         scrolled 
-          ? 'bg-[#050505]/90 backdrop-blur-xl border-b border-white/[0.05] shadow-[0_4px_30px_rgba(0,0,0,0.3)]' 
+          ? 'bg-[#050505]/95 backdrop-blur-xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)]' 
           : 'bg-transparent border-transparent'
       }`}
     >
@@ -92,20 +96,23 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
 
           {/* Logo */}
           <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
-            <Link href={`/${locale}`} className="relative group">
+            <Link href={`/${locale}`} className="relative group flex items-center gap-2">
               <span className="text-2xl font-serif tracking-[0.25em] uppercase text-primary transition-all duration-500 group-hover:text-white drop-shadow-[0_0_15px_rgba(229,228,226,0.3)] group-hover:drop-shadow-[0_0_25px_rgba(229,228,226,0.6)]">
-                BAHER
+                {isAr ? 'باهر' : 'BAHER'}
+              </span>
+              <span className="text-[10px] tracking-[0.3em] text-muted-foreground uppercase hidden sm:inline">
+                {isAr ? 'للفضة' : 'SILVER'}
               </span>
             </Link>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex flex-1 justify-center space-x-10 rtl:space-x-reverse">
+          <nav className="hidden lg:flex flex-1 justify-center space-x-8 rtl:space-x-reverse">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="group relative text-xs tracking-[0.15em] uppercase font-medium text-foreground/80 hover:text-white transition-colors duration-300 py-2"
+                className="group relative text-[11px] tracking-[0.15em] uppercase font-medium text-foreground/80 hover:text-white transition-colors duration-300 py-2"
               >
                 {link.name}
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-primary transition-all duration-500 group-hover:w-full opacity-0 group-hover:opacity-100 shadow-[0_0_8px_rgba(229,228,226,0.8)]" />
@@ -173,7 +180,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden bg-[#050505]/95 border-b border-white/10 px-6 py-6 space-y-4 backdrop-blur-2xl"
+            className="lg:hidden bg-[#050505]/98 border-b border-white/10 px-6 py-6 space-y-4 backdrop-blur-2xl"
           >
             <nav className="flex flex-col space-y-4">
               {navLinks.map((link) => (
@@ -181,7 +188,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm uppercase tracking-[0.2em] text-foreground/80 hover:text-primary transition-colors duration-200"
+                  className="text-xs uppercase tracking-[0.2em] text-foreground/80 hover:text-primary transition-colors duration-200"
                 >
                   {link.name}
                 </Link>
@@ -189,16 +196,16 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
               <Link
                 href={`/${locale}/account`}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-sm uppercase tracking-[0.2em] text-foreground/80 hover:text-primary transition-colors duration-200 pt-2 border-t border-white/10"
+                className="text-xs uppercase tracking-[0.2em] text-foreground/80 hover:text-primary transition-colors duration-200 pt-2 border-t border-white/10"
               >
-                {dict.header?.account || 'Account'}
+                {dict.header?.account || (isAr ? 'حسابي' : 'Account')}
               </Link>
               <Link
                 href={`/${locale}/admin`}
                 onClick={() => setMobileMenuOpen(false)}
                 className="text-xs uppercase tracking-[0.2em] text-primary/70 hover:text-primary transition-colors duration-200"
               >
-                {dict.header?.admin || 'Admin Dashboard'}
+                {dict.header?.admin || (isAr ? 'لوحة التحكم' : 'Admin Dashboard')}
               </Link>
             </nav>
           </motion.div>
