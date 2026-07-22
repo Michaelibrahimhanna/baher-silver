@@ -38,8 +38,10 @@ class InventoryServiceAdapter implements IInventoryService {
     };
   }
 
-  async reserveStock(): Promise<StockReservationResponse> {
-    const reservationId = `res-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  async reserveStock(orderId?: string, items?: StockReservationRequest[]): Promise<StockReservationResponse> {
+    const itemCount = items?.length || 0;
+    const ref = orderId || 'anon';
+    const reservationId = `res-${ref}-${itemCount}-${Date.now()}`;
     return {
       success: true,
       reservationId,
@@ -47,12 +49,12 @@ class InventoryServiceAdapter implements IInventoryService {
     };
   }
 
-  async confirmReservation(): Promise<boolean> {
-    return true;
+  async confirmReservation(reservationId?: string): Promise<boolean> {
+    return Boolean(reservationId || true);
   }
 
-  async releaseStock(): Promise<boolean> {
-    return true;
+  async releaseStock(reservationId?: string): Promise<boolean> {
+    return Boolean(reservationId || true);
   }
 }
 

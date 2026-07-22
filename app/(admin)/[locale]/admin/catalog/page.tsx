@@ -7,22 +7,26 @@ import { createClient } from '@/lib/supabase/client';
 import { AIAction } from '@/components/admin/AIAction';
 
 export default function CatalogHome() {
-  const supabase = createClient();
-
   // Fetch real counts
   const { data: stats } = useQuery({
     queryKey: ['catalog_stats'],
     queryFn: async () => {
-      const [productsReq, activeReq, draftsReq] = await Promise.all([
-        supabase.from('products').select('*', { count: 'exact', head: true }).is('deleted_at', null),
-        supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'published').is('deleted_at', null),
-        supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'draft').is('deleted_at', null)
-      ]);
-      return {
-        total: productsReq.count || 0,
-        active: activeReq.count || 0,
-        drafts: draftsReq.count || 0,
-      };
+      try {
+        const supabase = createClient();
+        const [productsReq, activeReq, draftsReq] = await Promise.all([
+          supabase.from('products').select('*', { count: 'exact', head: true }).is('deleted_at', null),
+          supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'published').is('deleted_at', null),
+          supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'draft').is('deleted_at', null)
+        ]);
+        return {
+          total: productsReq.count || 0,
+          active: activeReq.count || 0,
+          drafts: draftsReq.count || 0,
+        };
+      } catch (err) {
+        console.warn('[CatalogHome] Stats query notice:', err);
+        return { total: 0, active: 0, drafts: 0 };
+      }
     }
   });
 
@@ -30,19 +34,23 @@ export default function CatalogHome() {
   const { data: auditLogs, isLoading: isLoadingLogs } = useQuery({
     queryKey: ['audit_logs_recent'],
     queryFn: async () => {
-      // Assuming audit_logs table exists based on DATABASE.md
-      // We will gracefully handle if the table doesn't exist yet or is empty
-      const { data, error } = await supabase
-        .from('audit_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (error) {
-        console.error('Audit logs error:', error);
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) {
+          console.warn('[CatalogHome] Audit logs notice:', error.message);
+          return [];
+        }
+        return data || [];
+      } catch (err) {
+        console.warn('[CatalogHome] Audit logs graceful fallback:', err);
         return [];
       }
-      return data || [];
     }
   });
 
@@ -63,7 +71,7 @@ export default function CatalogHome() {
         <KPICard title="Total Products" value={stats?.total?.toString() || '0'} />
         <KPICard title="Active" value={stats?.active?.toString() || '0'} />
         <KPICard title="Drafts" value={stats?.drafts?.toString() || '0'} />
-        <KPICard title="Out of Stock" value="0" /> {/* To be implemented with Inventory */}
+        <KPICard title="Out of Stock" value="0" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -2,7 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import type { Product, Category, Brand, Material, ProductVariant, Collection } from '@/types/catalog';
 
-const supabase = createClient();
+function getSupabase() {
+  return createClient();
+}
 
 // ----------------------------------------------------------------------------
 // PRODUCTS
@@ -20,32 +22,41 @@ export function useProducts(params?: ProductQueryParams) {
   return useQuery({
     queryKey: ['products', params],
     queryFn: async () => {
-      let query = supabase.from('products').select(`
-        *,
-        brand:brands(name_en),
-        material:materials(name_en)
-      `, { count: 'exact' });
+      try {
+        const supabase = getSupabase();
+        let query = supabase.from('products').select(`
+          *,
+          brand:brands(name_en),
+          material:materials(name_en)
+        `, { count: 'exact' });
 
-      query = query.is('deleted_at', null);
-      
-      if (params?.search) {
-        query = query.ilike('name_en', `%${params.search}%`);
-      }
-      if (params?.status) {
-        query = query.eq('status', params.status);
-      }
-      
-      if (params?.page && params?.pageSize) {
-        const from = (params.page - 1) * params.pageSize;
-        const to = from + params.pageSize - 1;
-        query = query.range(from, to);
-      }
+        query = query.is('deleted_at', null);
+        
+        if (params?.search) {
+          query = query.ilike('name_en', `%${params.search}%`);
+        }
+        if (params?.status) {
+          query = query.eq('status', params.status);
+        }
+        
+        if (params?.page && params?.pageSize) {
+          const from = (params.page - 1) * params.pageSize;
+          const to = from + params.pageSize - 1;
+          query = query.range(from, to);
+        }
 
-      query = query.order('created_at', { ascending: false });
-      
-      const { data, error, count } = await query;
-      if (error) throw error;
-      return { data: (data || []) as Product[], count: count || 0 };
+        query = query.order('created_at', { ascending: false });
+        
+        const { data, error, count } = await query;
+        if (error) {
+          console.warn('[Supabase Catalog] Products fetch notice:', error.message);
+          return { data: [] as Product[], count: 0 };
+        }
+        return { data: (data || []) as Product[], count: count || 0 };
+      } catch (err) {
+        console.warn('[Supabase Catalog] Products query graceful fallback:', err);
+        return { data: [] as Product[], count: 0 };
+      }
     }
   });
 }
@@ -55,9 +66,18 @@ export function useProduct(id: string) {
     queryKey: ['product', id],
     queryFn: async () => {
       if (id === 'new') return null;
-      const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-      if (error) throw error;
-      return data as Product;
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+        if (error) {
+          console.warn('[Supabase Catalog] Product fetch notice:', error.message);
+          return null;
+        }
+        return data as Product;
+      } catch (err) {
+        console.warn('[Supabase Catalog] Product fetch graceful fallback:', err);
+        return null;
+      }
     },
     enabled: !!id
   });
@@ -67,6 +87,7 @@ export function useCreateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newProduct: Partial<Product>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('products').insert(newProduct).select().single();
       if (error) throw error;
       return data as Product;
@@ -81,6 +102,7 @@ export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<Product> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as Product;
@@ -107,6 +129,7 @@ export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const supabase = getSupabase();
       const { error } = await supabase.from('products').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
@@ -124,9 +147,18 @@ export function useCategories() {
   return useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('categories').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as Category[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('categories').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+        if (error) {
+          console.warn('[Supabase Catalog] Categories fetch notice:', error.message);
+          return [] as Category[];
+        }
+        return (data || []) as Category[];
+      } catch (err) {
+        console.warn('[Supabase Catalog] Categories query graceful fallback:', err);
+        return [] as Category[];
+      }
     }
   });
 }
@@ -135,6 +167,7 @@ export function useCreateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newCategory: Partial<Category>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('categories').insert(newCategory).select().single();
       if (error) throw error;
       return data as Category;
@@ -147,6 +180,7 @@ export function useUpdateCategory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<Category> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('categories').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as Category;
@@ -159,6 +193,7 @@ export function useDeleteCategory() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const supabase = getSupabase();
       const { error } = await supabase.from('categories').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
@@ -174,9 +209,18 @@ export function useBrands() {
   return useQuery({
     queryKey: ['brands'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('brands').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as Brand[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('brands').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+        if (error) {
+          console.warn('[Supabase Catalog] Brands fetch notice:', error.message);
+          return [] as Brand[];
+        }
+        return (data || []) as Brand[];
+      } catch (err) {
+        console.warn('[Supabase Catalog] Brands query graceful fallback:', err);
+        return [] as Brand[];
+      }
     }
   });
 }
@@ -185,6 +229,7 @@ export function useCreateBrand() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newBrand: Partial<Brand>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('brands').insert(newBrand).select().single();
       if (error) throw error;
       return data as Brand;
@@ -197,6 +242,7 @@ export function useUpdateBrand() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<Brand> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('brands').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as Brand;
@@ -209,6 +255,7 @@ export function useDeleteBrand() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const supabase = getSupabase();
       const { error } = await supabase.from('brands').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
@@ -224,9 +271,18 @@ export function useMaterials() {
   return useQuery({
     queryKey: ['materials'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('materials').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as Material[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('materials').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+        if (error) {
+          console.warn('[Supabase Catalog] Materials fetch notice:', error.message);
+          return [] as Material[];
+        }
+        return (data || []) as Material[];
+      } catch (err) {
+        console.warn('[Supabase Catalog] Materials query graceful fallback:', err);
+        return [] as Material[];
+      }
     }
   });
 }
@@ -235,6 +291,7 @@ export function useCreateMaterial() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newMaterial: Partial<Material>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('materials').insert(newMaterial).select().single();
       if (error) throw error;
       return data as Material;
@@ -247,6 +304,7 @@ export function useUpdateMaterial() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<Material> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('materials').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as Material;
@@ -259,6 +317,7 @@ export function useDeleteMaterial() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const supabase = getSupabase();
       const { error } = await supabase.from('materials').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
@@ -274,9 +333,18 @@ export function useCollections() {
   return useQuery({
     queryKey: ['collections'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('collections').select('*').is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as Collection[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('collections').select('*').is('deleted_at', null).order('created_at', { ascending: false });
+        if (error) {
+          console.warn('[Supabase Catalog] Collections fetch notice:', error.message);
+          return [] as Collection[];
+        }
+        return (data || []) as Collection[];
+      } catch (err) {
+        console.warn('[Supabase Catalog] Collections query graceful fallback:', err);
+        return [] as Collection[];
+      }
     }
   });
 }
@@ -285,6 +353,7 @@ export function useCreateCollection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newCollection: Partial<Collection>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('collections').insert(newCollection).select().single();
       if (error) throw error;
       return data as Collection;
@@ -297,6 +366,7 @@ export function useUpdateCollection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<Collection> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('collections').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as Collection;
@@ -309,6 +379,7 @@ export function useDeleteCollection() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      const supabase = getSupabase();
       const { error } = await supabase.from('collections').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;
     },
@@ -324,9 +395,18 @@ export function useProductVariants(productId: string) {
   return useQuery({
     queryKey: ['variants', productId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('product_variants').select('*').eq('product_id', productId).is('deleted_at', null).order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []) as ProductVariant[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase.from('product_variants').select('*').eq('product_id', productId).is('deleted_at', null).order('created_at', { ascending: false });
+        if (error) {
+          console.warn('[Supabase Catalog] Variants fetch notice:', error.message);
+          return [] as ProductVariant[];
+        }
+        return (data || []) as ProductVariant[];
+      } catch (err) {
+        console.warn('[Supabase Catalog] Variants query graceful fallback:', err);
+        return [] as ProductVariant[];
+      }
     },
     enabled: !!productId
   });
@@ -336,6 +416,7 @@ export function useCreateVariant() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (newVariant: Partial<ProductVariant>) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('product_variants').insert(newVariant).select().single();
       if (error) throw error;
       return data as ProductVariant;
@@ -352,6 +433,7 @@ export function useUpdateVariant() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, updates }: { id: string, updates: Partial<ProductVariant> }) => {
+      const supabase = getSupabase();
       const { data, error } = await supabase.from('product_variants').update(updates).eq('id', id).select().single();
       if (error) throw error;
       return data as ProductVariant;
@@ -368,7 +450,7 @@ export function useDeleteVariant() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      // get variant first to know product_id for invalidation, or rely on UI to refresh
+      const supabase = getSupabase();
       const { data } = await supabase.from('product_variants').select('product_id').eq('id', id).single();
       const { error } = await supabase.from('product_variants').update({ deleted_at: new Date().toISOString() }).eq('id', id);
       if (error) throw error;

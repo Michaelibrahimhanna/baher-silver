@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 
-const supabase = createClient();
+function getSupabase() {
+  return createClient();
+}
 
 export interface ProductMedia {
   id: string;
@@ -19,14 +21,23 @@ export function useProductMedia(productId: string) {
   return useQuery({
     queryKey: ['product_media', productId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_media')
-        .select('*')
-        .eq('product_id', productId)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return (data || []) as ProductMedia[];
+      try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('product_media')
+          .select('*')
+          .eq('product_id', productId)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: true });
+        if (error) {
+          console.warn('[Supabase Media] Product media fetch notice:', error.message);
+          return [] as ProductMedia[];
+        }
+        return (data || []) as ProductMedia[];
+      } catch (err) {
+        console.warn('[Supabase Media] Product media query graceful fallback:', err);
+        return [] as ProductMedia[];
+      }
     },
     enabled: !!productId
   });
@@ -37,6 +48,7 @@ export function useUploadProductMedia() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ productId, file, isPrimary = false }: { productId: string, file: File, isPrimary?: boolean }) => {
+      const supabase = getSupabase();
       const fileExt = file.name.split('.').pop();
       const fileName = `${productId}/${crypto.randomUUID()}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -48,7 +60,7 @@ export function useUploadProductMedia() {
 
       if (uploadError) throw uploadError;
 
-      // 2. Get public URL (or just save path, usually saving path is better)
+      // 2. Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('product-media')
         .getPublicUrl(filePath);
@@ -80,8 +92,7 @@ export function useDeleteProductMedia() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (media: ProductMedia) => {
-      // Extract file path from public URL if stored as full URL, or just use storage_path
-      // Assuming storage_path is the full public URL, we need the relative path to delete from bucket
+      const supabase = getSupabase();
       const bucketUrlPath = '/storage/v1/object/public/product-media/';
       const relativePath = media.storage_path.includes(bucketUrlPath) 
         ? media.storage_path.split(bucketUrlPath)[1]
@@ -107,6 +118,7 @@ export function useSetPrimaryMedia() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ productId, mediaId }: { productId: string, mediaId: string }) => {
+      const supabase = getSupabase();
       // 1. Unset all primary
       await supabase.from('product_media').update({ is_primary: false }).eq('product_id', productId);
       // 2. Set new primary
