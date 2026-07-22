@@ -47,4 +47,6 @@ BaherSilver_Production_v1.zip
 # helper scripts
 scripts/find-vercel-url.mjs
 scripts/verify-routes.mjs
+scripts/test-live-routes.mjs
+
 
