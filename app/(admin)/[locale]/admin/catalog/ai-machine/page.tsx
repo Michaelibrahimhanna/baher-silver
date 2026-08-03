@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { Sparkles, Bot, ArrowLeft } from 'lucide-react';
 import { AiIntakeQueueDropzone } from '@/components/admin/catalog/ai-machine/AiIntakeQueueDropzone';
 import { AiProductReviewScreen } from '@/components/admin/catalog/ai-machine/AiProductReviewScreen';
+import { AiBatchQueueControlsBar } from '@/components/admin/catalog/ai-machine/AiBatchQueueControlsBar';
 import { aiProductIntakeQueue } from '@/lib/services/aiProductIntakeQueue';
 import { AIProductAnalysisPipelineService } from '@/lib/services/aiProductAnalysisPipeline';
 import { AIProductBuilderService } from '@/lib/services/aiProductBuilderService';
-import { AIProductDraft, IntakeFileType } from '@/types/aiProductMachine';
+import { ProductIntakeJob, AIProductDraft, IntakeFileType } from '@/types/aiProductMachine';
 
 export default function AiProductMachinePage() {
   const router = useRouter();
+  const [activeJob, setActiveJob] = React.useState<ProductIntakeJob | null>(null);
   const [activeDraft, setActiveDraft] = React.useState<AIProductDraft | null>(null);
   const [isProcessing, setIsProcessing] = React.useState(false);
 
@@ -22,6 +24,7 @@ export default function AiProductMachinePage() {
     setIsProcessing(true);
 
     const job = aiProductIntakeQueue.createIntakeJob(batchName, rawFiles);
+    setActiveJob(job);
 
     setTimeout(() => {
       const imgAnalysis = AIProductAnalysisPipelineService.analyzeImagePlaceholder(rawFiles[0]?.name || 'ring.jpg');
@@ -63,6 +66,11 @@ export default function AiProductMachinePage() {
         </button>
       </div>
 
+      {/* Batch Controls Bar if Active Job Exists */}
+      {activeJob && (
+        <AiBatchQueueControlsBar job={activeJob} onJobUpdate={(updated) => setActiveJob(updated)} />
+      )}
+
       {isProcessing ? (
         <div className="flex h-96 flex-col items-center justify-center text-center space-y-3 rounded-3xl border border-white/10 bg-slate-950 p-8 shadow-2xl">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -78,10 +86,12 @@ export default function AiProductMachinePage() {
           draft={activeDraft}
           onApprove={() => {
             setActiveDraft(null);
+            setActiveJob(null);
             router.push('/admin/catalog/products');
           }}
           onReject={() => {
             setActiveDraft(null);
+            setActiveJob(null);
           }}
         />
       ) : (

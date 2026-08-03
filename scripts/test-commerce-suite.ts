@@ -36,6 +36,9 @@ import { AIProductBuilderService } from '../lib/services/aiProductBuilderService
 import { AIPricingAssistantService } from '../lib/services/aiPricingAssistantService';
 import { aiContinuousLearningStore } from '../lib/services/aiContinuousLearningStore';
 import { getAiProductMachinePluginStatus } from '../lib/plugins/aiProductMachinePlugin';
+import { aiProviderRegistry, DefaultVisionProvider } from '../lib/services/aiProviderRegistry';
+import { aiBatchQueueManager } from '../lib/services/aiBatchQueueManager';
+import { AIProductValidationEngineService } from '../lib/services/aiProductValidationEngine';
 
 
 let passedTests = 0;
@@ -774,6 +777,59 @@ async function runSuite() {
     const res = BaherBrainAiService.processUserCommand('أنشئ منتجات من هذه الصور');
     assert.equal(res.executedAction?.actionType, 'ai_product_machine');
     assert.equal(res.executedAction?.payload?.url, '/admin/catalog/ai-machine');
+  });
+
+  console.log('\n--- 16. PRODUCTION-READY AI PRODUCT MACHINE ENHANCEMENTS TESTS ---');
+  test('Vendor-Agnostic AI Provider Registration & Contract Abstraction', () => {
+    const defaultVision = aiProviderRegistry.getVisionProvider();
+    assert.ok(defaultVision);
+
+    aiProviderRegistry.registerVisionProvider(new DefaultVisionProvider());
+    assert.equal(aiProviderRegistry.getVisionProvider().id, 'default-vision-provider');
+  });
+
+  test('Batch Queue Lifecycle Controls (Pause, Resume, Retry, Cancel)', () => {
+    const job = aiBatchQueueManager.createBatchJob('Batch 1000 Test', 1000, [
+      { name: 'item1.jpg', size: 2000, type: 'image' },
+    ]);
+
+    assert.equal(job.status, 'processing');
+    assert.equal(aiBatchQueueManager.pauseJob(job.id), true);
+    assert.equal(aiBatchQueueManager.getJob(job.id)?.status, 'paused');
+    assert.equal(aiBatchQueueManager.resumeJob(job.id), true);
+    assert.equal(aiBatchQueueManager.getJob(job.id)?.status, 'processing');
+    assert.equal(aiBatchQueueManager.cancelJob(job.id), true);
+    assert.equal(aiBatchQueueManager.getJob(job.id)?.status, 'rejected');
+  });
+
+  test('Pre-Approval Quality Gate & Validation Engine Diagnostics', () => {
+    const imgAnalysis = AIProductAnalysisPipelineService.analyzeImagePlaceholder('ring.jpg');
+    const docAnalysis = AIProductAnalysisPipelineService.analyzeDocumentOcrPlaceholder('specs.csv');
+    const draft = AIProductBuilderService.generateProductDraft('job-val-test', imgAnalysis, docAnalysis);
+
+    const diagnosticsValid = AIProductValidationEngineService.evaluateDraft(draft, 1250);
+    assert.equal(diagnosticsValid.canPublish, true);
+
+    const invalidDraft = { ...draft, name_ar: '' };
+    const diagnosticsInvalid = AIProductValidationEngineService.evaluateDraft(invalidDraft, 1250);
+    assert.equal(diagnosticsInvalid.canPublish, false);
+    assert.ok(diagnosticsInvalid.issues.some((i) => i.field === 'name_ar'));
+  });
+
+  test('7-Factor Pricing Breakdown with Wholesale & Discount Prices', () => {
+    const pricing = AIPricingAssistantService.calculateFormulaPrice(14.5, 32.5, 120, 80, 50, 40, 35);
+    assert.ok(pricing.overheadCost > 0);
+    assert.ok(pricing.suggestedWholesalePrice > 0);
+    assert.ok(pricing.suggestedDiscountPrice > 0);
+  });
+
+  test('Extended Content Generation with Social Captions & Meta Ads Copy', () => {
+    const imgAnalysis = AIProductAnalysisPipelineService.analyzeImagePlaceholder('ring.jpg');
+    const draft = AIProductBuilderService.generateProductDraft('job-mkt-test', imgAnalysis, undefined, 'luxury');
+    assert.ok(draft.socialCaptionAr);
+    assert.ok(draft.metaAdsCopyAr);
+    assert.ok(draft.features_ar.length > 0);
+    assert.ok(draft.care_instructions_ar);
   });
 
 

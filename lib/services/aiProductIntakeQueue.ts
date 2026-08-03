@@ -26,6 +26,7 @@ class AIProductIntakeQueueService {
         },
       ],
       status: 'ready_for_review',
+      progressPercent: 100,
       created_at: new Date(Date.now() - 15 * 60000).toISOString(),
     },
   ];
@@ -54,7 +55,8 @@ class AIProductIntakeQueueService {
       batchName,
       batchSize: fileItems.length,
       files: fileItems,
-      status: 'draft_queue',
+      status: 'queued',
+      progressPercent: 15,
       created_at: new Date().toISOString(),
     };
 

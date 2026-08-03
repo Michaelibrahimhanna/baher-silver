@@ -1,40 +1,72 @@
-import { AIProductDraft, AIImageAnalysisResult, AIDocumentAnalysisResult } from '@/types/aiProductMachine';
+import { AIProductDraft, AIImageAnalysisResult, AIDocumentAnalysisResult, AIPromptTone } from '@/types/aiProductMachine';
 import { calculateProductHealthScore } from '../product-health-score';
 
 export class AIProductBuilderService {
   static generateProductDraft(
     jobId: string,
     imageAnalysis: AIImageAnalysisResult,
-    docAnalysis?: AIDocumentAnalysisResult
+    docAnalysis?: AIDocumentAnalysisResult,
+    tone: AIPromptTone = 'luxury'
   ): AIProductDraft {
     const sku = docAnalysis?.extractedSku || `BS-AI-${Date.now().toString().slice(-4)}`;
+    const barcode = '6291000998877';
+    const qrRouterToken = `BSQR-AI-${Date.now().toString(36).toUpperCase()}`;
+
+    const isLuxury = tone === 'luxury';
 
     const draftWithoutScore = {
       id: `draft-${Date.now()}`,
       jobId,
-      name_ar: `خاتم فضة إيطالي عيار 925 مرصع بالزركون الملكي - ${sku}`,
+      sku,
+      barcode,
+      qrRouterToken,
+      name_ar: isLuxury
+        ? `خاتم فضة إيطالي عيار 925 مرصع بالزركون الملكي - ${sku}`
+        : `خاتم فضة عيار 925 مع حجر الزركون - ${sku}`,
       name_en: `Royal Pharaonic 925 Sterling Silver Ring - ${sku}`,
       short_description_ar: 'خاتم فضة نقي عيار 925 معالج ضد الأكسدة بتصميم فرعوني فاخر.',
       short_description_en: 'Authentic 925 sterling silver ring with anti-tarnish coating and royal finish.',
-      description_ar: 'صنع هذا الخاتم من أجود أنوااع الفضة النقية عيار 925 بلمسات يدوية دقيقة ومصنعية عالية الجودة من ورش باهر سيلفر بالشرقية والقاهرة. يأتي مع شهادة ضمان الأصالة مدى الحياة وبصمة QR مشفرة.',
-      description_en: 'Handcrafted with precision in Cairo from premium 925 sterling silver featuring royal zircon setting and encrypted QR authenticity certification.',
+      description_ar: 'صُنع هذا الخاتم الملوكي الفاخر يدويًا من أجود أنواع الفضة الإيطالية عيار 925 برعاية باهر سيلفر بالشرقية والقاهرة. يأتي مع شهادة ضمان أصالة رقمية مدى الحياة وبصمة QR مشفرة.',
+      description_en: 'Handcrafted with royal precision in Cairo from premium 925 sterling silver featuring zircon setting and encrypted QR authenticity certification.',
       meta_title: `خاتم فضة عيار 925 الملكي | باهر سيلفر مصر - ${sku}`,
-      meta_description: 'تسوق خاتم الفضة الإيطالي عيار 925 بتصميم ملكي فاخر وضمان شامل مدى الحياة مع توصيل سريع في مصر.',
+      meta_description: 'تسوق أفضل خاتم فضة عيار 925 بتصميم ملكي فاخر وضمان شامل مدى الحياة مع توصيل سريع في جميع المحافظات.',
       slug: `silver-ring-royal-zircon-${sku.toLowerCase()}`,
-      keywords: ['فضة 925', 'خاتم فضة', 'مجوهرات مصري', 'باهر سيلفر', 'فضيات عيار 925'],
+      keywords: ['فضة 925', 'خاتم فضة', 'مجوهرات مصرية', 'باهر سيلفر', 'فضيات عيار 925'],
       category: docAnalysis?.extractedCategory || 'rings',
       collection: 'Heritage Royal Collection',
       specifications: [
         { key_ar: 'عيار الفضة', key_en: 'Silver Purity', value_ar: '925 نقي معتمد', value_en: '925 Certified Pure' },
-        { key_ar: 'نوع الأحجار', key_en: 'Stone Type', value_ar: imageAnalysis.stoneType || 'زركون ملكي', value_en: 'Royal Zircon' },
+        { key_ar: 'نوع الأحجار', key_en: 'Stone Type', value_ar: imageAnalysis.stones || 'زركون ملكي', value_en: 'Royal Zircon' },
         { key_ar: 'الوزن التقريبي', key_en: 'Estimated Weight', value_ar: `${imageAnalysis.estimatedWeightGram} جرام`, value_en: `${imageAnalysis.estimatedWeightGram}g` },
+        { key_ar: 'اللمسة النهائية', key_en: 'Finish', value_ar: imageAnalysis.finish, value_en: 'Anti-Tarnish Rhodium' },
       ],
+      features_ar: [
+        'فضة نقية عيار 925 معالجة بطبقة روديوم حماية ضد التغير والأكسدة.',
+        'تصميم فرعوني ملكي حصري مدمج بشرائح الزركون النقي.',
+        'شهادة أصالة مشفرة برمز QR ديناميكي غير قابل للتزوير.',
+        'ضمان باهر سيلفر مدى الحياة لخدمات التلميع وإعادة الهيكلة.',
+      ],
+      features_en: [
+        'Authentic 925 Sterling Silver coated with anti-tarnish rhodium layer.',
+        'Exclusive royal pharaonic design with premium cubic zirconia.',
+        'Encrypted dynamic QR certification of authenticity.',
+        'Lifetime warranty for polishing and maintenance.',
+      ],
+      care_instructions_ar: 'يُحفظ في علبة باهر الفاخرة المرفقة. يُفضل تجنب ملامسة العطور المركزة والمواد الكيميائية المباشرة. يُنصح بالتلميع الفصلي باستخدام قطعة القماش المرفقة.',
+      care_instructions_en: 'Store in your luxury Baher Silver box. Avoid direct contact with heavy perfumes or chemicals. Gently polish with the included velvet cloth.',
       attributes: {
         material: imageAnalysis.material,
+        purity: imageAnalysis.purity,
         style: imageAnalysis.jewelryStyle,
         gender: imageAnalysis.gender,
       },
-      suggestedTags: ['فضة_ملكيه', 'خاتم_عيار_925', 'أناقة_باهر', 'ضمان_مدى_الحياة'],
+      suggestedTags: ['فضة_ملكية', 'خاتم_عيار_925', 'أناقة_باهر', 'ضمان_مدى_الحياة', 'هدايا_فاخرة'],
+      relatedProductIds: ['p1', 'p2'],
+      matchingProductIds: ['p3'],
+      accessoriesProductIds: ['acc-box-1'],
+      socialCaptionAr: '✨ الأناقة لا تنتهي! اكتشفي خاتم الفضة الإيطالي عيار 925 بتصميمه الملكي من باهر سيلفر. 👑 تسوقي الآن واستمتعي بضمان مدى الحياة! #باهر_سيلفر #فضة925',
+      metaAdsCopyAr: 'هل تبحثين عن قطعة مجوهرات فريدة؟ 💎 خاتم الفضة الإيطالي عيار 925 متوفر الآن بخصم لفترة محدودة مع شحن مجاني وضمان مدى الحياة. اضغطي للطلب الآن!',
+      confidenceScores: imageAnalysis.confidenceScores,
       mediaPlaceholders: ['https://images.unsplash.com/photo-1605100804763-247f67b3557e'],
     };
 
@@ -42,7 +74,7 @@ export class AIProductBuilderService {
       id: draftWithoutScore.id,
       slug: draftWithoutScore.slug,
       sku,
-      barcode: '6291000998877',
+      barcode,
       name_ar: draftWithoutScore.name_ar,
       name_en: draftWithoutScore.name_en,
       short_description_ar: draftWithoutScore.short_description_ar,

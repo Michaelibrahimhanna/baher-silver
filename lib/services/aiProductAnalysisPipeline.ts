@@ -10,14 +10,27 @@ export class AIProductAnalysisPipelineService {
 
     return {
       productType,
+      category: 'rings',
       material: 'فضة نقية عيار 925 (925 Sterling Silver)',
-      stoneType: 'زركون نقي ممتاز (Cubic Zirconia)',
-      stoneColor: 'أبيض ملكي (Crystal White)',
+      purity: 'عيار 925 معتمد (925 Pure Certified)',
+      stones: 'زركون نقي ممتاز (Cubic Zirconia)',
+      stoneColors: 'أبيض ملكي (Crystal White)',
+      finish: 'تلميع مصنع ضد الأكسدة (Anti-Tarnish Polish)',
       jewelryStyle: 'تراثي فرعوني ملكي (Pharaonic Royal Heritage)',
       gender: 'women',
       estimatedWeightGram: 14.5,
       productOrientation: 'front',
-      confidenceScore: 0.94,
+      confidenceScores: {
+        productType: 97,
+        category: 97,
+        material: 99,
+        purity: 98,
+        stones: 92,
+        weight: 81,
+        description: 93,
+        pricing: 90,
+        seo: 95,
+      },
     };
   }
 
