@@ -1,4 +1,14 @@
-import { IVisionProvider, IOcrProvider, ILlmContentProvider, AIImageAnalysisResult, AIDocumentAnalysisResult, AIProductDraft } from '@/types/aiProductMachine';
+import {
+  IVisionProvider,
+  IOcrProvider,
+  ILlmContentProvider,
+  IAiOperatorProvider,
+  AIImageAnalysisResult,
+  AIDocumentAnalysisResult,
+  AIProductDraft,
+  AIPostAnalysisRecommendations,
+} from '@/types/aiProductMachine';
+import { AIOperatorEngineService } from './aiOperatorEngine';
 
 // Default Pluggable Placeholder Vision Provider
 export class DefaultVisionProvider implements IVisionProvider {
@@ -26,7 +36,7 @@ export class DefaultVisionProvider implements IVisionProvider {
         material: 99,
         purity: 98,
         stones: 92,
-        weight: 81, // Highlight low confidence (< 85%)
+        weight: 81,
         description: 93,
         pricing: 90,
         seo: 95,
@@ -70,10 +80,21 @@ export class DefaultLlmContentProvider implements ILlmContentProvider {
   }
 }
 
+// Default Pluggable Operator Provider
+export class DefaultAiOperatorProvider implements IAiOperatorProvider {
+  id = 'default-operator-provider';
+  name = 'Baher Brain AI Operator Assistant';
+
+  async generateOperatorRecommendations(draft: Partial<AIProductDraft>): Promise<AIPostAnalysisRecommendations> {
+    return AIOperatorEngineService.generateRecommendations(draft.category, 14.5);
+  }
+}
+
 class AIProviderRegistry {
   private visionProvider: IVisionProvider = new DefaultVisionProvider();
   private ocrProvider: IOcrProvider = new DefaultOcrProvider();
   private llmProvider: ILlmContentProvider = new DefaultLlmContentProvider();
+  private operatorProvider: IAiOperatorProvider = new DefaultAiOperatorProvider();
 
   registerVisionProvider(provider: IVisionProvider): void {
     this.visionProvider = provider;
@@ -87,6 +108,10 @@ class AIProviderRegistry {
     this.llmProvider = provider;
   }
 
+  registerOperatorProvider(provider: IAiOperatorProvider): void {
+    this.operatorProvider = provider;
+  }
+
   getVisionProvider(): IVisionProvider {
     return this.visionProvider;
   }
@@ -97,6 +122,10 @@ class AIProviderRegistry {
 
   getLlmProvider(): ILlmContentProvider {
     return this.llmProvider;
+  }
+
+  getOperatorProvider(): IAiOperatorProvider {
+    return this.operatorProvider;
   }
 }
 

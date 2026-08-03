@@ -1,5 +1,6 @@
 import { AIProductDraft, AIImageAnalysisResult, AIDocumentAnalysisResult, AIPromptTone } from '@/types/aiProductMachine';
 import { calculateProductHealthScore } from '../product-health-score';
+import { AIOperatorEngineService } from './aiOperatorEngine';
 
 export class AIProductBuilderService {
   static generateProductDraft(
@@ -13,6 +14,24 @@ export class AIProductBuilderService {
     const qrRouterToken = `BSQR-AI-${Date.now().toString(36).toUpperCase()}`;
 
     const isLuxury = tone === 'luxury';
+    const sellingPrice = docAnalysis?.extractedPrice || 1250;
+
+    const name_ar = isLuxury
+      ? `خاتم فضة إيطالي عيار 925 مرصع بالزركون الملكي - ${sku}`
+      : `خاتم فضة عيار 925 مع حجر الزركون - ${sku}`;
+    const description_ar = 'صُنع هذا الخاتم الملوكي الفاخر يدويًا من أجود أنواع الفضة الإيطالية عيار 925 برعاية باهر سيلفر بالشرقية والقاهرة. يأتي مع شهادة ضمان أصالة رقمية مدى الحياة وبصمة QR مشفرة.';
+
+    const operatorRecommendations = AIOperatorEngineService.generateRecommendations(docAnalysis?.extractedCategory || 'rings', imageAnalysis.estimatedWeightGram);
+    const smartInsights = AIOperatorEngineService.generateSmartInsights(name_ar, description_ar, sellingPrice, imageAnalysis.estimatedWeightGram);
+    
+    const draftPartialForTasks: Partial<AIProductDraft> = {
+      confidenceScores: imageAnalysis.confidenceScores,
+      accessoriesProductIds: ['acc-box-1'],
+    };
+
+    const smartTasks = AIOperatorEngineService.generateSmartTasks(draftPartialForTasks);
+    const enterpriseReadiness = AIOperatorEngineService.calculateEnterpriseReadiness(smartInsights, smartTasks, sellingPrice);
+    const granularApproval = AIOperatorEngineService.getInitialGranularApprovalState();
 
     const draftWithoutScore = {
       id: `draft-${Date.now()}`,
@@ -20,13 +39,11 @@ export class AIProductBuilderService {
       sku,
       barcode,
       qrRouterToken,
-      name_ar: isLuxury
-        ? `خاتم فضة إيطالي عيار 925 مرصع بالزركون الملكي - ${sku}`
-        : `خاتم فضة عيار 925 مع حجر الزركون - ${sku}`,
+      name_ar,
       name_en: `Royal Pharaonic 925 Sterling Silver Ring - ${sku}`,
       short_description_ar: 'خاتم فضة نقي عيار 925 معالج ضد الأكسدة بتصميم فرعوني فاخر.',
       short_description_en: 'Authentic 925 sterling silver ring with anti-tarnish coating and royal finish.',
-      description_ar: 'صُنع هذا الخاتم الملوكي الفاخر يدويًا من أجود أنواع الفضة الإيطالية عيار 925 برعاية باهر سيلفر بالشرقية والقاهرة. يأتي مع شهادة ضمان أصالة رقمية مدى الحياة وبصمة QR مشفرة.',
+      description_ar,
       description_en: 'Handcrafted with royal precision in Cairo from premium 925 sterling silver featuring zircon setting and encrypted QR authenticity certification.',
       meta_title: `خاتم فضة عيار 925 الملكي | باهر سيلفر مصر - ${sku}`,
       meta_description: 'تسوق أفضل خاتم فضة عيار 925 بتصميم ملكي فاخر وضمان شامل مدى الحياة مع توصيل سريع في جميع المحافظات.',
@@ -68,6 +85,11 @@ export class AIProductBuilderService {
       metaAdsCopyAr: 'هل تبحثين عن قطعة مجوهرات فريدة؟ 💎 خاتم الفضة الإيطالي عيار 925 متوفر الآن بخصم لفترة محدودة مع شحن مجاني وضمان مدى الحياة. اضغطي للطلب الآن!',
       confidenceScores: imageAnalysis.confidenceScores,
       mediaPlaceholders: ['https://images.unsplash.com/photo-1605100804763-247f67b3557e'],
+      operatorRecommendations,
+      smartInsights,
+      granularApproval,
+      smartTasks,
+      enterpriseReadiness,
     };
 
     const health = calculateProductHealthScore({
@@ -84,7 +106,7 @@ export class AIProductBuilderService {
       meta_title: draftWithoutScore.meta_title,
       meta_description: draftWithoutScore.meta_description,
       keywords: draftWithoutScore.keywords,
-      selling_price: docAnalysis?.extractedPrice || 1250,
+      selling_price: sellingPrice,
       current_stock: 10,
       silver_cost: 450,
       labor_cost: 150,

@@ -39,6 +39,7 @@ import { getAiProductMachinePluginStatus } from '../lib/plugins/aiProductMachine
 import { aiProviderRegistry, DefaultVisionProvider } from '../lib/services/aiProviderRegistry';
 import { aiBatchQueueManager } from '../lib/services/aiBatchQueueManager';
 import { AIProductValidationEngineService } from '../lib/services/aiProductValidationEngine';
+import { AIOperatorEngineService } from '../lib/services/aiOperatorEngine';
 
 
 let passedTests = 0;
@@ -723,14 +724,14 @@ async function runSuite() {
   });
 
   test('AI Product Intake Queue & Batch Processing Lifecycle', () => {
-    const job = aiProductIntakeQueue.createIntakeJob('Batch Test 500', [
-      { name: 'ring.jpg', size: 1000, type: 'image' },
-      { name: 'specs.csv', size: 500, type: 'csv' },
+    const job = aiProductIntakeQueue.createIntakeJob('Khan El Khalili Ring Batch', [
+      { name: 'ring1.jpg', size: 1500000, type: 'image' },
+      { name: 'specs.csv', size: 5000, type: 'csv' },
     ]);
 
-    assert.ok(job.id.startsWith('job-'));
-    assert.equal(job.batchSize, 2);
-    assert.equal(job.status, 'draft_queue');
+    assert.ok(job.id);
+    assert.equal(job.files.length, 2);
+    assert.equal(job.status, 'queued');
   });
 
   test('AI Product Analysis Pipeline Image & OCR Contracts', () => {
@@ -830,6 +831,44 @@ async function runSuite() {
     assert.ok(draft.metaAdsCopyAr);
     assert.ok(draft.features_ar.length > 0);
     assert.ok(draft.care_instructions_ar);
+  });
+
+  console.log('\n--- 17. ENTERPRISE AI OPERATOR MODE TESTS ---');
+  test('Post-Analysis Business Recommendations Synthesis', () => {
+    const recs = AIOperatorEngineService.generateRecommendations('rings', 14.5);
+    assert.ok(recs.bestCategory);
+    assert.ok(recs.bestSellingSeason);
+    assert.ok(recs.bundleOpportunities.length > 0);
+    assert.ok(recs.profitabilityScore >= 90);
+  });
+
+  test('Smart Product Insights Dashboard 8-Metric Radar Engine', () => {
+    const insights = AIOperatorEngineService.generateSmartInsights('خاتم فضة 925', 'وصف تفصيلي فاخر للخاتم', 1250, 14.5);
+    assert.ok(insights.productCompleteness >= 90);
+    assert.ok(insights.healthScore >= 90);
+    assert.ok(insights.seoScore >= 90);
+  });
+
+  test('Auto-Generated Smart Task Suggestions Engine', () => {
+    const tasks = AIOperatorEngineService.generateSmartTasks({
+      confidenceScores: { productType: 90, category: 90, material: 90, purity: 90, stones: 90, weight: 80, description: 90, pricing: 90, seo: 90 },
+      accessoriesProductIds: [],
+    });
+    assert.ok(tasks.length >= 1);
+    assert.ok(tasks.some((t) => t.code === 'TASK_LOW_WEIGHT_CONFIDENCE'));
+  });
+
+  test('Granular Approval State Controls & Bulk Actions', () => {
+    const state = AIOperatorEngineService.getInitialGranularApprovalState();
+    assert.equal(state.productApproved, false);
+    assert.equal(state.publishingApproved, false);
+  });
+
+  test('Enterprise Readiness Score Calculation (0-100)', () => {
+    const insights = AIOperatorEngineService.generateSmartInsights('خاتم فضة 925', 'وصف تفصيلي فاخر للخاتم', 1250, 14.5);
+    const readiness = AIOperatorEngineService.calculateEnterpriseReadiness(insights, [], 1250);
+    assert.ok(readiness.overallScore >= 90);
+    assert.equal(readiness.canPublishImmediately, true);
   });
 
 

@@ -14,7 +14,7 @@ import {
   Globe,
   GitCompare
 } from 'lucide-react';
-import { AIProductDraft, AIPricingEstimate } from '@/types/aiProductMachine';
+import { AIProductDraft, AIPricingEstimate, AIGranularApprovalState } from '@/types/aiProductMachine';
 import { ProductHealthScoreCard } from '../ProductHealthScoreCard';
 import { AIPricingAssistantService } from '@/lib/services/aiPricingAssistantService';
 import { AIProductValidationEngineService } from '@/lib/services/aiProductValidationEngine';
@@ -23,6 +23,10 @@ import { aiContinuousLearningStore } from '@/lib/services/aiContinuousLearningSt
 import { AiFieldConfidenceBadge } from './AiFieldConfidenceBadge';
 import { AiValidationDiagnosticsPanel } from './AiValidationDiagnosticsPanel';
 import { AiCompareDiffModal } from './AiCompareDiffModal';
+import { AiGranularApprovalCenterBar } from './AiGranularApprovalCenterBar';
+import { AiSmartProductInsightsDashboard } from './AiSmartProductInsightsDashboard';
+import { AiPostAnalysisRecommendationsCard } from './AiPostAnalysisRecommendationsCard';
+import { AiSmartTaskSuggestionsPanel } from './AiSmartTaskSuggestionsPanel';
 
 interface AiProductReviewScreenProps {
   draft: AIProductDraft;
@@ -51,6 +55,55 @@ export function AiProductReviewScreen({ draft, onApprove, onReject }: AiProductR
     setCurrentDraft((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleToggleApproval = (section: keyof AIGranularApprovalState) => {
+    setCurrentDraft((prev) => ({
+      ...prev,
+      granularApproval: {
+        ...prev.granularApproval,
+        [section]: !prev.granularApproval[section],
+      },
+    }));
+  };
+
+  const handleApproveAllSections = () => {
+    setCurrentDraft((prev) => ({
+      ...prev,
+      granularApproval: {
+        productApproved: true,
+        pricingApproved: true,
+        seoApproved: true,
+        categoryApproved: true,
+        collectionApproved: true,
+        qrApproved: true,
+        marketingAssetsApproved: true,
+        publishingApproved: true,
+      },
+    }));
+  };
+
+  const handleRejectAllSections = () => {
+    setCurrentDraft((prev) => ({
+      ...prev,
+      granularApproval: {
+        productApproved: false,
+        pricingApproved: false,
+        seoApproved: false,
+        categoryApproved: false,
+        collectionApproved: false,
+        qrApproved: false,
+        marketingAssetsApproved: false,
+        publishingApproved: false,
+      },
+    }));
+  };
+
+  const handleTaskResolved = (taskId: string) => {
+    setCurrentDraft((prev) => ({
+      ...prev,
+      smartTasks: prev.smartTasks.filter((t) => t.id !== taskId),
     }));
   };
 
@@ -83,8 +136,8 @@ export function AiProductReviewScreen({ draft, onApprove, onReject }: AiProductR
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-extrabold text-emerald-300 border border-emerald-500/30 uppercase">
-                AI GENERATED DRAFT • PRODUCTION READY WORKSPACE
+              <span className="rounded-full bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-extrabold text-amber-300 border border-amber-500/30 uppercase">
+                ENTERPRISE AI OPERATOR MODE WORKSPACE
               </span>
               <span className="text-xs text-slate-400 font-mono">Job ID: {currentDraft.jobId}</span>
             </div>
@@ -146,6 +199,31 @@ export function AiProductReviewScreen({ draft, onApprove, onReject }: AiProductR
 
       {/* TOP HEALTH SCORE CARD */}
       <ProductHealthScoreCard healthScore={currentDraft.healthScore} />
+
+      {/* SMART PRODUCT INSIGHTS DASHBOARD */}
+      <AiSmartProductInsightsDashboard
+        insights={currentDraft.smartInsights}
+        readinessScore={currentDraft.enterpriseReadiness}
+      />
+
+      {/* POST ANALYSIS BUSINESS RECOMMENDATIONS */}
+      <AiPostAnalysisRecommendationsCard
+        recommendations={currentDraft.operatorRecommendations}
+      />
+
+      {/* GRANULAR APPROVAL CENTER BAR */}
+      <AiGranularApprovalCenterBar
+        approvalState={currentDraft.granularApproval}
+        onToggleApproval={handleToggleApproval}
+        onApproveAll={handleApproveAllSections}
+        onRejectAll={handleRejectAllSections}
+      />
+
+      {/* SMART TASK SUGGESTIONS PANEL */}
+      <AiSmartTaskSuggestionsPanel
+        tasks={currentDraft.smartTasks}
+        onTaskResolved={handleTaskResolved}
+      />
 
       {/* MAIN 3-COLUMN GRID REVIEW LAYOUT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

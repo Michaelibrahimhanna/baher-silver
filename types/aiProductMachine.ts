@@ -32,7 +32,7 @@ export interface AIConfidenceScores {
   material: number; // e.g. 99
   purity: number; // e.g. 98
   stones: number; // e.g. 92
-  weight: number; // e.g. 81 (Low confidence highlight)
+  weight: number; // e.g. 81
   description: number; // e.g. 93
   pricing: number; // e.g. 90
   seo: number; // e.g. 95
@@ -62,6 +62,74 @@ export interface AIDocumentAnalysisResult {
   extractedSupplier?: string;
   extractedCategory?: string;
   confidenceScore: number;
+}
+
+// Enterprise Operator Post-Analysis Recommendations
+export interface AIPostAnalysisRecommendations {
+  bestCategory: string;
+  bestCollection: string;
+  bestSellingSeason: string; // e.g. "عيد الحب (Valentine's)" | "موسم الأعياد" | "طوال العام"
+  targetAudience: string; // e.g. "السيدات البحث عن الفخامة والعيار الأصيل"
+  similarExistingProductIds: string[];
+  duplicateDetected: boolean;
+  duplicateSkuMatch?: string;
+  bundleOpportunities: string[]; // e.g. "طقم فضة فرعوني متكامل (خاتم + قلادة)"
+  frequentlyBoughtTogetherIds: string[];
+  crossSellIds: string[];
+  upsellIds: string[];
+  suggestedAccessoryIds: string[];
+  inventoryWarnings: string[];
+  profitabilityScore: number; // 0 - 100
+  expectedDemandScore: number; // 0 - 100
+  seoOpportunityScore: number; // 0 - 100
+}
+
+// Smart Product Insights Dashboard Metrics
+export interface AISmartProductInsights {
+  productCompleteness: number; // 0 - 100
+  healthScore: number; // 0 - 100
+  seoScore: number; // 0 - 100
+  salesPotential: number; // 0 - 100
+  luxuryScore: number; // 0 - 100
+  photographyQualityScore: number; // Placeholder 0 - 100
+  marketReadiness: number; // 0 - 100
+  publishingReadiness: number; // 0 - 100
+}
+
+// Granular Approval Center State
+export interface AIGranularApprovalState {
+  productApproved: boolean;
+  pricingApproved: boolean;
+  seoApproved: boolean;
+  categoryApproved: boolean;
+  collectionApproved: boolean;
+  qrApproved: boolean;
+  marketingAssetsApproved: boolean;
+  publishingApproved: boolean;
+}
+
+// Smart Auto-Generated Task Suggestion
+export interface AISmartTaskSuggestion {
+  id: string;
+  code: string;
+  title_ar: string;
+  title_en: string;
+  severity: 'high' | 'medium' | 'low';
+  field: string;
+  actionType: 'edit_field' | 'add_spec' | 'adjust_price' | 'add_relation';
+}
+
+// Enterprise Readiness Score (0 - 100)
+export interface AIEnterpriseReadinessScore {
+  overallScore: number;
+  grade: 'EXCELLENT' | 'GOOD' | 'NEEDS_IMPROVEMENT' | 'BLOCKED';
+  canPublishImmediately: boolean;
+  readinessBreakdown: {
+    dataCompleteness: number;
+    financialMargin: number;
+    seoOptimization: number;
+    securityQrBarcode: number;
+  };
 }
 
 export interface AIProductDraft {
@@ -97,6 +165,12 @@ export interface AIProductDraft {
   confidenceScores: AIConfidenceScores;
   healthScore: HealthScoreResult;
   mediaPlaceholders: string[];
+  // Operator Enhancements
+  operatorRecommendations: AIPostAnalysisRecommendations;
+  smartInsights: AISmartProductInsights;
+  granularApproval: AIGranularApprovalState;
+  smartTasks: AISmartTaskSuggestion[];
+  enterpriseReadiness: AIEnterpriseReadinessScore;
 }
 
 export interface AIPricingEstimate {
@@ -162,4 +236,10 @@ export interface ILlmContentProvider {
   id: string;
   name: string;
   generateContent(prompt: string, tone?: AIPromptTone): Promise<Partial<AIProductDraft>>;
+}
+
+export interface IAiOperatorProvider {
+  id: string;
+  name: string;
+  generateOperatorRecommendations(draft: Partial<AIProductDraft>): Promise<AIPostAnalysisRecommendations>;
 }

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Sparkles, Bot, ArrowLeft } from 'lucide-react';
-import { AiIntakeQueueDropzone } from '@/components/admin/catalog/ai-machine/AiIntakeQueueDropzone';
+import { AiProductImportWizard } from '@/components/admin/catalog/ai-machine/AiProductImportWizard';
 import { AiProductReviewScreen } from '@/components/admin/catalog/ai-machine/AiProductReviewScreen';
 import { AiBatchQueueControlsBar } from '@/components/admin/catalog/ai-machine/AiBatchQueueControlsBar';
 import { aiProductIntakeQueue } from '@/lib/services/aiProductIntakeQueue';
@@ -44,15 +44,15 @@ export default function AiProductMachinePage() {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
             <span className="text-[10px] tracking-[0.3em] uppercase text-amber-400 font-bold">
-              PRIMARY PRODUCT CREATION OS • BAHER BRAIN ENGINE
+              PRIMARY ENTERPRISE OPERATOR OS • BAHER BRAIN ENGINE
             </span>
           </div>
           <h1 className="text-3xl font-serif text-white tracking-tight mt-1 flex items-center gap-2">
-            آلة إنشاء المنتجات بالذكاء الاصطناعي (Baher Brain AI Product Machine)
+            المشغل الذكي لإنشاء المنتجات (Baher Brain Enterprise AI Operator)
             <Sparkles className="h-6 w-6 text-amber-400" />
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            سحب وإسقاط ملفات الصور والكشوفات لاستخراج وتوليد بيانات المنتجات والأسعار والتوصيف ثنائي اللغة آلياً
+            سحب وإسقاط ملفات الصور والكشوفات لاستخراج وتوليد بيانات المنتجات، مؤشرات الرؤى، والتوصيات التجارية آلياً
           </p>
         </div>
 
@@ -76,9 +76,9 @@ export default function AiProductMachinePage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
             <Bot className="h-8 w-8 animate-spin" />
           </div>
-          <h3 className="text-lg font-bold text-white">جاري تحليل صور المستندات وتوليد مواصفات المنتج...</h3>
+          <h3 className="text-lg font-bold text-white">جاري تحليل البيانات وتوليد توصيات المشغل الذكي...</h3>
           <p className="text-xs text-slate-400 max-w-sm">
-            يقوم Baher Brain بقراءة الكشوفات وتحديد نوع الفضة والعيار وحساب الأسعار والتوليد ثنائي اللغة.
+            يقوم Baher Brain بجمع المؤشرات والتسعير وإعداد مهام المعالجة لعرضها على المسؤول البشري للاعتماد.
           </p>
         </div>
       ) : activeDraft ? (
@@ -95,7 +95,7 @@ export default function AiProductMachinePage() {
           }}
         />
       ) : (
-        <AiIntakeQueueDropzone onBatchCreated={handleBatchCreated} />
+        <AiProductImportWizard onStartAnalysis={handleBatchCreated} />
       )}
     </div>
   );
