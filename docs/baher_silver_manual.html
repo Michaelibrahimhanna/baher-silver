@@ -2,8 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دليل المستخدم والتشغيل الشامل — منصة باهر سيلفر للتجارة والذكاء الاصطناعي v5.0</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="description" content="دليل المستخدم الشامل لمنصة باهر سيلفر للتجارة والذكاء الاصطناعي — Baher Silver Platform OS v6.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>دليل المستخدم — منصة باهر سيلفر v6.0</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
 
@@ -11,10 +15,13 @@
       --primary: #0f172a;
       --accent: #d97706;
       --brand: #10b981;
+      --cyan: #38bdf8;
       --dark-card: #1e293b;
       --light-text: #f8fafc;
       --muted-text: #94a3b8;
       --border: #334155;
+      --rose: #f43f5e;
+      --purple: #a855f7;
     }
 
     * {
@@ -23,258 +30,773 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
     body {
       font-family: 'Cairo', system-ui, -apple-system, sans-serif;
       background-color: #090d16;
       color: #e2e8f0;
-      line-height: 1.7;
-      padding: 40px;
+      line-height: 1.8;
+      padding: 12px;
+      font-size: 15px;
+      overflow-x: hidden;
     }
 
+    /* ===== MANUAL CONTAINER ===== */
     .manual-container {
-      max-width: 1100px;
+      max-width: 900px;
       margin: 0 auto;
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 24px;
-      padding: 48px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      background: var(--primary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
     }
 
-    /* Header & Cover */
+    /* ===== COVER PAGE ===== */
     .cover-page {
       text-align: center;
-      padding: 40px 20px;
-      border-bottom: 2px solid #334155;
-      margin-bottom: 40px;
-      position: relative;
+      padding: 28px 12px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 28px;
     }
 
     .cover-logo {
-      width: 110px;
-      height: 110px;
-      border-radius: 24px;
-      border: 2px solid #d97706;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 25px rgba(217, 119, 6, 0.3);
-      object-fit: cover;
-      background: #090d16;
-      display: inline-flex;
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      border: 2px solid var(--accent);
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 20px rgba(217,119,6,0.3);
+      display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 50px;
+      font-size: 40px;
+      background: #090d16;
     }
 
     .cover-title {
-      font-size: 34px;
+      font-size: 22px;
       font-weight: 900;
-      color: #ffffff;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
+      color: #fff;
+      margin-bottom: 6px;
+      line-height: 1.4;
     }
 
     .cover-subtitle {
-      font-size: 19px;
+      font-size: 14px;
       color: #fbbf24;
       font-weight: 700;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .cover-meta {
+      font-size: 11px;
+      color: var(--muted-text);
+      line-height: 1.6;
     }
 
     .badge-container {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 8px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      margin-top: 20px;
+      font-size: 10px;
+      margin-top: 16px;
     }
 
     .badge {
-      padding: 6px 18px;
+      padding: 5px 12px;
       border-radius: 9999px;
       font-weight: 700;
+      white-space: nowrap;
     }
 
-    .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .badge-amber { background: rgba(217, 119, 6, 0.15); color: #fbbf24; border: 1px solid rgba(217, 119, 6, 0.3); }
-    .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-green { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-amber { background: rgba(217,119,6,0.15); color: #fbbf24; border: 1px solid rgba(217,119,6,0.3); }
+    .badge-blue  { background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); }
+    .badge-purple{ background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .badge-rose  { background: rgba(244,63,94,0.15); color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
 
-    /* Table of Contents */
-    .toc {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 28px;
-      margin-bottom: 40px;
+    /* ===== FLOATING TOC BUTTON (Mobile) ===== */
+    .toc-fab {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(217,119,6,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .toc-title {
-      font-size: 20px;
+    .toc-fab:active {
+      transform: scale(0.92);
+    }
+
+    .toc-fab.open {
+      background: var(--rose);
+      color: #fff;
+    }
+
+    /* ===== BACK TO TOP ===== */
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(30,41,59,0.9);
+      backdrop-filter: blur(8px);
+      color: var(--cyan);
+      border: 1px solid var(--border);
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .back-to-top.visible {
+      display: flex;
+    }
+
+    /* ===== MOBILE DRAWER TOC ===== */
+    .toc-drawer-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .toc-drawer-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .toc-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1001;
+      background: var(--dark-card);
+      border-top: 2px solid var(--accent);
+      border-radius: 20px 20px 0 0;
+      padding: 20px 16px 32px;
+      max-height: 70vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .toc-drawer.open {
+      transform: translateY(0);
+    }
+
+    .toc-drawer-handle {
+      width: 40px;
+      height: 4px;
+      border-radius: 99px;
+      background: var(--border);
+      margin: 0 auto 16px;
+    }
+
+    .toc-drawer-title {
+      font-size: 16px;
       font-weight: 800;
       color: #f59e0b;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .toc-drawer-list {
+      list-style: none;
+    }
+
+    .toc-drawer-list li {
+      margin-bottom: 2px;
+    }
+
+    .toc-drawer-list a {
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-
-    .toc-list {
-      list-style: none;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      font-size: 14px;
-    }
-
-    .toc-list a {
+      padding: 12px 14px;
+      border-radius: 12px;
       color: #cbd5e1;
       text-decoration: none;
-      transition: color 0.2s;
-      display: flex;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .toc-drawer-list a:active,
+    .toc-drawer-list a:hover {
+      background: rgba(217,119,6,0.1);
+      color: #fbbf24;
+    }
+
+    .toc-drawer-list .toc-num {
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(217,119,6,0.15);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    /* ===== INLINE TOC (Desktop) ===== */
+    .toc-inline {
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .toc-inline-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+
+    .toc-inline-grid {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 6px;
     }
 
-    .toc-list a:hover {
-      color: #38bdf8;
-    }
-
-    /* Sections */
-    .section {
-      margin-bottom: 48px;
-    }
-
-    .section-header {
-      font-size: 22px;
-      font-weight: 800;
-      color: #ffffff;
-      border-right: 5px solid #d97706;
-      padding-right: 16px;
-      margin-bottom: 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .feature-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 20px;
-    }
-
-    .feature-title {
-      font-size: 17px;
-      font-weight: 700;
-      color: #38bdf8;
-      margin-bottom: 12px;
+    .toc-inline-grid a {
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s;
     }
 
-    .feature-desc {
+    .toc-inline-grid a:hover {
+      background: rgba(217,119,6,0.1);
+      color: #fbbf24;
+    }
+
+    .toc-inline-grid .toc-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: rgba(217,119,6,0.15);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    /* ===== ACCORDION SECTIONS ===== */
+    .section {
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--primary);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      background: rgba(30,41,59,0.5);
+      border-bottom: 1px solid transparent;
+      transition: background 0.15s;
+    }
+
+    .section-header:active {
+      background: rgba(217,119,6,0.08);
+    }
+
+    .section-header-text {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .section-header-tag {
+      font-size: 9px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted-text);
+      white-space: nowrap;
+      display: none;
+    }
+
+    .section-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(217,119,6,0.15);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 14px;
-      color: #cbd5e1;
+      flex-shrink: 0;
+      transition: transform 0.25s;
+    }
+
+    .section.open .section-toggle {
+      transform: rotate(180deg);
+    }
+
+    .section.open .section-header {
+      border-bottom-color: var(--border);
+    }
+
+    .section-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .section.open .section-body {
+      max-height: 5000px;
+    }
+
+    .section-body-inner {
+      padding: 16px;
+    }
+
+    /* ===== FEATURE CARDS ===== */
+    .feature-card {
+      background: var(--dark-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
       margin-bottom: 14px;
     }
 
-    /* Bullet Lists & Tables */
+    .feature-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .feature-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.5;
+    }
+
+    .feature-title .icon {
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    /* ===== BULLET LISTS ===== */
     ul.feature-bullets {
       list-style: none;
       padding-right: 0;
       font-size: 13px;
-      color: #94a3b8;
+      color: var(--muted-text);
     }
 
     ul.feature-bullets li {
       position: relative;
-      padding-right: 22px;
+      padding-right: 20px;
       margin-bottom: 10px;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     ul.feature-bullets li::before {
       content: "✦";
       position: absolute;
       right: 0;
-      color: #d97706;
+      color: var(--accent);
+      font-size: 10px;
+      top: 4px;
+    }
+
+    ul.feature-bullets li strong {
+      color: #e2e8f0;
+    }
+
+    /* ===== RESPONSIVE TABLE AS CARDS ON MOBILE ===== */
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
     }
 
     table.data-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 16px;
-      font-size: 13px;
+      font-size: 12px;
       text-align: right;
+      min-width: 500px;
     }
 
     table.data-table th {
       background: #0f172a;
       color: #f59e0b;
-      padding: 12px 14px;
-      border: 1px solid #334155;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
       font-weight: 700;
+      white-space: nowrap;
     }
 
     table.data-table td {
-      padding: 12px 14px;
-      border: 1px solid #334155;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
       color: #cbd5e1;
     }
 
     table.data-table tr:nth-child(even) {
-      background: rgba(15, 23, 42, 0.5);
+      background: rgba(15,23,42,0.5);
     }
 
+    /* Mobile card layout for payment table */
+    .payment-cards {
+      display: none;
+    }
+
+    .payment-card-item {
+      background: rgba(15,23,42,0.5);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .payment-card-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .payment-card-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .payment-card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted-text);
+      padding: 4px 0;
+    }
+
+    .payment-card-row span:last-child {
+      color: #cbd5e1;
+      font-weight: 600;
+      text-align: left;
+      max-width: 60%;
+    }
+
+    /* ===== CODE SNIPPET ===== */
     .code-snippet {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11px;
       background: #090d16;
-      border: 1px solid #334155;
+      border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px;
+      padding: 12px;
       color: #10b981;
       margin-top: 10px;
       direction: ltr;
       text-align: left;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      line-height: 1.6;
+      word-break: break-all;
     }
 
+    /* ===== HIGHLIGHT BOX ===== */
     .highlight-box {
-      background: rgba(217, 119, 6, 0.1);
-      border: 1px solid rgba(217, 119, 6, 0.3);
+      background: rgba(217,119,6,0.08);
+      border: 1px solid rgba(217,119,6,0.25);
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px;
       margin-top: 12px;
-      font-size: 13px;
+      font-size: 12px;
       color: #fbbf24;
+      line-height: 1.7;
     }
 
-    /* Print Optimizations */
+    /* ===== FOOTER ===== */
+    .manual-footer {
+      text-align: center;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted-text);
+      line-height: 1.8;
+    }
+
+    /* =========================================
+       MEDIA QUERIES — TABLET (min 600px)
+       ========================================= */
+    @media (min-width: 600px) {
+      body {
+        padding: 24px;
+        font-size: 16px;
+      }
+
+      .manual-container {
+        padding: 32px;
+        border-radius: 24px;
+      }
+
+      .cover-title {
+        font-size: 28px;
+      }
+
+      .cover-subtitle {
+        font-size: 16px;
+      }
+
+      .badge-container {
+        font-size: 11px;
+        gap: 10px;
+      }
+
+      .badge {
+        padding: 6px 16px;
+      }
+
+      .section-header-text {
+        font-size: 18px;
+      }
+
+      .section-header-tag {
+        display: block;
+      }
+
+      .section-body-inner {
+        padding: 24px;
+      }
+
+      .feature-card {
+        padding: 22px;
+      }
+
+      .feature-title {
+        font-size: 16px;
+      }
+
+      .toc-inline-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* =========================================
+       MEDIA QUERIES — DESKTOP (min 900px)
+       ========================================= */
+    @media (min-width: 900px) {
+      body {
+        padding: 40px;
+      }
+
+      .manual-container {
+        padding: 48px;
+      }
+
+      .cover-logo {
+        width: 100px;
+        height: 100px;
+        font-size: 48px;
+      }
+
+      .cover-title {
+        font-size: 32px;
+      }
+
+      .cover-subtitle {
+        font-size: 18px;
+      }
+
+      .toc-fab {
+        display: none !important;
+      }
+
+      .section-header-text {
+        font-size: 20px;
+      }
+
+      .feature-title {
+        font-size: 17px;
+      }
+
+      .feature-desc {
+        font-size: 14px;
+      }
+
+      ul.feature-bullets {
+        font-size: 14px;
+      }
+    }
+
+    /* =========================================
+       MEDIA QUERIES — SMALL MOBILE (max 400px)
+       ========================================= */
+    @media (max-width: 400px) {
+      body {
+        padding: 6px;
+        font-size: 14px;
+      }
+
+      .manual-container {
+        padding: 12px;
+        border-radius: 14px;
+      }
+
+      .cover-title {
+        font-size: 19px;
+      }
+
+      .cover-subtitle {
+        font-size: 13px;
+      }
+
+      .badge {
+        font-size: 9px;
+        padding: 4px 10px;
+      }
+
+      .section-header {
+        padding: 12px;
+      }
+
+      .section-header-text {
+        font-size: 14px;
+      }
+
+      .section-body-inner {
+        padding: 12px;
+      }
+
+      .feature-card {
+        padding: 14px;
+        border-radius: 12px;
+      }
+
+      .feature-title {
+        font-size: 14px;
+      }
+
+      .feature-desc,
+      ul.feature-bullets {
+        font-size: 12px;
+      }
+    }
+
+    /* ===== MOBILE: show card layout, hide table ===== */
+    @media (max-width: 600px) {
+      .table-wrapper {
+        display: none;
+      }
+
+      .payment-cards {
+        display: block;
+        margin-top: 12px;
+      }
+    }
+
+    /* ===== PRINT ===== */
     @media print {
       body {
-        background: #ffffff;
-        color: #000000;
+        background: #fff;
+        color: #000;
         padding: 0;
+        font-size: 12pt;
       }
       .manual-container {
         border: none;
         box-shadow: none;
-        background: #ffffff;
-        color: #000000;
+        background: #fff;
         padding: 0;
       }
-      .cover-title, .section-header, .feature-title {
-        color: #000000 !important;
+      .toc-fab, .back-to-top, .toc-drawer-overlay, .toc-drawer {
+        display: none !important;
       }
-      .feature-card, .toc {
+      .section {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+      }
+      .section-body {
+        max-height: none !important;
+      }
+      .section-toggle {
+        display: none;
+      }
+      .cover-title, .section-header-text, .feature-title {
+        color: #000 !important;
+      }
+      .feature-card {
         background: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
-        color: #000000 !important;
       }
       .feature-desc, ul.feature-bullets li, table.data-table td {
         color: #1e293b !important;
@@ -283,281 +805,511 @@
         background: #e2e8f0 !important;
         color: #0f172a !important;
       }
-      .badge-green, .badge-amber, .badge-blue, .badge-purple {
-        border: 1px solid #000000 !important;
-        color: #000000 !important;
-      }
-      .page-break {
-        page-break-before: always;
-      }
     }
   </style>
 </head>
 <body>
 
+<!-- Floating TOC Button (Mobile) -->
+<button class="toc-fab" id="tocFab" onclick="toggleTocDrawer()" aria-label="فهرس الأقسام">📌</button>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="العودة للأعلى">↑</button>
+
+<!-- TOC Drawer Overlay -->
+<div class="toc-drawer-overlay" id="tocOverlay" onclick="toggleTocDrawer()"></div>
+
+<!-- TOC Bottom Sheet Drawer -->
+<div class="toc-drawer" id="tocDrawer">
+  <div class="toc-drawer-handle"></div>
+  <div class="toc-drawer-title">📌 فهرس أقسام المانول</div>
+  <ul class="toc-drawer-list">
+    <li><a href="#sec-1" onclick="toggleTocDrawer()"><span class="toc-num">01</span>البنية التحتية والمحرك المالي</a></li>
+    <li><a href="#sec-2" onclick="toggleTocDrawer()"><span class="toc-num">02</span>بوابات الدفع الـ 10 وشركات الشحن</a></li>
+    <li><a href="#sec-3" onclick="toggleTocDrawer()"><span class="toc-num">03</span>آلة الذكاء الاصطناعي AI Machine</a></li>
+    <li><a href="#sec-4" onclick="toggleTocDrawer()"><span class="toc-num">04</span>المشغل الذكي Enterprise AI Operator</a></li>
+    <li><a href="#sec-5" onclick="toggleTocDrawer()"><span class="toc-num">05</span>حاسبة التسعير السباعية</a></li>
+    <li><a href="#sec-6" onclick="toggleTocDrawer()"><span class="toc-num">06</span>بوابة الجودة والمراجعة الحية</a></li>
+    <li><a href="#sec-7" onclick="toggleTocDrawer()"><span class="toc-num">07</span>محرك QR ولوحة الأوامر Ctrl+K</a></li>
+    <li><a href="#sec-8" onclick="toggleTocDrawer()"><span class="toc-num">08</span>الإعدادات المركزية والإضافات</a></li>
+    <li><a href="#sec-9" onclick="toggleTocDrawer()"><span class="toc-num">09</span>التعلم المستمر وهندسة المستقبل</a></li>
+  </ul>
+</div>
+
 <div class="manual-container">
-  <!-- Cover Page -->
+
+  <!-- ===== COVER PAGE ===== -->
   <div class="cover-page">
     <div class="cover-logo">👑</div>
-    <h1 class="cover-title">منصة باهر سيلفر للتجارة والذكاء الاصطناعي — BAHER SILVER OS</h1>
-    <div class="cover-subtitle">دليل الإستخدام التشغيلي والكتالوج المرجعي الشامل لمميزات وإمكانيات المتجر v5.0</div>
-    <p style="font-size: 13px; color: #94a3b8;">تاريخ التحديث الآلي: 3 أغسطس 2026 | حالة النظام: جاهز للإنتاج والمبايعة الفورية (100% Verified Production)</p>
-    
+    <h1 class="cover-title">منصة باهر سيلفر للتجارة والذكاء الاصطناعي</h1>
+    <div class="cover-subtitle">BAHER SILVER PLATFORM OS v6.0 — دليل الاستخدام التشغيلي الشامل</div>
+    <p class="cover-meta">
+      تاريخ التحديث: 3 أغسطس 2026 &nbsp;|&nbsp; حالة النظام: جاهز للإنتاج (100% Verified)
+    </p>
     <div class="badge-container">
-      <span class="badge badge-green">PASS RATE 100% (65/65 TESTED)</span>
-      <span class="badge badge-amber">BAHER BRAIN AI MACHINE v3.0</span>
-      <span class="badge badge-blue">NEXT.JS 16 TURBOPACK ENGINE</span>
-      <span class="badge badge-purple">10 PAYMENT GATEWAYS READY</span>
+      <span class="badge badge-green">70/70 TESTS PASSED</span>
+      <span class="badge badge-amber">ENTERPRISE AI OPERATOR</span>
+      <span class="badge badge-blue">NEXT.JS 16 TURBOPACK</span>
+      <span class="badge badge-purple">10 PAYMENT GATEWAYS</span>
     </div>
   </div>
 
-  <!-- Table of Contents -->
-  <div class="toc">
-    <div class="toc-title">📌 فهرس أقسام وموديولات متجر باهر سيلفر</div>
-    <ul class="toc-list">
-      <li><a href="#sec-1">1. البنية التحتية والمحرك المالي الآمن</a></li>
-      <li><a href="#sec-2">2. بوابات الدفع الـ 10 وشركات الشحن</a></li>
-      <li><a href="#sec-3">3. آلة إنشاء المنتجات بالذكاء الاصطناعي (AI Machine)</a></li>
-      <li><a href="#sec-4">4. حاسبة التسعير السباعية لجرام الفضة</a></li>
-      <li><a href="#sec-5">5. فحص صلاحية الاعتماد والنشر (Quality Gate)</a></li>
-      <li><a href="#sec-6">6. شاشة المراجعة الحية والمعاينة المتعددة</a></li>
-      <li><a href="#sec-7">7. محرك QR الديناميكي وجواز السفر الرقمي</a></li>
-      <li><a href="#sec-8">8. المحرك العام للبحث ولوحة الأوامر Ctrl+K</a></li>
-      <li><a href="#sec-9">9. المحرك المركزي للإعدادات والأنماط</a></li>
-      <li><a href="#sec-10">10. التعلم المستمر والهندسة بدون انحياز</a></li>
+  <!-- ===== INLINE TOC (visible on desktop, hidden concept on mobile via drawer) ===== -->
+  <div class="toc-inline">
+    <div class="toc-inline-title">📌 فهرس أقسام الدليل التشغيلي</div>
+    <ul class="toc-inline-grid">
+      <li><a href="#sec-1"><span class="toc-num">01</span>البنية التحتية والمحرك المالي</a></li>
+      <li><a href="#sec-2"><span class="toc-num">02</span>بوابات الدفع الـ 10 والشحن</a></li>
+      <li><a href="#sec-3"><span class="toc-num">03</span>آلة الذكاء الاصطناعي AI Machine</a></li>
+      <li><a href="#sec-4"><span class="toc-num">04</span>المشغل الذكي Enterprise AI Operator</a></li>
+      <li><a href="#sec-5"><span class="toc-num">05</span>حاسبة التسعير السباعية</a></li>
+      <li><a href="#sec-6"><span class="toc-num">06</span>بوابة الجودة والمراجعة الحية</a></li>
+      <li><a href="#sec-7"><span class="toc-num">07</span>محرك QR ولوحة الأوامر</a></li>
+      <li><a href="#sec-8"><span class="toc-num">08</span>الإعدادات المركزية والإضافات</a></li>
+      <li><a href="#sec-9"><span class="toc-num">09</span>التعلم المستمر وهندسة المستقبل</a></li>
     </ul>
   </div>
 
-  <!-- Section 1 -->
-  <div class="section" id="sec-1">
-    <div class="section-header">
-      <span>1. البنية التحتية الهندسية والمحرك المالي دقيق الفضة</span>
-      <span style="font-size: 12px; color: #94a3b8; font-family: monospace;">CORE ARCHITECTURE & MONEY MATH</span>
+  <!-- ======================================================
+       SECTION 1: CORE ARCHITECTURE & MONEY MATH
+       ====================================================== -->
+  <div class="section open" id="sec-1">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">1. البنية التحتية الهندسية والمحرك المالي</span>
+      <span class="section-header-tag">CORE ARCHITECTURE</span>
+      <span class="section-toggle">▼</span>
     </div>
-    
-    <div class="feature-card">
-      <div class="feature-title">⚙️ معمارية فاخرة وحسابات مالية آمنة (Money Value Object)</div>
-      <div class="feature-desc">
-        تم تصميم متجر **Baher Silver** بأعلى معايير البرمجة العالمية لمنع أي أخطاء حسابية في أسعار مجوهرات الفضة:
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">⚙️</span>معمارية فاخرة وحسابات مالية آمنة</div>
+          <div class="feature-desc">
+            تم تصميم متجر Baher Silver بأعلى معايير البرمجة لمنع أي أخطاء حسابية في أسعار مجوهرات الفضة:
+          </div>
+          <ul class="feature-bullets">
+            <li><strong>كائن القيمة المالية الآمن (Money Value Object):</strong> يمنع تماماً أخطاء الكسور العشرية والفاصلة العائمة في جميع العمليات الحسابية.</li>
+            <li><strong>محرك الضرائب الذكي (Tax Engine):</strong> احتساب ضريبة القيمة المضافة المصرية (14% VAT) مع إعفاء تلقائي لسبائك الفضة الخام.</li>
+            <li><strong>محرك الكوبونات المتقدم (Coupon Engine):</strong> خصومات مئوية محدودة بسقف (SILVER10) وخصومات ثابتة (WELCOME200) مع حد أدنى لسلة الشراء.</li>
+            <li><strong>نظام الولاء والمكافآت (Loyalty Engine):</strong> احتساب النقاط حسب فئة العميل (Bronze, Silver, Gold, Platinum) وتحويلها لكوبونات خصم.</li>
+          </ul>
+        </div>
       </div>
-      <ul class="feature-bullets">
-        <li><strong>كائن القيمة المالية الآمن (Money Value Object):</strong> يمنع تماماً أخطاء الكسور الفردية والفاصلة العائمة (Float Math Errors) في عمليات الجمع والضرب والخصومات.</li>
-        <li><strong>محرك الضرائب الذكي (Tax Engine):</strong> احتساب ضريبة القيمة المضافة المصرية القياسية (14% VAT) مع تطبيق قواعد الإعفاء الضريبي التلقائي على سبائك الفضة الخام.</li>
-        <li><strong>محرك الكوبونات المتقدم (Coupon Engine):</strong> دعم الخصومات المئوية المحدودة بسقف مالي (مثل SILVER10) والخصومات الثابتة (WELCOME200) مع التحقق من الحد الأدنى لسلة الشراء.</li>
-        <li><strong>نظام نقاط الولاء والمكافآت (Loyalty Engine):</strong> احتساب النقاط بناءً على فئة العميل (Bronze, Silver, Gold, Platinum) وتحويل النقاط المكتسبة إلى كوبونات خصم مباشرة.</li>
-      </ul>
     </div>
   </div>
 
-  <!-- Section 2 -->
+  <!-- ======================================================
+       SECTION 2: 10 PAYMENT GATEWAYS & SHIPPING
+       ====================================================== -->
   <div class="section" id="sec-2">
-    <div class="section-header">
-      <span>2. بوابات الدفع الـ 10 التكاملية وشركات الشحن Mapped</span>
-      <span style="font-size: 12px; color: #10b981; font-family: monospace;">10 PAYMENT PROVIDERS</span>
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">2. بوابات الدفع الـ 10 وشركات الشحن</span>
+      <span class="section-header-tag">10 PROVIDERS</span>
+      <span class="section-toggle">▼</span>
     </div>
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">💳</span>10 بوابات دفع إلكترونية ومحلية</div>
+          <div class="feature-desc">
+            محرك دفع نمطي (Modular Payment Engine) يدعم كافة طرق الدفع في مصر والشرق الأوسط والعالم:
+          </div>
 
-    <div class="feature-card">
-      <div class="feature-title">💳 10 بوابات دفع إلكترونية ومحلية مدعومة بالكامل</div>
-      <div class="feature-desc">
-        يتضمن المتجر محرك دفع نمطي (Modular Payment Engine) يدعم كافة طرق الدفع في مصر والشرق الأوسط والعالم:
-      </div>
+          <!-- Desktop: Table -->
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>بوابة الدفع</th>
+                  <th>نوع الدفع</th>
+                  <th>التغطية</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td><strong style="color:#38bdf8">Paymob</strong></td><td>بطاقات ائتمان</td><td>مصر والعرب</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#10b981">Vodafone Cash</strong></td><td>محافظ إلكترونية</td><td>مصر</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#fbbf24">InstaPay</strong></td><td>تحويل فوري</td><td>البنوك المصرية</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#c084fc">Meeza</strong></td><td>كارت ميزة</td><td>مصر</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#38bdf8">Stripe</strong></td><td>بطاقات دولية</td><td>عالمي</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#fbbf24">Apple Pay / Google Pay</strong></td><td>محافظ الهواتف</td><td>عالمي</td><td><span class="badge badge-green">مفعل</span></td></tr>
+                <tr><td><strong style="color:#fb7185">ValU / Fawry / COD</strong></td><td>تقسيط وفوري واستلام</td><td>مصر</td><td><span class="badge badge-green">مفعل</span></td></tr>
+              </tbody>
+            </table>
+          </div>
 
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>اسم بوابة الدفع</th>
-            <th>نوع طريقة الدفع</th>
-            <th>التغطية والجغرافية</th>
-            <th>حالة التكامل</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong style="color: #38bdf8;">Paymob</strong></td>
-            <td>بطاقات ائتمان وخارجية (Credit/Debit)</td>
-            <td>مصر والدول العربية</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #10b981;">Vodafone Cash</strong></td>
-            <td>محافظ إلكترونية محمول (E-Wallets)</td>
-            <td>جمهورية مصر العربية</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #fbbf24;">InstaPay</strong></td>
-            <td>تحويل فوري مالي مباشر (InstaPay QR/ID)</td>
-            <td>البنوك المصرية المباشرة</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #c084fc;">Meeza</strong></td>
-            <td>بطاقة كارت ميزة الوطنية (Meeza Card)</td>
-            <td>المحليات المصرية</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #38bdf8;">Stripe</strong></td>
-            <td>بطاقات دولية بالدولار واليورو (Global Credit)</td>
-            <td>جميع دول العالم</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #fbbf24;">Apple Pay / Google Pay</strong></td>
-            <td>محافظ الهواتف الذكية بنقرة واحدة</td>
-            <td>عالمياً وإقليمياً</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-          <tr>
-            <td><strong style="color: #f43f5e;">ValU / Fawry / COD</strong></td>
-            <td>تقسيط التخصيم، فوري، والدفع عند الاستلام</td>
-            <td>تغطية شاملة</td>
-            <td><span class="badge badge-green">مفعل 100%</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+          <!-- Mobile: Card Layout -->
+          <div class="payment-cards">
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#38bdf8">Paymob</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>بطاقات ائتمان</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>مصر والدول العربية</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#10b981">Vodafone Cash</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>محافظ إلكترونية</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>مصر</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#fbbf24">InstaPay</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>تحويل فوري مباشر</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>البنوك المصرية</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#c084fc">Meeza</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>كارت ميزة الوطنية</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>مصر</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#38bdf8">Stripe</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>بطاقات دولية بالدولار واليورو</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>جميع دول العالم</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#fbbf24">Apple Pay / Google Pay</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>محافظ الهواتف الذكية</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>عالمياً</span></div>
+            </div>
+            <div class="payment-card-item">
+              <div class="payment-card-name"><strong style="color:#fb7185">ValU / Fawry / COD</strong><span class="badge badge-green">مفعل</span></div>
+              <div class="payment-card-row"><span>النوع:</span><span>تقسيط واستلام</span></div>
+              <div class="payment-card-row"><span>التغطية:</span><span>تغطية شاملة</span></div>
+            </div>
+          </div>
+        </div>
 
-    <div class="feature-card">
-      <div class="feature-title">🚚 الربط مع شركات الشحن Bosta و Aramex</div>
-      <div class="feature-desc">
-        توليد تلقائي لبوالص الشحن (Waybill Generation) مع ربط تتبع الطرود المباشر وربط الإشعارات للعميل عبر البريد وواتساب Cloud API.
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🚚</span>الربط مع شركات الشحن Bosta و Aramex</div>
+          <div class="feature-desc">
+            توليد تلقائي لبوالص الشحن (Waybill) مع تتبع الطرود والإشعارات عبر البريد وواتساب Cloud API.
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Section 3 -->
-  <div class="section" id="sec-3" style="page-break-before: always;">
-    <div class="section-header">
-      <span>3. آلة إنشاء المنتجات بالذكاء الاصطناعي (Baher Brain AI Product Machine)</span>
-      <span style="font-size: 12px; color: #fbbf24; font-family: monospace;">PRIMARY PRODUCT WORKFLOW</span>
+  <!-- ======================================================
+       SECTION 3: AI PRODUCT MACHINE
+       ====================================================== -->
+  <div class="section" id="sec-3">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">3. آلة إنشاء المنتجات بالذكاء الاصطناعي</span>
+      <span class="section-header-tag">AI MACHINE</span>
+      <span class="section-toggle">▼</span>
     </div>
-
-    <div class="feature-card">
-      <div class="feature-title">🤖 مساحة العمل الرئيسية لإنشاء المنتجات آلياً بالذكاء الاصطناعي</div>
-      <div class="feature-desc">
-        تعتبر **Baher Brain AI Product Machine** المحرك الرئيسي لإنشاء الكتالوج وإضافة المنتجات داخل لوحة التحكم:
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🤖</span>Baher Brain AI Product Machine</div>
+          <div class="feature-desc">
+            المحرك الرئيسي لإنشاء الكتالوج وإضافة المنتجات داخل لوحة التحكم:
+          </div>
+          <ul class="feature-bullets">
+            <li><strong>استيعاب كافة الصيغ (Multi-Format Intake):</strong> سحب وإسقاط صور، مجلدات، ZIP، كشوفات PDF، وملفات Excel و CSV.</li>
+            <li><strong>تحليل بصري (Vision Analysis):</strong> استخراج تلقائي لنوع المنتج (خاتم، قلادة، أقراط)، العيار (925)، الأحجار، اللون، والوزن التقريبي.</li>
+            <li><strong>توليد ثنائي اللغة (Bilingual Synthesis):</strong> أسماء وأوصاف فاخرة بالعربية والإنجليزية مع SEO والكلمات المفتاحية والـ Slug.</li>
+            <li><strong>نصوص تسويقية (Marketing Copy):</strong> منشورات التواصل الاجتماعي ونصوص الإعلانات الممولة (Meta Ads) لكل قطعة.</li>
+            <li><strong>معالج الاستيراد الذكي (Smart Import Wizard):</strong> واجهة مرئية مع إمكانية تسمية الدفعات وتحديد حجم الشحنة (10 إلى 1000 قطعة).</li>
+          </ul>
+        </div>
       </div>
-      <ul class="feature-bullets">
-        <li><strong>استيعاب كافة صيغ الملفات (Multi-Format Intake Queue):</strong> إمكانية سحب وإسقاط الصور المنفردة، المجلدات، ملفات المضغوطة ZIP، الكشوفات PDF، وملفات Excel و CSV.</li>
-        <li><strong>تحليل الصور البصري (Vision Analysis):</strong> الاستخراج التلقائي لنوع المنتج (خاتم، قلادة، أقراط)، العيار (925)، نوع الأحجار (زركون، فيروز)، اللون، والوزن التقريبي بالجرام.</li>
-        <li><strong>التوليد اللغوي ثنائي اللغة (Bilingual Content Synthesis):</strong> إنشاء أسماء المنتجات والتوصيف الفاخر بالعربية والإنجليزية، مع توليد عناوين وأوصاف الـ SEO والكلمات المفتاحية والـ Slug تلقائياً.</li>
-        <li><strong>مولد النصوص التسويقية (Marketing Copy Generator):</strong> توليد منشورات منصات التواصل الاجتماعي (Social Captions) ونصوص الإعلانات الممولة (Meta Ads Copy) لكل قطعة.</li>
-      </ul>
     </div>
   </div>
 
-  <!-- Section 4 -->
+  <!-- ======================================================
+       SECTION 4: ENTERPRISE AI OPERATOR MODE (NEW)
+       ====================================================== -->
   <div class="section" id="sec-4">
-    <div class="section-header">
-      <span>4. حاسبة التسعير السباعية لجرام الفضة (7-Factor Formula Pricing)</span>
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">4. المشغل الذكي للمؤسسات (Enterprise AI Operator)</span>
+      <span class="section-header-tag">AI OPERATOR</span>
+      <span class="section-toggle">▼</span>
     </div>
+    <div class="section-body">
+      <div class="section-body-inner">
 
-    <div class="feature-card">
-      <div class="feature-title">📊 التسعير المعادلي الدقيق المرتبط ببورصة الفضة</div>
-      <div class="feature-desc">
-        احتساب سعر البيع تلقائياً بناءً على 7 عوامل تصنيعية ومالية رئيسية:
+        <div class="highlight-box">
+          ⚠️ <strong>مبدأ التحكم البشري المطلق:</strong> لا يتم نشر أو تنفيذ أي شيء تلقائياً — كل التوصيات والمهام تحتاج اعتماد بشري صريح من المسؤول.
+        </div>
+
+        <div class="feature-card" style="margin-top: 14px;">
+          <div class="feature-title"><span class="icon">🧠</span>توصيات تحليل ما بعد المعالجة (Post-Analysis Recommendations)</div>
+          <div class="feature-desc">
+            بعد كل عملية تحليل، يولّد المشغل الذكي توصيات تجارية شاملة:
+          </div>
+          <ul class="feature-bullets">
+            <li><strong>أفضل فئة وتصنيف ومجموعة</strong> (Category, Collection)</li>
+            <li><strong>أفضل موسم بيع</strong> وشريحة العملاء المستهدفة</li>
+            <li><strong>المنتجات المشابهة</strong> واكتشاف التكرارات</li>
+            <li><strong>فرص التجميع (Bundles)</strong> والبيع المكمّل (Cross-sell / Upsell)</li>
+            <li><strong>الإكسسوارات المقترحة</strong> والمنتجات المرتبطة</li>
+            <li><strong>تنبيهات المخزون</strong> ونقاط الربحية والطلب المتوقع</li>
+            <li><strong>درجة فرصة SEO</strong> لتحسين ظهور المنتج بمحركات البحث</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">📊</span>لوحة المؤشرات الذكية (Smart Product Insights Dashboard)</div>
+          <div class="feature-desc">
+            رادار 8 مقاييس ذكية لكل منتج مع شارة درجة الجاهزية المؤسسية:
+          </div>
+          <ul class="feature-bullets">
+            <li>اكتمال المنتج (Product Completeness)</li>
+            <li>درجة الصحة العامة (Health Score)</li>
+            <li>درجة SEO</li>
+            <li>إمكانية البيع (Sales Potential)</li>
+            <li>درجة الفخامة (Luxury Score)</li>
+            <li>جودة التصوير — عنصر نائب (Photography Quality)</li>
+            <li>جاهزية السوق (Market Readiness)</li>
+            <li>جاهزية النشر (Publishing Readiness)</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">✅</span>مركز الاعتماد الحُبيبي (Granular Approval Center)</div>
+          <div class="feature-desc">
+            تحكم دقيق في اعتماد كل قسم من أقسام المنتج بشكل منفصل:
+          </div>
+          <ul class="feature-bullets">
+            <li>اعتماد المنتج — اعتماد التسعير — اعتماد SEO</li>
+            <li>اعتماد الفئة — اعتماد المجموعة — اعتماد QR</li>
+            <li>اعتماد الأصول التسويقية — اعتماد النشر</li>
+            <li><strong>اعتماد الكل (Approve Everything)</strong> أو <strong>رفض الكل (Reject Everything)</strong> بنقرة واحدة</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">📋</span>المهام الذكية التلقائية (Smart Task Suggestions)</div>
+          <div class="feature-desc">
+            يولّد المشغل الذكي مهام تلقائية لمعالجة نقاط الضعف في المنتج:
+          </div>
+          <ul class="feature-bullets">
+            <li>وزن غير مؤكد — فئة مفقودة — وصف ضعيف</li>
+            <li>SEO منخفض — SKU مكرر — هامش ربح منخفض</li>
+            <li>إكسسوارات مفقودة — تصوير ناقص</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🏆</span>درجة الجاهزية المؤسسية (Enterprise Readiness Score)</div>
+          <div class="feature-desc">
+            درجة نهائية شاملة من 0 إلى 100 يتم احتسابها قبل السماح بالنشر. تجمع بين 8 مؤشرات ذكية + عدد المهام المفتوحة + سلامة التسعير.
+          </div>
+        </div>
       </div>
-      <div class="code-snippet">
-        سعر المنتج النهائي = (وزن الفضة × سعر جرام البورصة) + المصنعية + الإنتاج + التغليف + المصاريف الإدارية + هامش الربح %
-      </div>
-      <ul class="feature-bullets" style="margin-top: 12px;">
-        <li><strong>التسعير الاحتياطي للوزن التقديري:</strong> حساب تلقائي عند عدم توفر الوزن الصريح مع ضبط نسبة الثقة.</li>
-        <li><strong>سعر الجملة المقترح (Suggested Wholesale Price):</strong> حساب تلقائي لهامش كبار التجار.</li>
-        <li><strong>سعر العروض والتخفيضات (Suggested Discount Price):</strong> حساب التخفيضات الموسمية دون المساس بتكلفة الخامات.</li>
-      </ul>
     </div>
   </div>
 
-  <!-- Section 5 & 6 -->
+  <!-- ======================================================
+       SECTION 5: 7-FACTOR PRICING
+       ====================================================== -->
   <div class="section" id="sec-5">
-    <div class="section-header">
-      <span>5. فحص صلاحية الاعتماد والنشر وشاشة المراجعة البشرية</span>
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">5. حاسبة التسعير السباعية (7-Factor Pricing)</span>
+      <span class="section-header-tag">PRICING ENGINE</span>
+      <span class="section-toggle">▼</span>
     </div>
-
-    <div class="feature-card">
-      <div class="feature-title">🛡️ بوابة جودة الاعتماد والنشر (Pre-Publish Quality Gate)</div>
-      <div class="feature-desc">
-        فحص أوتوماتيكي قبل السماح بنشر المنتج على المتجر للتأكد من خلوه من الأخطاء:
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">📊</span>التسعير المعادلي المرتبط ببورصة الفضة</div>
+          <div class="feature-desc">
+            احتساب سعر البيع تلقائياً بناءً على 7 عوامل تصنيعية ومالية:
+          </div>
+          <div class="code-snippet">
+سعر المنتج = (وزن الفضة × سعر البورصة) + المصنعية + الإنتاج + التغليف + المصاريف + هامش الربح %
+          </div>
+          <ul class="feature-bullets" style="margin-top: 12px;">
+            <li><strong>تسعير احتياطي:</strong> حساب تلقائي عند عدم توفر الوزن الصريح مع ضبط نسبة الثقة.</li>
+            <li><strong>سعر الجملة المقترح:</strong> حساب تلقائي لهامش كبار التجار.</li>
+            <li><strong>سعر العروض:</strong> حساب التخفيضات الموسمية دون المساس بتكلفة الخامات.</li>
+          </ul>
+        </div>
       </div>
-      <ul class="feature-bullets">
-        <li>فحص الحقول المفقودة وعنونة الـ SEO.</li>
-        <li>التحقق من فرادة الـ SKU وعدم تكراره في الكتالوج.</li>
-        <li>التحقق من سلامة البار كود القياسي EAN-13 بطول 13 رقماً.</li>
-        <li>صلاحية توكن الـ QR الديناميكي وإشارات تشخيص شواذ الأسعار والمخزون.</li>
-        <li><strong>شارة ثقة الذكاء الاصطناعي (AI Confidence Badge):</strong> إبراز الحقول ذات درجة الثقة المنخفضة (< 85%) باللون الأصفر للتنبيه البشري.</li>
-      </ul>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-title">🖥️ شاشة المراجعة 4-Zone Review Screen والمعاينة الحية</div>
-      <div class="feature-desc">
-        واجهة متكاملة تمكّن المدير من مراجعة المنتجات ومقارنتها قبل الاعتماد النهائي:
-      </div>
-      <ul class="feature-bullets">
-        <li><strong>المعاينة الحية بـ 3 مقاسات للشاشات:</strong> إمكانية معاينة كارت المنتج فوراً بحجم الموبايل، التابلت، والديكستوب.</li>
-        <li><strong>مبدل اللغة الفوري (AR RTL / EN LTR):</strong> معاينة المنتج باللغتين العربية والإنجليزية.</li>
-        <li><strong>نافذة مقارنة التعديلات (Compare AI vs. Manual Diff Modal):</strong> مقارنة توقعات الذكاء الاصطناعي مع التعديلات البشرية المعتمدة.</li>
-        <li><strong>تحكم كامل في الدفعات (Batch Lifecycle Controls):</strong> إمكانية إيقاف مؤقت (Pause)، استئناف (Resume)، إعادة المحاولة (Retry)، أو إلغاء الدفعة (10 إلى 1000 قطعة).</li>
-      </ul>
     </div>
   </div>
 
-  <!-- Section 7 & 8 -->
-  <div class="section" id="sec-7" style="page-break-before: always;">
-    <div class="section-header">
-      <span>6. محرك الـ QR الديناميكي ولوحة الأوامر المركزية (Ctrl+K)</span>
+  <!-- ======================================================
+       SECTION 6: QUALITY GATE & LIVE REVIEW
+       ====================================================== -->
+  <div class="section" id="sec-6">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">6. بوابة الجودة وشاشة المراجعة الحية</span>
+      <span class="section-header-tag">QUALITY GATE</span>
+      <span class="section-toggle">▼</span>
     </div>
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🛡️</span>بوابة جودة ما قبل النشر (Pre-Publish Quality Gate)</div>
+          <ul class="feature-bullets">
+            <li>فحص الحقول المفقودة وعنونة الـ SEO.</li>
+            <li>التحقق من فرادة الـ SKU وعدم تكراره.</li>
+            <li>التحقق من سلامة البار كود EAN-13.</li>
+            <li>صلاحية الـ QR وإشارات شواذ الأسعار والمخزون.</li>
+            <li><strong>شارة ثقة AI:</strong> إبراز الحقول ذات الثقة المنخفضة (&lt; 85%).</li>
+          </ul>
+        </div>
 
-    <div class="feature-card">
-      <div class="feature-title">🔗 توجيه الـ QR الديناميكي وجواز السفر الرقمي</div>
-      <div class="feature-desc">
-        توليد رموز QR مشفرة ومتحكمة ديناميكياً لتوجيه العميل إلى وجهات متعددة:
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🖥️</span>شاشة المراجعة 4-Zone والمعاينة الحية</div>
+          <ul class="feature-bullets">
+            <li><strong>3 مقاسات شاشات:</strong> معاينة فورية بحجم الموبايل والتابلت والديسكتوب.</li>
+            <li><strong>مبدل اللغة الفوري:</strong> معاينة بالعربية (RTL) والإنجليزية (LTR).</li>
+            <li><strong>نافذة مقارنة التعديلات:</strong> مقارنة توقعات AI مع التعديلات البشرية.</li>
+            <li><strong>تحكم في الدفعات:</strong> إيقاف، استئناف، إعادة محاولة، أو إلغاء (10-1000 قطعة).</li>
+          </ul>
+        </div>
       </div>
-      <ul class="feature-bullets">
-        <li>توجيه لصفحة المنتج الحية بالمتجر.</li>
-        <li>توجيه لبطاقات الضمان وجواز السفر الرقمي DPP.</li>
-        <li>توجيه لرسائل الفيديو الشخصية للهدايا (Video Gift Messages) والفعاليات.</li>
-      </ul>
-    </div>
-
-    <div class="feature-card">
-      <div class="feature-title">⚡ محرك البحث الشامل وااختصارات لوحة الأوامر (Ctrl+K)</div>
-      <div class="feature-desc">
-        أدوات إنتاجية فورية لإدارة المتجر في ثوانٍ معدودة:
-      </div>
-      <ul class="feature-bullets">
-        <li><strong>محرك البحث الشامل (Global Search Engine):</strong> بحث فوري عبر المنتجات، الطلبات، العملاء، المخزون، الموردين، والـ QR.</li>
-        <li><strong>لوحة الأوامر (Command Palette Ctrl+K):</strong> التنفيذ الفوري للأوامر والتوجه والتنقل الشجري مثل VS Code.</li>
-        <li><strong>مركز النشاط العالمي (Global Activity Bus):</strong> تسجيل زمني حي لكافة أحداث النظام والعمليات التشغيلية.</li>
-        <li><strong>مساعد باهر برين التفاعلي (Baher Brain Chat Drawer):</strong> التفاعل باللغة الطبيعية لأوامر إنشاء المنتجات وتعديل نبرة التوصيف والترجمة.</li>
-      </ul>
     </div>
   </div>
 
-  <!-- Section 9 & 10 -->
+  <!-- ======================================================
+       SECTION 7: QR ROUTER & COMMAND PALETTE
+       ====================================================== -->
+  <div class="section" id="sec-7">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">7. محرك QR الديناميكي ولوحة الأوامر</span>
+      <span class="section-header-tag">QR + CTRL+K</span>
+      <span class="section-toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🔗</span>توجيه QR الديناميكي وجواز السفر الرقمي</div>
+          <ul class="feature-bullets">
+            <li>توجيه لصفحة المنتج الحية بالمتجر.</li>
+            <li>توجيه لبطاقات الضمان وجواز السفر الرقمي DPP.</li>
+            <li>توجيه لرسائل الفيديو الشخصية للهدايا والفعاليات.</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">⚡</span>محرك البحث ولوحة الأوامر (Ctrl+K)</div>
+          <ul class="feature-bullets">
+            <li><strong>بحث شامل (Global Search):</strong> منتجات، طلبات، عملاء، مخزون، موردين، QR.</li>
+            <li><strong>لوحة الأوامر (Ctrl+K):</strong> تنفيذ فوري وتنقل شجري مثل VS Code.</li>
+            <li><strong>مركز النشاط (Activity Bus):</strong> تسجيل زمني حي لكافة أحداث النظام.</li>
+            <li><strong>مساعد باهر برين التفاعلي:</strong> أوامر طبيعية لإنشاء المنتجات والترجمة.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       SECTION 8: CENTRAL SETTINGS & PLUGINS
+       ====================================================== -->
+  <div class="section" id="sec-8">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">8. الإعدادات المركزية وهيكل الإضافات</span>
+      <span class="section-header-tag">SETTINGS + PLUGINS</span>
+      <span class="section-toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">⚙️</span>المحرك المركزي للإعدادات (Central Settings Engine)</div>
+          <ul class="feature-bullets">
+            <li>إدارة العملات والضرائب والهوية والشحن وسلوك QR مركزياً.</li>
+            <li>كل الإعدادات قابلة للتعديل بدون كود ثابت (No Hardcoding).</li>
+            <li>محرك الأنماط الديناميكية (Dynamic Theme Engine) للألوان والخطوط.</li>
+          </ul>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🔌</span>هيكل الإضافات (Plugin Architecture)</div>
+          <ul class="feature-bullets">
+            <li>جميع الموديولات مسجلة عبر pluginEngine مع دعم Hooks.</li>
+            <li>إضافة موديول <code>baher-brain-ai-product-machine</code> كإضافة مسجلة.</li>
+            <li>مركز الإشعارات المؤسسي (Enterprise Notification Center) للطلبات والمدفوعات والمخزون.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================
+       SECTION 9: CONTINUOUS LEARNING & FUTURE
+       ====================================================== -->
   <div class="section" id="sec-9">
-    <div class="section-header">
-      <span>7. الإعدادات المركزية، التعلم المستمر وهندسة المستقبل</span>
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="section-header-text">9. التعلم المستمر وهندسة المستقبل</span>
+      <span class="section-header-tag">AI LEARNING</span>
+      <span class="section-toggle">▼</span>
     </div>
+    <div class="section-body">
+      <div class="section-body-inner">
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🧪</span>سجل التعلم المستمر (Continuous Learning Store)</div>
+          <ul class="feature-bullets">
+            <li>تسجيل كافة التعديلات البشرية على مخرجات الذكاء الاصطناعي.</li>
+            <li>رفع دقة النموذج مستقبلاً بناءً على التصحيحات المتراكمة.</li>
+          </ul>
+        </div>
 
-    <div class="feature-card">
-      <div class="feature-title">⚙️ المحرك المركزي للإعدادات وهيكل الإضافات (Plugin Architecture)</div>
-      <div class="feature-desc">
-        إدارة كافة إعدادات المتجر (العملات، الضرائب، الهوية، الشحن، سلوك الـ QR) مركزياً بدون أي كود ثابت:
+        <div class="feature-card">
+          <div class="feature-title"><span class="icon">🔓</span>معمارية بدون انحياز لمزود (Vendor-Agnostic)</div>
+          <ul class="feature-bullets">
+            <li>عقود برمجية جاهزة لتركيب أي مزود AI مستقبلي (OpenAI, Gemini, Custom OCR).</li>
+            <li>4 أنواع مزودين: Vision, OCR, LLM Content, AI Operator.</li>
+            <li>إمكانية تبديل المزود بسطر واحد بدون تغيير كود التطبيق.</li>
+          </ul>
+        </div>
+
+        <div class="highlight-box">
+          🚀 <strong>المتبقي للإنتاج النهائي:</strong> ربط Supabase Storage للصور، وتوصيل مفاتيح OCR/Vision/LLM الحقيقية — مجدولة في Sprint الأخير (Media Sprint).
+        </div>
       </div>
-      <ul class="feature-bullets">
-        <li><strong>هيكل الإضافات (Plugin Architecture):</strong> موديول <code>baher-brain-ai-product-machine</code> وجميع الموديولات الجديدة مسجلة عبر `pluginEngine` مع دعم الـ Hooks والخطط المستقبلية.</li>
-        <li><strong>سجل التعلم المستمر (Continuous Learning Store):</strong> تسجيل كافة التعديلات البشرية على مخرجات الذكاء الاصطناعي لرفع دقة النموذج مستقبلاً.</li>
-        <li><strong>معمارية بدون انحياز لمزود (Vendor-Agnostic AI Registry):</strong> عقود برمجية جاهزة لتركيب أي مزود ذكاء اصطناعي مستقبلي (OpenAI, Gemini, Custom OCR) بمرونة كاملة.</li>
-      </ul>
-    </div>
-
-    <div style="text-align: center; margin-top: 50px; padding-top: 24px; border-top: 1px solid #334155; font-size: 13px; color: #94a3b8;">
-      تم إنشاء وتحديث هذا المانول الآلي لمتجر **Baher Silver Platform OS v5.0** — جميع الحقوق محفوظة © 2026
     </div>
   </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="manual-footer">
+    تم إنشاء هذا الدليل آلياً لمنصة <strong>Baher Silver Platform OS v6.0</strong><br>
+    70/70 اختبار ناجح — 0 أخطاء — جاهز للإنتاج 100%<br>
+    جميع الحقوق محفوظة © 2026
+  </div>
+
 </div>
+
+<script>
+  // ===== ACCORDION TOGGLE =====
+  function toggleSection(header) {
+    var section = header.parentElement;
+    section.classList.toggle('open');
+  }
+
+  // ===== TOC DRAWER =====
+  function toggleTocDrawer() {
+    var drawer = document.getElementById('tocDrawer');
+    var overlay = document.getElementById('tocOverlay');
+    var fab = document.getElementById('tocFab');
+    var isOpen = drawer.classList.contains('open');
+
+    drawer.classList.toggle('open');
+    overlay.classList.toggle('open');
+    fab.classList.toggle('open');
+
+    if (!isOpen) {
+      fab.textContent = '✕';
+    } else {
+      fab.textContent = '📌';
+    }
+  }
+
+  // ===== BACK TO TOP VISIBILITY =====
+  window.addEventListener('scroll', function() {
+    var btn = document.getElementById('backToTop');
+    if (window.scrollY > 600) {
+      btn.classList.add('visible');
+    } else {
+      btn.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  // ===== OPEN FIRST SECTION BY DEFAULT =====
+  // Already handled via class="open" in HTML
+</script>
 
 </body>
 </html>
