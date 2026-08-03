@@ -2,16 +2,24 @@
 
 import * as React from 'react';
 import { Activity, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
-import type { Product } from '@/types/catalog';
+import type { Product, HealthScoreResult } from '@/types/catalog';
 import { calculateProductHealthScore } from '@/lib/product-health-score';
 
 interface ProductHealthScoreCardProps {
-  product: Product;
+  product?: Product;
+  healthScore?: HealthScoreResult;
 }
 
-export function ProductHealthScoreCard({ product }: ProductHealthScoreCardProps) {
+export function ProductHealthScoreCard({ product, healthScore }: ProductHealthScoreCardProps) {
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const health = calculateProductHealthScore(product);
+  const health = healthScore || (product ? calculateProductHealthScore(product) : {
+    overallScore: 100,
+    grade: 'A+' as const,
+    breakdown: { seo: 15, pricing: 20, description: 20, specifications: 15, variants: 10, completeness: 10, media: 10 },
+    metrics: [],
+    recommendations: [],
+    missingRecommendations: [],
+  });
 
   const gradeColorClass =
     health.grade === 'A+' || health.grade === 'A'

@@ -19,7 +19,8 @@ import {
   RotateCcw,
   Archive,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import type { Product } from '@/types/catalog';
 import { softDeleteProduct, restoreProductFromRecycleBin, filterActiveProducts, filterSoftDeletedProducts } from '@/lib/recycle-bin';
@@ -195,6 +196,11 @@ function ProductsContent() {
           <button className="bg-white/5 text-white border border-white/10 px-4 py-2.5 rounded-xl text-xs font-medium uppercase tracking-wider flex items-center gap-2 hover:bg-white/10 transition-colors">
             <Download className="w-4 h-4" /> Export CSV
           </button>
+          <Link href="/admin/catalog/ai-machine">
+            <button className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-amber-500/30 transition-all shadow-md">
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> AI Product Machine
+            </button>
+          </Link>
           <Link href="/admin/catalog/products/new">
             <button className="bg-amber-500 text-black px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-amber-400 transition-colors shadow-lg shadow-amber-500/20">
               <Plus className="w-4 h-4" /> Create Product

@@ -8,7 +8,7 @@ export interface AIChatMessage {
   text_en: string;
   timestamp: string;
   executedAction?: {
-    actionType: 'navigate' | 'update_setting' | 'calculate_cost' | 'show_report';
+    actionType: 'navigate' | 'update_setting' | 'calculate_cost' | 'show_report' | 'ai_product_machine';
     payload?: Record<string, unknown>;
   };
 }
@@ -16,8 +16,31 @@ export interface AIChatMessage {
 export class BaherBrainAiService {
   static processUserCommand(prompt: string, _lang?: 'ar' | 'en'): AIChatMessage {
     const q = prompt.trim().toLowerCase();
+    const isAr = _lang === 'ar' || !_lang;
 
-    // 1. Action: Navigation
+    // 1. AI Product Machine Creation Command
+    if (q.includes('أنشئ منتجات') || q.includes('صور') || q.includes('create products') || q.includes('images')) {
+      globalActivityBus.logEvent({
+        domain: 'ai_brain',
+        actor_name: 'Baher Brain AI Machine',
+        actor_role: 'AI Assistant',
+        title_ar: isAr ? 'فتح آلة إنشاء المنتجات' : 'Opened AI Product Machine',
+        title_en: 'Opened AI Product Machine',
+        description_ar: `أمر المستخدم: "${prompt}"`,
+        description_en: `User command: "${prompt}"`,
+        severity: 'info',
+      });
+      return {
+        id: `ai-msg-${Date.now()}`,
+        sender: 'assistant',
+        text_ar: 'تم فتح آلة Baher Brain AI Product Machine لبدء معالجة واستخراج بيانات المنتجات تلقائياً من الصور والملفات.',
+        text_en: 'Opened Baher Brain AI Product Machine to process images and auto-generate catalog data.',
+        timestamp: new Date().toISOString(),
+        executedAction: { actionType: 'ai_product_machine', payload: { url: '/admin/catalog/ai-machine' } },
+      };
+    }
+
+    // 2. Action: Navigation
     if (q.includes('طلب') || q.includes('order')) {
       globalActivityBus.logEvent({
         domain: 'ai_brain',
@@ -40,7 +63,7 @@ export class BaherBrainAiService {
       };
     }
 
-    // 2. Action: Currency / Setting Update
+    // 3. Action: Currency / Setting Update
     if (q.includes('عملة') || q.includes('currency') || q.includes('egp') || q.includes('usd')) {
       const targetCurrency = q.includes('usd') ? 'USD' : 'EGP';
       settingsEngine.updateSettings({ general: { ...settingsEngine.getSettings().general, primaryCurrency: targetCurrency } });
@@ -55,15 +78,15 @@ export class BaherBrainAiService {
       };
     }
 
-    // 3. Action: Product Creation / Catalog
+    // 4. Action: Product Creation / Catalog
     if (q.includes('منتج') || q.includes('product') || q.includes('خاتم') || q.includes('ring')) {
       return {
         id: `ai-msg-${Date.now()}`,
         sender: 'assistant',
-        text_ar: 'أهلاً بك! يمكنك إنشاء منتج جديد مباشرة عبر المحرر الشامل أو فتح قائمة المنتجات.',
-        text_en: 'Welcome! You can create a new product in the Enterprise Editor.',
+        text_ar: 'أهلاً بك! يمكنك استخدام آلة Baher Brain AI Product Machine لإنشاء المنتجات آلياً بالذكاء الاصطناعي.',
+        text_en: 'Welcome! You can use Baher Brain AI Product Machine to generate products automatically.',
         timestamp: new Date().toISOString(),
-        executedAction: { actionType: 'navigate', payload: { url: '/admin/catalog/products/new' } },
+        executedAction: { actionType: 'ai_product_machine', payload: { url: '/admin/catalog/ai-machine' } },
       };
     }
 

@@ -30,6 +30,12 @@ import { enterpriseNotificationStore } from '../lib/services/enterpriseNotificat
 import { settingsEngine } from '../lib/services/settingsEngine';
 import { themeEngine, DEFAULT_THEME } from '../lib/services/themeEngine';
 import { BaherBrainAiService } from '../lib/services/baherBrainAi';
+import { aiProductIntakeQueue } from '../lib/services/aiProductIntakeQueue';
+import { AIProductAnalysisPipelineService } from '../lib/services/aiProductAnalysisPipeline';
+import { AIProductBuilderService } from '../lib/services/aiProductBuilderService';
+import { AIPricingAssistantService } from '../lib/services/aiPricingAssistantService';
+import { aiContinuousLearningStore } from '../lib/services/aiContinuousLearningStore';
+import { getAiProductMachinePluginStatus } from '../lib/plugins/aiProductMachinePlugin';
 
 
 let passedTests = 0;
@@ -703,6 +709,71 @@ async function runSuite() {
     assert.ok(ROUTER_DESTINATION_MAP.events);
     assert.ok(ROUTER_DESTINATION_MAP.video_messages);
     assert.ok(ROUTER_DESTINATION_MAP.gift_pages);
+  });
+
+  console.log('\n--- 15. BAHER BRAIN AI PRODUCT MACHINE CAPABILITIES TESTS ---');
+  test('AI Product Machine Plugin Registration & Status', () => {
+    const status = getAiProductMachinePluginStatus();
+    assert.ok(status);
+    assert.equal(status.id, 'baher-brain-ai-product-machine');
+    assert.equal(status.enabled, true);
+  });
+
+  test('AI Product Intake Queue & Batch Processing Lifecycle', () => {
+    const job = aiProductIntakeQueue.createIntakeJob('Batch Test 500', [
+      { name: 'ring.jpg', size: 1000, type: 'image' },
+      { name: 'specs.csv', size: 500, type: 'csv' },
+    ]);
+
+    assert.ok(job.id.startsWith('job-'));
+    assert.equal(job.batchSize, 2);
+    assert.equal(job.status, 'draft_queue');
+  });
+
+  test('AI Product Analysis Pipeline Image & OCR Contracts', () => {
+    const imgAnalysis = AIProductAnalysisPipelineService.analyzeImagePlaceholder('earring-front.jpg');
+    assert.ok(imgAnalysis.productType.includes('Earrings'));
+    assert.equal(imgAnalysis.estimatedWeightGram, 14.5);
+
+    const docAnalysis = AIProductAnalysisPipelineService.analyzeDocumentOcrPlaceholder('manifest.pdf');
+    assert.ok(docAnalysis.extractedSku?.startsWith('BS-AI-'));
+  });
+
+  test('AI Product Builder Synthesis & Health Score Rating', () => {
+    const imgAnalysis = AIProductAnalysisPipelineService.analyzeImagePlaceholder('ring.jpg');
+    const docAnalysis = AIProductAnalysisPipelineService.analyzeDocumentOcrPlaceholder('specs.csv');
+    const draft = AIProductBuilderService.generateProductDraft('job-test', imgAnalysis, docAnalysis);
+
+    assert.ok(draft.name_ar);
+    assert.ok(draft.name_en);
+    assert.ok(draft.healthScore.overallScore >= 80);
+  });
+
+  test('AI Pricing Assistant Formula Costing & Fallback Estimation', () => {
+    const pricingCalculated = AIPricingAssistantService.calculateFormulaPrice(14.5, 32.5);
+    assert.equal(pricingCalculated.isWeightEstimated, false);
+    assert.ok(pricingCalculated.calculatedSellingPrice > 500);
+
+    const pricingEstimated = AIPricingAssistantService.calculateFormulaPrice(undefined, 32.5);
+    assert.equal(pricingEstimated.isWeightEstimated, true);
+    assert.equal(pricingEstimated.silverGramWeight, 12.0);
+  });
+
+  test('Continuous Learning Architecture Feedback Logger', () => {
+    const log = aiContinuousLearningStore.recordHumanCorrection(
+      'p-101',
+      { name_ar: 'اسم قديم' },
+      { name_ar: 'اسم جديد معدل' }
+    );
+
+    assert.ok(log.id.startsWith('train-log-'));
+    assert.ok(log.editedFields.includes('name_ar'));
+  });
+
+  test('Conversational AI Product Creation Intent Trigger', () => {
+    const res = BaherBrainAiService.processUserCommand('أنشئ منتجات من هذه الصور');
+    assert.equal(res.executedAction?.actionType, 'ai_product_machine');
+    assert.equal(res.executedAction?.payload?.url, '/admin/catalog/ai-machine');
   });
 
 
