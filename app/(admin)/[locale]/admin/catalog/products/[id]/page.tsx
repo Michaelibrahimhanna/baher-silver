@@ -2,960 +2,809 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { 
   ArrowLeft, 
   Sparkles, 
   Save, 
-  Eye, 
-  Upload, 
-  Trash2, 
+  Printer, 
+  Copy, 
   RefreshCw, 
-  Smartphone, 
-  Tablet, 
-  Monitor, 
-  DollarSign, 
-  Scale, 
-  Boxes, 
   Search, 
   Image as ImageIcon,
-  FileText
+  Tag,
+  Sliders,
+  Layers,
+  Calculator,
+  QrCode,
+  Network,
+  History,
+  Heart,
+  Lock,
+  CheckCircle2,
+  Eye,
+  Trash2,
+  AlertCircle
 } from 'lucide-react';
-import { products } from '@/lib/products';
-import type { Product, SilverPurity, GenderTarget } from '@/types/catalog';
+import type { Product, ProductStatus, QRDestinationType } from '@/types/catalog';
+import { MASTER_PURITY_LEVELS, MASTER_STONE_TYPES, MASTER_STONE_COLORS, MASTER_FINISHES, MASTER_SUPPLIERS, MASTER_WAREHOUSES, CUSTOM_FIELD_DEFINITIONS, PRODUCT_TEMPLATES } from '@/lib/master-data';
+import { generateSKU, generateEAN13Barcode } from '@/lib/catalog-identifiers';
+import { duplicateProduct } from '@/lib/catalog-duplication';
+import { createProductVersionSnapshot } from '@/lib/product-versioning';
+import { createInitialWorkflow } from '@/lib/approval-workflow';
+import { softDeleteProduct } from '@/lib/recycle-bin';
 
-function getInitialFormData(id: string) {
-  const existing = products.find(p => p.id === id || p.slug === id);
-  if (existing) {
-    return {
-      id: existing.id,
-      sku: `BS-SIL-${existing.id.toUpperCase()}`,
-      barcode: `6291000${existing.id}`,
-      qr_code: `QR-BS-${existing.id}`,
-      slug: existing.slug,
-      name_en: existing.name.en,
-      name_ar: existing.name.ar,
-      short_description_en: 'Handcrafted 925 sterling silver jewelry piece for luxury daily wear.',
-      short_description_ar: 'قطعة مجوهرات فاخرة مصنوعة يدوياً من الفضة عيار 925 للاستخدام اليومي الراقي.',
-      description_en: existing.details?.description?.en || 'A timeless classic, meticulously handcrafted from 925 sterling silver.',
-      description_ar: existing.details?.description?.ar || 'خاتم كلاسيكي خالد، مصنوع يدوياً بعناية من الفضة عيار 925.',
-      category_name: existing.category,
-      subcategory_id: 'sub-1',
-      collection_name: existing.isLimited ? 'Luxe Limited' : 'Heritage Collection',
-      material_name: '925 Sterling Silver',
-      gender: 'women' as GenderTarget,
-      tags: ['silver925', 'luxury', 'handcrafted', 'zircon'],
-      silver_purity: '925' as SilverPurity,
-      silver_weight_g: existing.category === 'rings' ? 6.5 : 14.2,
-      stone_weight_g: 1.2,
-      total_weight_g: existing.category === 'rings' ? 7.7 : 15.4,
-      manufacturing_cost: 25,
-      silver_cost: 45,
-      packaging_cost: 10,
-      other_costs: 5,
-      purchase_cost: 85,
-      selling_price: existing.price,
-      sale_price: existing.price > 100 ? existing.price * 0.9 : undefined,
-      discount_percent: existing.price > 100 ? 10 : 0,
-      current_stock: existing.stockStatus === 'OUT_OF_STOCK' ? 0 : 25,
-      min_stock: 5,
-      max_stock: 100,
-      warehouse: 'Cairo Main Vault',
-      primary_image: existing.image,
-      media_urls: existing.gallery || [existing.image],
-      three_sixty_urls: ['https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800'],
-      video_url: '',
-      reels_url: 'https://instagram.com/reel/example',
-      youtube_url: '',
-      meta_title: `${existing.name.en} | Baher Silver 925`,
-      meta_description: existing.details?.description?.en || 'Buy authentic 925 silver jewelry at Baher Silver.',
-      keywords: ['silver ring', '925 silver', 'baher silver', 'egypt silver'],
-      status: 'published' as Product['status'],
-      visibility: 'public' as Product['visibility'],
-      publishing_status: 'immediate' as Product['publishing_status'],
-      featured: existing.isBestSeller || false,
-      best_seller: existing.isBestSeller || false,
-      new_arrival: existing.isNew || false,
-      limited_edition: existing.isLimited || false,
-      is_handmade: existing.isHandmade || true,
-    };
-  }
-
-  return {
-    id: `p-new`,
-    sku: `BS-SIL-777`,
-    barcode: `6291000777`,
-    qr_code: `QR-BS-NEW`,
-    slug: 'new-silver-jewelry',
-    name_en: '',
-    name_ar: '',
-    short_description_en: '',
-    short_description_ar: '',
-    description_en: '',
-    description_ar: '',
-    category_name: 'rings',
-    subcategory_id: '',
-    collection_name: 'Heritage Collection',
-    material_name: '925 Sterling Silver',
-    gender: 'women' as GenderTarget,
-    tags: ['silver925', 'new'],
-    silver_purity: '925' as SilverPurity,
-    silver_weight_g: 8.0,
-    stone_weight_g: 1.0,
-    total_weight_g: 9.0,
-    manufacturing_cost: 30,
-    silver_cost: 50,
-    packaging_cost: 10,
-    other_costs: 5,
-    purchase_cost: 95,
-    selling_price: 150,
-    sale_price: 135,
-    discount_percent: 10,
-    current_stock: 20,
-    min_stock: 5,
-    max_stock: 100,
-    warehouse: 'Cairo Main Vault',
-    primary_image: 'https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800',
-    media_urls: ['https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800'],
-    three_sixty_urls: [],
-    video_url: '',
-    reels_url: '',
-    youtube_url: '',
-    meta_title: '',
-    meta_description: '',
-    keywords: ['silver', 'jewelry'],
-    status: 'draft' as Product['status'],
-    visibility: 'public' as Product['visibility'],
-    publishing_status: 'immediate' as Product['publishing_status'],
-    featured: false,
-    best_seller: false,
-    new_arrival: true,
-    limited_edition: false,
-    is_handmade: true,
-  };
-}
+// Enterprise & Modular Components
+import { CustomFieldsRenderer } from '@/components/admin/catalog/CustomFieldsRenderer';
+import { ProductVariantsMatrix } from '@/components/admin/catalog/ProductVariantsMatrix';
+import { FormulaPricingCalculator } from '@/components/admin/catalog/FormulaPricingCalculator';
+import { DualQRCodePreview } from '@/components/admin/catalog/DualQRCodePreview';
+import { PrintableLabelsModal } from '@/components/admin/catalog/PrintableLabelsModal';
+import { ProductRelationsManager } from '@/components/admin/catalog/ProductRelationsManager';
+import { ProductActivityTimeline } from '@/components/admin/catalog/ProductActivityTimeline';
+import { BaherBrainDrawer } from '@/components/admin/catalog/BaherBrainDrawer';
+import { BaherMemoriesPanel } from '@/components/admin/catalog/BaherMemoriesPanel';
+import { MediaPlaceholderTab } from '@/components/admin/catalog/MediaPlaceholderTab';
+import { LiveProductPreviewModal } from '@/components/admin/catalog/LiveProductPreviewModal';
+import { ProductVersionHistoryModal } from '@/components/admin/catalog/ProductVersionHistoryModal';
+import { ProductHealthScoreCard } from '@/components/admin/catalog/ProductHealthScoreCard';
 
 export default function EnterpriseProductEditor() {
   const params = useParams();
-  const router = useRouter();
   const id = params?.id as string;
   const isNew = id === 'new';
 
-  const [formData, setFormData] = React.useState(() => getInitialFormData(id));
-  const [activeTab, setActiveTab] = React.useState<'general' | 'media' | 'silver' | 'pricing' | 'inventory' | 'seo' | 'preview'>('general');
-  const [previewViewport, setPreviewViewport] = React.useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [isAIAnalyzing, setIsAIAnalyzing] = React.useState(false);
-  const [isGeneratingContent, setIsGeneratingContent] = React.useState(false);
-  const [aiOutput, setAiOutput] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState<
+    'general' | 'master_attrs' | 'variants' | 'pricing' | 'relations' | 'identifiers' | 'seo' | 'timeline' | 'media' | 'memories'
+  >('general');
 
-  // Auto Margin Calculation
-  const calculatedPurchaseCost = (formData.manufacturing_cost || 0) + (formData.silver_cost || 0) + (formData.packaging_cost || 0) + (formData.other_costs || 0);
-  const calculatedProfit = formData.selling_price - calculatedPurchaseCost;
-  const calculatedProfitMargin = formData.selling_price > 0 ? ((calculatedProfit / formData.selling_price) * 100).toFixed(1) : '0';
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
 
-  const handleChange = (field: string, value: unknown) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // Modals & Drawers State
+  const [isLabelsModalOpen, setIsLabelsModalOpen] = React.useState(false);
+  const [isAiDrawerOpen, setIsAiDrawerOpen] = React.useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = React.useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = React.useState(false);
+
+  // Autosave & Recovery State
+  const [hasUnsavedDraft, setHasUnsavedDraft] = React.useState(false);
+  const [recoveredDraftTime, setRecoveredDraftTime] = React.useState<string | null>(null);
+  const [lastAutosavedAt, setLastAutosavedAt] = React.useState<string | null>(null);
+
+  // Initial Product Form State
+  const [formData, setFormData] = React.useState<Product>({
+    id: isNew ? 'prod-new-item' : id,
+    template_id: 'tmpl-ring',
+    sku: generateSKU('ring', 'SIL'),
+    barcode: generateEAN13Barcode(),
+    internal_qr: 'QR-INT-BS-RING-101',
+    customer_qr: 'QR-CUST-silver-ring-101',
+    qr_destination_type: 'product',
+    slug: 'silver-ring-heritage-101',
+    name_en: 'Royal Heritage Silver Ring',
+    name_ar: 'خاتم فضة التراث الملكي عيار 925',
+    short_description_en: 'Authentic 925 Sterling Silver Ring featuring Khan El-Khalili handcrafted filigree pattern.',
+    short_description_ar: 'خاتم فضة إسترليني عيار 925 مرصع بزركون نقي مصنع يدوياً بأسلوب الفنون التراثية الشرقية.',
+    description_en: 'Detailed handcrafted ring made from solid 925 silver.',
+    description_ar: 'قطعة فضية فاخرة مصنوعة من أنقى درجات الفضة عيار 925.',
+    internal_notes: 'ملاحظة خاصة بالطاقم: متوفر بالخزينة الرئيسية في درج الخواتم رقم A-12.',
+    category_name: 'rings',
+    collection_name: 'Heritage Collection',
+    material_name: '925 Sterling Silver',
+    purity_level_id: 'pur-925',
+    stone_type_id: 'st-zircon',
+    stone_color_id: 'sc-clear',
+    finish_id: 'fin-rhodium',
+    supplier_id: 'sup-cairo-craft',
+    warehouse_id: 'wh-cairo-main',
+    gender: 'women',
+    tags: ['silver925', 'heritage', 'luxury', 'handcrafted'],
+    silver_purity: '925',
+    silver_weight_g: 7.5,
+    stone_weight_g: 1.0,
+    total_weight_g: 8.5,
+    labor_cost: 20,
+    stone_cost: 15,
+    manufacturing_cost: 25,
+    silver_cost: 45,
+    packaging_cost: 10,
+    overhead_cost: 5,
+    purchase_cost: 85,
+    selling_price: 180,
+    sale_price: 165,
+    discount_percent: 8,
+    profit_margin_percent: 45,
+    current_stock: 15,
+    min_stock: 3,
+    max_stock: 50,
+    warehouse: 'Cairo Central Vault',
+    primary_image: 'https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800',
+    media_urls: [
+      'https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800',
+      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800'
+    ],
+    meta_title: 'خاتم فضة التراث الملكي عيار 925 | باهر سيلفر',
+    meta_description: 'تسوق خاتم فضة عيار 925 أصلي مصنع يدوياً ضمان مدى الحياة من باهر سيلفر.',
+    keywords: ['خاتم فضة 925', 'فضة حريمي', 'مجوهرات مصرية'],
+    status: 'published',
+    visibility: 'public',
+    publishing_status: 'immediate',
+    featured: true,
+    best_seller: true,
+    new_arrival: true,
+    limited_edition: false,
+    is_handmade: true,
+    version_history: [],
+    workflow: createInitialWorkflow(),
+    custom_fields: [
+      { field_id: 'cf-warranty', key: 'warranty_period', value: '1 Year Lifetime Silver Guarantee' },
+      { field_id: 'cf-origin', key: 'origin_country', value: 'Egypt (Handmade)' }
+    ],
+    specifications: [
+      { id: 'sp-1', key_ar: 'مقاس الخاتم', key_en: 'Ring Size', value_ar: 'US 7 (EU 54)', value_en: 'US 7 (EU 54)' },
+      { id: 'sp-2', key_ar: 'نوع التثبيت', key_en: 'Setting', value_ar: 'Prong Setting (تركيب سنون)', value_en: 'Prong Setting' }
+    ],
+    variants: [],
+    relations: [],
+    activity_logs: [
+      {
+        id: 'log-1',
+        product_id: isNew ? 'new' : id,
+        actor_name: 'م. باهر إبراهيم',
+        actor_role: 'Chief Administrator',
+        action_type: 'create',
+        description_ar: 'تم إنشاء سجل المنتج لأول مرة وتوليد الـ SKUs والـ Barcodes الحصرية.',
+        description_en: 'Created master product record and generated identifiers.',
+        created_at: new Date().toISOString(),
+      }
+    ]
+  });
+
+  const draftStorageKey = React.useMemo(() => `baher_silver_product_draft_${formData.id}`, [formData.id]);
+
+  // Check for Unsaved Autosaved Local Draft on Mount
+  React.useEffect(() => {
+    try {
+      const savedDraftJson = localStorage.getItem(draftStorageKey);
+      if (savedDraftJson) {
+        const parsed = JSON.parse(savedDraftJson);
+        if (parsed.timestamp && parsed.data) {
+          const formattedTime = new Date(parsed.timestamp).toLocaleTimeString('ar-EG');
+          setTimeout(() => {
+            setHasUnsavedDraft(true);
+            setRecoveredDraftTime(formattedTime);
+          }, 0);
+        }
+      }
+    } catch {
+      // Ignored
+    }
+  }, [draftStorageKey]);
+
+  // Periodic Autosave Every 5 Seconds
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      try {
+        const timestamp = new Date().toISOString();
+        localStorage.setItem(draftStorageKey, JSON.stringify({ timestamp, data: formData }));
+        setLastAutosavedAt(new Date(timestamp).toLocaleTimeString('ar-EG'));
+      } catch {
+        // Ignored
+      }
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [draftStorageKey, formData]);
+
+  // Restore Recovered Local Draft
+  const handleRestoreLocalDraft = () => {
+    try {
+      const savedDraftJson = localStorage.getItem(draftStorageKey);
+      if (savedDraftJson) {
+        const parsed = JSON.parse(savedDraftJson);
+        if (parsed.data) {
+          setFormData(parsed.data);
+          setHasUnsavedDraft(false);
+          setSaveMessage('تم استعادة المسودة غير المحفوظة بنجاح!');
+          setTimeout(() => setSaveMessage(null), 3000);
+        }
+      }
+    } catch {
+      // Ignored
+    }
   };
 
-  const handleAutoSKU = () => {
-    const randomSKU = `BS-SIL-888`;
-    handleChange('sku', randomSKU);
-    handleChange('barcode', `6291000888`);
+  // Discard Local Draft
+  const handleDiscardLocalDraft = () => {
+    try {
+      localStorage.removeItem(draftStorageKey);
+      setHasUnsavedDraft(false);
+    } catch {
+      // Ignored
+    }
   };
 
-  // Baher Brain Content AI Generation
-  const handleGenerateAIContent = () => {
-    setIsGeneratingContent(true);
+  // Update Field Handler
+  const handleUpdateField = (field: keyof Product, val: unknown) => {
+    setFormData(prev => ({ ...prev, [field]: val }));
+  };
+
+  // Duplicate Product Action
+  const handleDuplicate = () => {
+    const cloned = duplicateProduct(formData);
+    setFormData(cloned);
+    setSaveMessage('تم تكرار المنتج بنجاح مع توليد SKU وباركود جديد دون تكرار!');
+    setTimeout(() => setSaveMessage(null), 4000);
+  };
+
+  // Soft Delete Action
+  const handleSoftDeleteCurrent = () => {
+    if (confirm(`هل أنت تأكد من نقل هذا المنتج إلى سلة المحذوفات؟`)) {
+      const deleted = softDeleteProduct(formData);
+      setFormData(deleted);
+      setSaveMessage('تم نقل المنتج إلى سلة المحذوفات (Soft Deleted).');
+      setTimeout(() => setSaveMessage(null), 4000);
+    }
+  };
+
+  // Save Product Handler & Version Snapshot Creation
+  const handleSave = () => {
+    setIsSaving(true);
+
+    const versionSnapshot = createProductVersionSnapshot(
+      formData,
+      'Administrator',
+      `Save snapshot at ${new Date().toLocaleTimeString('ar-EG')}`
+    );
+
+    const updatedVersions = [versionSnapshot, ...(formData.version_history || [])];
+
     setTimeout(() => {
+      setIsSaving(false);
       setFormData(prev => ({
         ...prev,
-        name_en: prev.name_en || 'Royal Zircon Solitaire 925 Ring',
-        name_ar: prev.name_ar || 'خاتم زركون سولتير ملكي فضة 925',
-        short_description_en: 'Exquisite 925 silver ring featuring AAA zircon solitaire setting.',
-        short_description_ar: 'خاتم فضة 925 فاخر مرصع بالحجر الرئيسي زركون الملكي.',
-        description_en: 'Crafted from solid 925 sterling silver, this ring radiates timeless elegance. Anti-tarnish rhodium finish ensures lifetime brilliance.',
-        description_ar: 'مصنوع من الفضة الإسترليني النظيفة عيار 925، مصقول بعناية بطلاء الروديوم لمنع التآكل والبريق.',
-        meta_title: 'Royal Zircon Solitaire 925 Ring | Baher Silver',
-        meta_description: 'Buy Royal Zircon Solitaire 925 Ring in Egypt with 100% authenticity guarantee.',
-        keywords: ['zircon ring', '925 silver', 'egypt jewelry', 'baher solitaire'],
-        tags: ['zircon', 'solitaire', 'silver925', 'royal'],
+        version_history: updatedVersions,
+        updated_at: new Date().toISOString(),
       }));
-      setAiOutput(`✨ AI Suggestions Generated:
-• Category: Rings
-• Selling Points: Lifetime Anti-Tarnish, AAA Zircon Crystal
-• Instagram Caption: "Elevate your daily elegance with our Royal Solitaire 925 Silver Ring. 💍 #BaherSilver"
-• Facebook Caption: "Discover 925 Sterling Silver perfection. Order now with free insured delivery."`);
-      setIsGeneratingContent(false);
-    }, 1200);
-  };
+      setSaveMessage(`تم حفظ كافة التغييرات وإنشاء النسخة الإصدارية #${versionSnapshot.version_number} بنجاح!`);
 
-  // Baher Brain Image Vision Analysis
-  const handleAIImageVision = () => {
-    setIsAIAnalyzing(true);
-    setTimeout(() => {
-      setFormData(prev => ({
-        ...prev,
-        category_name: 'rings',
-        silver_purity: '925' as SilverPurity,
-        silver_weight_g: 7.2,
-        stone_weight_g: 1.1,
-        total_weight_g: 8.3,
-        selling_price: 160,
-        tags: ['zircon_crystal', '925_sterling', 'mirror_finish'],
-      }));
-      alert('🤖 AI Vision Analysis Complete!\n\nDetected:\n- Color: Sterling Silver\n- Material: 925 Sterling Silver\n- Stone: AAA Zircon\n- Estimated Weight: 8.3g\n- Suggested Price: $160');
-      setIsAIAnalyzing(false);
-    }, 1500);
-  };
+      // Clear local dirty draft on explicit save
+      try {
+        localStorage.removeItem(draftStorageKey);
+      } catch {
+        // Ignored
+      }
 
-  const handleSave = (status: 'published' | 'draft') => {
-    setFormData(prev => ({ ...prev, status }));
-    alert(`Product saved successfully as ${status.toUpperCase()}!`);
-    router.push('/admin/catalog/products');
+      setTimeout(() => setSaveMessage(null), 3500);
+    }, 600);
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 pb-32">
-      
-      {/* Action Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div className="flex items-center gap-4">
-          <Link href="/admin/catalog/products" className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 text-white transition-colors">
-            <ArrowLeft className="w-5 h-5" />
+    <div className="min-h-screen space-y-6 pb-20 text-right">
+      {/* Top Header Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-white/10 pb-5">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/admin/catalog/products"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/40 text-slate-400 hover:bg-white/10 hover:text-white transition-all"
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-primary font-bold">PRODUCT EDITOR STUDIO</span>
-            <h1 className="text-2xl md:text-3xl font-serif text-white tracking-tight mt-0.5">
-              {isNew ? 'Create Enterprise Product' : `Editing: ${formData.name_en}`}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                {isNew ? 'إنشاء منتج فضة جديد (New Product)' : `محرر المنتج: ${formData.name_ar}`}
+              </h1>
+              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                formData.status === 'published' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+              }`}>
+                {formData.status.toUpperCase()}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 font-mono mt-0.5">
+              SKU: <span className="text-amber-400">{formData.sku}</span> | Barcode: <span className="text-cyan-400">{formData.barcode}</span>
+              {lastAutosavedAt && (
+                <span className="text-[10px] text-emerald-400 mr-2">
+                  (Autosaved {lastAutosavedAt})
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button 
-            type="button" 
-            onClick={() => setActiveTab('preview')} 
-            className="bg-white/5 text-white border border-white/10 px-4 py-2.5 rounded-xs text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-white/10 transition-colors"
+        {/* Action Header Controls */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPreviewModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-3.5 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all"
           >
-            <Eye className="w-4 h-4 text-primary" /> Live Preview
+            <Eye className="h-4 w-4 text-cyan-400" />
+            Live Preview
           </button>
-          <button 
-            type="button" 
-            onClick={() => handleSave('draft')} 
-            className="bg-white/10 text-white border border-white/20 px-4 py-2.5 rounded-xs text-xs font-bold uppercase tracking-wider hover:bg-white/20 transition-colors"
+
+          <button
+            type="button"
+            onClick={() => setIsVersionModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-all"
           >
-            Save Draft
+            <History className="h-4 w-4 text-amber-400" />
+            إصدارات ({formData.version_history?.length || 0})
           </button>
-          <button 
-            type="button" 
-            onClick={() => handleSave('published')} 
-            className="bg-primary text-black px-6 py-2.5 rounded-xs text-xs font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-white transition-colors shadow-lg"
+
+          <button
+            type="button"
+            onClick={() => setIsAiDrawerOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-all"
           >
-            <Save className="w-4 h-4" /> Publish Product
+            <Sparkles className="h-4 w-4 text-amber-400" />
+            Baher Brain AI
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDuplicate}
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-all"
+          >
+            <Copy className="h-4 w-4 text-purple-400" />
+            تكرار
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsLabelsModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/40 px-3.5 py-2 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-all"
+          >
+            <Printer className="h-4 w-4 text-cyan-400" />
+            ملصق
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSoftDeleteCurrent}
+            className="flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition-all"
+          >
+            <Trash2 className="h-4 w-4 text-rose-400" />
+            سلة المحذوفات
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-xs font-bold text-black hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
+          >
+            {isSaving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            حفظ البيانات (Save Product)
           </button>
         </div>
       </div>
 
-      {/* Editor Navigation Tabs */}
-      <div className="flex overflow-x-auto gap-2 border-b border-white/10 pb-2">
+      {/* Recovered Unsaved Local Draft Banner */}
+      {hasUnsavedDraft && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-xs text-amber-200">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0" />
+            <div>
+              <p className="font-bold text-amber-300">تم العثور على مسودة غير محفوظة (Autosaved Draft Recovered)!</p>
+              <p className="text-[11px] text-amber-200/80">
+                تاريخ المسودة المحفوظة آلياً: {recoveredDraftTime}. هل ترغب في استعادتها أم تجاهلها؟
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRestoreLocalDraft}
+              className="rounded-xl bg-amber-500 px-3.5 py-1.5 text-xs font-extrabold text-black hover:bg-amber-400 transition-all"
+            >
+              استعادة المسودة (Restore Draft)
+            </button>
+            <button
+              type="button"
+              onClick={handleDiscardLocalDraft}
+              className="rounded-xl border border-amber-500/30 bg-black/40 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-white/10 transition-all"
+            >
+              تجاهل (Discard)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {saveMessage && (
+        <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs font-semibold text-emerald-300">
+          <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0" />
+          <span>{saveMessage}</span>
+        </div>
+      )}
+
+      {/* Product AI Health Score Card Widget */}
+      <ProductHealthScoreCard product={formData} />
+
+      {/* Enterprise Tabs Navigation */}
+      <div className="flex overflow-x-auto gap-1 border-b border-white/10 pb-2 scrollbar-none">
         {[
-          { id: 'general', label: 'General Info', icon: FileText },
-          { id: 'media', label: 'Media & 360', icon: ImageIcon },
-          { id: 'silver', label: 'Silver & Costs', icon: Scale },
-          { id: 'pricing', label: 'Pricing & Margin', icon: DollarSign },
-          { id: 'inventory', label: 'Inventory & SKU', icon: Boxes },
-          { id: 'seo', label: 'SEO & Metadata', icon: Search },
-          { id: 'preview', label: 'Live Preview', icon: Eye },
+          { id: 'general', label: 'البيانات الأساسية والقوالب', icon: Sliders },
+          { id: 'master_attrs', label: 'السمات والحقول المخصصة', icon: Layers },
+          { id: 'variants', label: 'المتغيرات (Variants Matrix)', icon: Tag },
+          { id: 'pricing', label: 'محرك التسعير (Formula Engine)', icon: Calculator },
+          { id: 'relations', label: 'المنتجات المرتبطة (Relations)', icon: Network },
+          { id: 'identifiers', label: 'الـ QR والموجّه الديناميكي', icon: QrCode },
+          { id: 'seo', label: 'محرك الـ SEO و SERP', icon: Search },
+          { id: 'timeline', label: 'سجل النشاطات (Timeline)', icon: History },
+          { id: 'media', label: 'الميديا (Placeholder)', icon: ImageIcon },
+          { id: 'memories', label: 'Baher Memories (سبرينت قادم)', icon: Heart, badge: 'Future' },
         ].map((tab) => {
           const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'general' | 'media' | 'silver' | 'pricing' | 'inventory' | 'seo' | 'preview')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xs text-xs uppercase tracking-wider font-bold transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-primary/20 text-primary border border-primary/40 shadow-[0_0_15px_rgba(229,228,226,0.2)]'
-                  : 'bg-white/5 text-muted-foreground hover:text-white hover:bg-white/10 border border-transparent'
+              type="button"
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold whitespace-nowrap transition-all ${
+                isActive
+                  ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
+                  : 'bg-black/30 text-slate-400 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="h-4 w-4" />
               <span>{tab.label}</span>
+              {tab.badge && (
+                <span className="rounded bg-pink-500/20 px-1.5 py-0.2 text-[9px] text-pink-300 font-bold border border-pink-500/30">
+                  {tab.badge}
+                </span>
+              )}
             </button>
           );
         })}
       </div>
 
-      {/* Main Tab Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Form Area */}
-        <div className="lg:col-span-8 space-y-8">
-          
-          {/* TAB 1: GENERAL INFO */}
-          {activeTab === 'general' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <h3 className="text-lg font-serif text-white">General Product Details</h3>
-                <button
-                  type="button"
-                  onClick={handleGenerateAIContent}
-                  disabled={isGeneratingContent}
-                  className="bg-primary/20 text-primary border border-primary/40 px-3 py-1.5 rounded-xs text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-primary/30 transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {isGeneratingContent ? 'AI Generating...' : 'Auto-Fill with AI'}
-                </button>
-              </div>
+      {/* Tab 1: General Info & Templates & Extended Statuses */}
+      {activeTab === 'general' && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-5 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md">
+            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">المعلومات والوصف الأساسي</h3>
 
-              {/* Names EN & AR */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Product Name (English)</label>
-                  <input 
-                    type="text" 
-                    value={formData.name_en} 
-                    onChange={(e) => handleChange('name_en', e.target.value)} 
-                    placeholder="e.g. Classic 925 Silver Ring" 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">اسم المنتج (بالعربية)</label>
-                  <input 
-                    type="text" 
-                    dir="rtl" 
-                    value={formData.name_ar} 
-                    onChange={(e) => handleChange('name_ar', e.target.value)} 
-                    placeholder="مثال: خاتم فضة كلاسيكي عيار 925" 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-              </div>
-
-              {/* Short Descriptions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Short Description (English)</label>
-                  <textarea 
-                    rows={2} 
-                    value={formData.short_description_en} 
-                    onChange={(e) => handleChange('short_description_en', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">الوصف القصير (بالعربية)</label>
-                  <textarea 
-                    rows={2} 
-                    dir="rtl" 
-                    value={formData.short_description_ar} 
-                    onChange={(e) => handleChange('short_description_ar', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-              </div>
-
-              {/* Full Descriptions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Full Description (English)</label>
-                  <textarea 
-                    rows={5} 
-                    value={formData.description_en} 
-                    onChange={(e) => handleChange('description_en', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">الوصف التفصيلي الكامل (بالعربية)</label>
-                  <textarea 
-                    rows={5} 
-                    dir="rtl" 
-                    value={formData.description_ar} 
-                    onChange={(e) => handleChange('description_ar', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary" 
-                  />
-                </div>
-              </div>
-
-              {/* Classification */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Category</label>
-                  <select 
-                    value={formData.category_name} 
-                    onChange={(e) => handleChange('category_name', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary"
-                  >
-                    <option value="rings">Rings (خواتم)</option>
-                    <option value="necklaces">Necklaces (قلائد)</option>
-                    <option value="bracelets">Bracelets (أساور)</option>
-                    <option value="earrings">Earrings (أقراط)</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Collection</label>
-                  <select 
-                    value={formData.collection_name} 
-                    onChange={(e) => handleChange('collection_name', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary"
-                  >
-                    <option value="Heritage Collection">Heritage Collection</option>
-                    <option value="Minimalist Modern">Minimalist Modern</option>
-                    <option value="Royal Zircon">Royal Zircon</option>
-                    <option value="Luxe Earrings">Luxe Earrings</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Target Gender</label>
-                  <select 
-                    value={formData.gender} 
-                    onChange={(e) => handleChange('gender', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary"
-                  >
-                    <option value="women">Women</option>
-                    <option value="men">Men</option>
-                    <option value="unisex">Unisex</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div className="space-y-2">
-                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Product Tags (Comma Separated)</label>
-                <input 
-                  type="text" 
-                  value={formData.tags?.join(', ')} 
-                  onChange={(e) => handleChange('tags', e.target.value.split(',').map(t => t.trim()))} 
-                  placeholder="silver925, luxury, zircon, gift" 
-                  className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary font-mono" 
-                />
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 2: MEDIA & 360 */}
-          {activeTab === 'media' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <h3 className="text-lg font-serif text-white">Media Assets & AI Vision</h3>
-                <button
-                  type="button"
-                  onClick={handleAIImageVision}
-                  disabled={isAIAnalyzing}
-                  className="bg-primary/20 text-primary border border-primary/40 px-3 py-1.5 rounded-xs text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-primary/30 transition-colors"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {isAIAnalyzing ? 'Analyzing Image...' : 'AI Image Vision Extraction'}
-                </button>
-              </div>
-
-              {/* Drag & Drop Upload Zone */}
-              <div className="border-2 border-dashed border-white/20 p-8 rounded-xs text-center space-y-3 bg-white/[0.01] hover:border-primary/50 transition-colors cursor-pointer">
-                <Upload className="w-8 h-8 text-primary mx-auto" />
-                <div>
-                  <p className="text-xs font-bold text-white uppercase tracking-wider">Drag & Drop High-Res Product Photos</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Supports PNG, JPG, WEBP up to 20MB per image.</p>
-                </div>
-                <input type="file" multiple className="hidden" id="file-upload" />
-                <label htmlFor="file-upload" className="inline-block bg-white/10 text-white px-4 py-2 rounded-xs text-xs uppercase tracking-wider font-bold cursor-pointer hover:bg-white/20">
-                  Select Files
-                </label>
-              </div>
-
-              {/* Current Media Grid */}
-              <div className="space-y-3">
-                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Uploaded Product Gallery & Main Image</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {formData.media_urls?.map((url, idx) => (
-                    <div key={idx} className="relative aspect-square bg-secondary/20 rounded-xs border border-white/10 overflow-hidden group">
-                      <Image src={url} alt="Gallery photo" fill className="object-cover" sizes="120px" />
-                      {formData.primary_image === url && (
-                        <span className="absolute top-2 left-2 bg-primary text-black text-[9px] font-bold px-2 py-0.5 rounded-xs uppercase">
-                          MAIN
-                        </span>
-                      )}
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <button 
-                          type="button"
-                          onClick={() => handleChange('primary_image', url)}
-                          className="p-1.5 bg-primary text-black rounded-xs text-[9px] font-bold uppercase"
-                        >
-                          Set Main
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => handleChange('media_urls', formData.media_urls?.filter((_, i) => i !== idx))}
-                          className="p-1.5 bg-rose-500 text-white rounded-xs"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Interactive Video & Social URLs */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Instagram Reel URL</label>
-                  <input 
-                    type="text" 
-                    value={formData.reels_url} 
-                    onChange={(e) => handleChange('reels_url', e.target.value)} 
-                    placeholder="https://instagram.com/reel/..." 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary font-mono" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">YouTube Product Video URL</label>
-                  <input 
-                    type="text" 
-                    value={formData.youtube_url} 
-                    onChange={(e) => handleChange('youtube_url', e.target.value)} 
-                    placeholder="https://youtube.com/watch?v=..." 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary font-mono" 
-                  />
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 3: SILVER & COSTS */}
-          {activeTab === 'silver' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              <h3 className="text-lg font-serif text-white pb-4 border-b border-white/10">Silver Purity & Manufacturing Costs</h3>
-
-              {/* Silver Purity & Weights */}
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Silver Purity</label>
-                  <select 
-                    value={formData.silver_purity} 
-                    onChange={(e) => handleChange('silver_purity', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground focus:outline-none focus:border-primary"
-                  >
-                    <option value="925">925 Sterling Silver</option>
-                    <option value="950">950 Pure Silver</option>
-                    <option value="999">999 Fine Silver</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Silver Weight (g)</label>
-                  <input 
-                    type="number" 
-                    step="0.1" 
-                    value={formData.silver_weight_g} 
-                    onChange={(e) => handleChange('silver_weight_g', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground font-mono focus:outline-none focus:border-primary" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Stone Weight (g)</label>
-                  <input 
-                    type="number" 
-                    step="0.1" 
-                    value={formData.stone_weight_g} 
-                    onChange={(e) => handleChange('stone_weight_g', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground font-mono focus:outline-none focus:border-primary" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-primary font-semibold">Total Weight (g)</label>
-                  <input 
-                    type="number" 
-                    readOnly 
-                    value={(formData.silver_weight_g || 0) + (formData.stone_weight_g || 0)} 
-                    className="w-full bg-primary/10 border border-primary/30 rounded-xs p-3 text-xs text-primary font-mono font-bold" 
-                  />
-                </div>
-              </div>
-
-              {/* Manufacturing Cost Breakdown */}
-              <div className="space-y-4 pt-4 border-t border-white/10">
-                <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Costing Structure breakdown ($ / EGP)</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase">Silver Raw Cost</span>
-                    <input 
-                      type="number" 
-                      value={formData.silver_cost} 
-                      onChange={(e) => handleChange('silver_cost', Number(e.target.value))} 
-                      className="w-full bg-secondary/10 border border-white/10 rounded-xs p-2.5 text-xs text-white font-mono" 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase">Crafting Fee</span>
-                    <input 
-                      type="number" 
-                      value={formData.manufacturing_cost} 
-                      onChange={(e) => handleChange('manufacturing_cost', Number(e.target.value))} 
-                      className="w-full bg-secondary/10 border border-white/10 rounded-xs p-2.5 text-xs text-white font-mono" 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase">Packaging Box</span>
-                    <input 
-                      type="number" 
-                      value={formData.packaging_cost} 
-                      onChange={(e) => handleChange('packaging_cost', Number(e.target.value))} 
-                      className="w-full bg-secondary/10 border border-white/10 rounded-xs p-2.5 text-xs text-white font-mono" 
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-muted-foreground uppercase">Other Overhead</span>
-                    <input 
-                      type="number" 
-                      value={formData.other_costs} 
-                      onChange={(e) => handleChange('other_costs', Number(e.target.value))} 
-                      className="w-full bg-secondary/10 border border-white/10 rounded-xs p-2.5 text-xs text-white font-mono" 
-                    />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-white/5 border border-white/10 rounded-xs flex justify-between items-center">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground font-bold">Total Purchase & Production Cost</span>
-                  <span className="text-base font-mono font-bold text-white">${calculatedPurchaseCost.toFixed(2)}</span>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 4: PRICING & MARGIN */}
-          {activeTab === 'pricing' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              <h3 className="text-lg font-serif text-white pb-4 border-b border-white/10">Pricing & Automatic Profit Margins</h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Selling Price ($)</label>
-                  <input 
-                    type="number" 
-                    value={formData.selling_price} 
-                    onChange={(e) => handleChange('selling_price', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-sm font-mono text-white font-bold focus:outline-none focus:border-primary" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Sale / Promotional Price ($)</label>
-                  <input 
-                    type="number" 
-                    value={formData.sale_price || ''} 
-                    onChange={(e) => handleChange('sale_price', Number(e.target.value))} 
-                    placeholder="Optional" 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-sm font-mono text-emerald-400 focus:outline-none focus:border-primary" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Discount %</label>
-                  <input 
-                    type="number" 
-                    value={formData.discount_percent || 0} 
-                    onChange={(e) => handleChange('discount_percent', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-sm font-mono text-white focus:outline-none focus:border-primary" 
-                  />
-                </div>
-              </div>
-
-              {/* Profit Margin KPI Dashboard */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-white/10">
-                <div className="p-4 bg-white/5 border border-white/10 rounded-xs">
-                  <span className="text-[10px] text-muted-foreground uppercase">Production Cost</span>
-                  <p className="text-xl font-mono text-white font-bold mt-1">${calculatedPurchaseCost.toFixed(2)}</p>
-                </div>
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xs">
-                  <span className="text-[10px] text-emerald-400 uppercase font-bold">Estimated Profit</span>
-                  <p className="text-xl font-mono text-emerald-400 font-bold mt-1">${calculatedProfit.toFixed(2)}</p>
-                </div>
-                <div className="p-4 bg-primary/10 border border-primary/30 rounded-xs">
-                  <span className="text-[10px] text-primary uppercase font-bold">Profit Margin</span>
-                  <p className="text-xl font-mono text-primary font-bold mt-1">{calculatedProfitMargin}%</p>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 5: INVENTORY & SKU */}
-          {activeTab === 'inventory' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <h3 className="text-lg font-serif text-white">Stock Control & Barcode Logistics</h3>
-                <button 
-                  type="button" 
-                  onClick={handleAutoSKU}
-                  className="bg-white/10 text-white border border-white/20 px-3 py-1.5 rounded-xs text-xs uppercase tracking-wider font-bold flex items-center gap-1.5 hover:bg-white/20"
-                >
-                  <RefreshCw className="w-3.5 h-3.5 text-primary" /> Auto SKU Generator
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">SKU Identifier</label>
-                  <input 
-                    type="text" 
-                    value={formData.sku} 
-                    onChange={(e) => handleChange('sku', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-primary font-mono font-bold" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Barcode (EAN-13)</label>
-                  <input 
-                    type="text" 
-                    value={formData.barcode} 
-                    onChange={(e) => handleChange('barcode', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground font-mono" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">QR Code Tag</label>
-                  <input 
-                    type="text" 
-                    value={formData.qr_code} 
-                    onChange={(e) => handleChange('qr_code', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground font-mono" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-4 border-t border-white/10">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Current Stock</label>
-                  <input 
-                    type="number" 
-                    value={formData.current_stock} 
-                    onChange={(e) => handleChange('current_stock', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-white font-mono font-bold" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Minimum Stock Alert</label>
-                  <input 
-                    type="number" 
-                    value={formData.min_stock} 
-                    onChange={(e) => handleChange('min_stock', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-amber-400 font-mono" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Maximum Stock Cap</label>
-                  <input 
-                    type="number" 
-                    value={formData.max_stock} 
-                    onChange={(e) => handleChange('max_stock', Number(e.target.value))} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-white font-mono" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Warehouse Vault</label>
-                  <select 
-                    value={formData.warehouse} 
-                    onChange={(e) => handleChange('warehouse', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-foreground"
-                  >
-                    <option value="Cairo Main Vault">Cairo Main Vault</option>
-                    <option value="Alexandria Vault">Alexandria Vault</option>
-                  </select>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 6: SEO STUDIO */}
-          {activeTab === 'seo' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              <h3 className="text-lg font-serif text-white pb-4 border-b border-white/10">Search Engine Optimization & OpenGraph Preview</h3>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">URL Slug</label>
-                  <input 
-                    type="text" 
-                    value={formData.slug} 
-                    onChange={(e) => handleChange('slug', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-primary font-mono" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Meta Title Tag</label>
-                  <input 
-                    type="text" 
-                    value={formData.meta_title} 
-                    onChange={(e) => handleChange('meta_title', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-white" 
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Meta Description</label>
-                  <textarea 
-                    rows={3} 
-                    value={formData.meta_description} 
-                    onChange={(e) => handleChange('meta_description', e.target.value)} 
-                    className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-white" 
-                  />
-                </div>
-              </div>
-
-              {/* Google Search Snippet Simulation */}
-              <div className="p-4 bg-white/5 border border-white/10 rounded-xs space-y-1">
-                <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">Google Search Snippet Preview</span>
-                <p className="text-sm font-sans text-blue-400 hover:underline cursor-pointer">{formData.meta_title || 'Product Title'}</p>
-                <p className="text-[11px] text-emerald-400 font-mono">https://www.bahersilver.com/en/product/{formData.slug}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{formData.meta_description || 'Product meta description...'}</p>
-              </div>
-
-            </div>
-          )}
-
-          {/* TAB 7: LIVE SIMULATED PREVIEW */}
-          {activeTab === 'preview' && (
-            <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-6">
-              
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <h3 className="text-lg font-serif text-white">Live Storefront Viewport Simulator</h3>
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 p-1 rounded-xs">
-                  <button 
-                    onClick={() => setPreviewViewport('desktop')}
-                    className={`p-1.5 rounded-xs ${previewViewport === 'desktop' ? 'bg-primary text-black' : 'text-muted-foreground'}`}
-                  >
-                    <Monitor className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setPreviewViewport('tablet')}
-                    className={`p-1.5 rounded-xs ${previewViewport === 'tablet' ? 'bg-primary text-black' : 'text-muted-foreground'}`}
-                  >
-                    <Tablet className="w-4 h-4" />
-                  </button>
-                  <button 
-                    onClick={() => setPreviewViewport('mobile')}
-                    className={`p-1.5 rounded-xs ${previewViewport === 'mobile' ? 'bg-primary text-black' : 'text-muted-foreground'}`}
-                  >
-                    <Smartphone className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Viewport Frame */}
-              <div className={`mx-auto bg-black border border-white/20 rounded-sm p-6 space-y-6 overflow-hidden transition-all duration-500 ${
-                previewViewport === 'desktop' ? 'w-full' : previewViewport === 'tablet' ? 'w-[600px]' : 'w-[360px]'
-              }`}>
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  <div className="relative aspect-[3/4] w-full md:w-1/2 bg-secondary/20 rounded-xs overflow-hidden border border-white/10">
-                    <Image src={formData.primary_image} alt={formData.name_en} fill className="object-cover" sizes="300px" />
-                  </div>
-                  <div className="space-y-3 flex-1">
-                    <span className="text-[10px] uppercase tracking-widest text-primary font-bold">{formData.collection_name}</span>
-                    <h2 className="text-xl font-serif text-white">{formData.name_en}</h2>
-                    <p className="text-sm font-mono text-primary font-bold">${formData.selling_price.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{formData.description_en}</p>
-                    <button className="w-full bg-primary text-black py-2.5 text-xs uppercase font-bold tracking-wider rounded-xs">
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          )}
-
-        </div>
-
-        {/* Right Sidebar: Status & Badges */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          <div className="bg-[#050505] border border-white/10 p-6 rounded-xs space-y-4">
-            <h3 className="text-base font-serif text-white pb-3 border-b border-white/10">Visibility & Status</h3>
-            
-            <div className="space-y-2">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Publishing Status</label>
-              <select 
-                value={formData.status} 
-                onChange={(e) => handleChange('status', e.target.value)} 
-                className="w-full bg-secondary/10 border border-white/10 rounded-xs p-3 text-xs text-white"
+            {/* Template Selector */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">قالب المنتج (Product Template):</label>
+              <select
+                value={formData.template_id || ''}
+                onChange={(e) => handleUpdateField('template_id', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white focus:border-amber-500 focus:outline-none"
               >
-                <option value="published">Published (Visible in Store)</option>
-                <option value="draft">Draft (Hidden in Store)</option>
-                <option value="archived">Archived</option>
+                {PRODUCT_TEMPLATES.map(t => (
+                  <option key={t.id} value={t.id}>{t.name_ar} ({t.name_en})</option>
+                ))}
               </select>
             </div>
 
-            <div className="space-y-3 pt-4 border-t border-white/10">
-              <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Store Badges & Highlights</label>
-              
-              <label className="flex items-center gap-3 text-xs text-white cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={formData.featured} 
-                  onChange={(e) => handleChange('featured', e.target.checked)} 
-                  className="rounded border-white/20 text-primary focus:ring-0" 
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">اسم المنتج بالعربية *</label>
+                <input
+                  type="text"
+                  value={formData.name_ar}
+                  onChange={(e) => handleUpdateField('name_ar', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
                 />
-                <span>Featured Product (Home Slider)</span>
-              </label>
+              </div>
 
-              <label className="flex items-center gap-3 text-xs text-white cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={formData.best_seller} 
-                  onChange={(e) => handleChange('best_seller', e.target.checked)} 
-                  className="rounded border-white/20 text-primary focus:ring-0" 
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">Product Name (English) *</label>
+                <input
+                  type="text"
+                  value={formData.name_en}
+                  onChange={(e) => handleUpdateField('name_en', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white font-sans text-left"
                 />
-                <span>Best Seller Badge</span>
-              </label>
-
-              <label className="flex items-center gap-3 text-xs text-white cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={formData.new_arrival} 
-                  onChange={(e) => handleChange('new_arrival', e.target.checked)} 
-                  className="rounded border-white/20 text-primary focus:ring-0" 
-                />
-                <span>New Arrival Badge</span>
-              </label>
-
-              <label className="flex items-center gap-3 text-xs text-white cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={formData.limited_edition} 
-                  onChange={(e) => handleChange('limited_edition', e.target.checked)} 
-                  className="rounded border-white/20 text-primary focus:ring-0" 
-                />
-                <span>Limited Edition Badge</span>
-              </label>
+              </div>
             </div>
 
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">الوصف القصير بالعربية (Short Description AR)</label>
+              <textarea
+                rows={2}
+                value={formData.short_description_ar}
+                onChange={(e) => handleUpdateField('short_description_ar', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">الوصف التفصيلي (Full Description AR)</label>
+              <textarea
+                rows={4}
+                value={formData.description_ar}
+                onChange={(e) => handleUpdateField('description_ar', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+
+            {/* Internal Notes (Staff Only) */}
+            <div className="space-y-1.5 rounded-xl border border-purple-500/30 bg-purple-500/5 p-4">
+              <label className="block text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-purple-400" />
+                ملاحظات داخلية خاصة بالطاقم فقط (Internal Notes - Hidden from Storefront)
+              </label>
+              <textarea
+                rows={2}
+                value={formData.internal_notes || ''}
+                placeholder="أدخل أي ملاحظات خاصة بالتخزين، المورد، أو تعليمات الصيانة الداخلية..."
+                onChange={(e) => handleUpdateField('internal_notes', e.target.value)}
+                className="w-full rounded-lg border border-purple-500/20 bg-slate-950 px-3 py-2 text-xs text-slate-200"
+              />
+            </div>
           </div>
 
-          {/* AI Output Log Box */}
-          {aiOutput && (
-            <div className="bg-primary/10 border border-primary/30 p-4 rounded-xs text-xs text-primary font-mono leading-relaxed space-y-2">
-              <div className="flex items-center gap-2 font-bold uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" /> Baher Brain AI Log
-              </div>
-              <pre className="whitespace-pre-wrap font-sans text-[11px] text-foreground">{aiOutput}</pre>
+          {/* Right Column: Status & Classification */}
+          <div className="space-y-5 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md">
+            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">الحالة والتصنيف</h3>
+
+            {/* Extended Status Picker */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">حالة المنتج (Product Status):</label>
+              <select
+                value={formData.status}
+                onChange={(e) => handleUpdateField('status', e.target.value as ProductStatus)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs font-semibold text-amber-400"
+              >
+                <option value="published">منشور ومتاح (Published)</option>
+                <option value="draft">مسودة (Draft)</option>
+                <option value="hidden">مخفي من المتجر (Hidden)</option>
+                <option value="archived">مؤرشف (Archived)</option>
+                <option value="out_of_stock">منتهي المخزون (Out of stock)</option>
+                <option value="coming_soon">قريباً (Coming Soon)</option>
+                <option value="pre_order">حجز مسبق (Pre-Order)</option>
+                <option value="discontinued">متوقف إنتاجه (Discontinued)</option>
+              </select>
             </div>
-          )}
 
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">التصنيف الرئيسي (Category):</label>
+              <input
+                type="text"
+                value={formData.category_name || 'Rings'}
+                onChange={(e) => handleUpdateField('category_name', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">المجموعة / التشيكلة (Collection):</label>
+              <input
+                type="text"
+                value={formData.collection_name || 'Heritage Collection'}
+                onChange={(e) => handleUpdateField('collection_name', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+          </div>
         </div>
+      )}
 
-      </div>
+      {/* Tab 2: Master Attributes & Custom Fields */}
+      {activeTab === 'master_attrs' && (
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md space-y-4">
+            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">ربط البيانات المرجعية المركزية (Master Data System)</h3>
+            
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">نقاء الفضة (Purity):</label>
+                <select
+                  value={formData.purity_level_id || ''}
+                  onChange={(e) => handleUpdateField('purity_level_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_PURITY_LEVELS.map(p => (
+                    <option key={p.id} value={p.id}>{p.name_ar}</option>
+                  ))}
+                </select>
+              </div>
 
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">نوع الحجر (Stone Type):</label>
+                <select
+                  value={formData.stone_type_id || ''}
+                  onChange={(e) => handleUpdateField('stone_type_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_STONE_TYPES.map(s => (
+                    <option key={s.id} value={s.id}>{s.name_ar}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">لون الحجر (Stone Color):</label>
+                <select
+                  value={formData.stone_color_id || ''}
+                  onChange={(e) => handleUpdateField('stone_color_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_STONE_COLORS.map(c => (
+                    <option key={c.id} value={c.id}>{c.name_ar}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">طلاء السطح (Finish):</label>
+                <select
+                  value={formData.finish_id || ''}
+                  onChange={(e) => handleUpdateField('finish_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_FINISHES.map(f => (
+                    <option key={f.id} value={f.id}>{f.name_ar}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">المورد المعتمد (Supplier):</label>
+                <select
+                  value={formData.supplier_id || ''}
+                  onChange={(e) => handleUpdateField('supplier_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_SUPPLIERS.map(sup => (
+                    <option key={sup.id} value={sup.id}>{sup.name_ar}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-xs font-medium text-slate-300">الخزينة المودع بها (Warehouse):</label>
+                <select
+                  value={formData.warehouse_id || ''}
+                  onChange={(e) => handleUpdateField('warehouse_id', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                >
+                  {MASTER_WAREHOUSES.map(w => (
+                    <option key={w.id} value={w.id}>{w.name_ar}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic Custom Fields Renderer */}
+          <CustomFieldsRenderer
+            definitions={CUSTOM_FIELD_DEFINITIONS}
+            values={formData.custom_fields || []}
+            onChange={(updatedVals) => handleUpdateField('custom_fields', updatedVals)}
+          />
+        </div>
+      )}
+
+      {/* Tab 3: Variants Matrix */}
+      {activeTab === 'variants' && (
+        <ProductVariantsMatrix
+          variants={formData.variants || []}
+          productSku={formData.sku}
+          productSlug={formData.slug}
+          onChange={(updatedVars) => handleUpdateField('variants', updatedVars)}
+        />
+      )}
+
+      {/* Tab 4: Formula Pricing Engine */}
+      {activeTab === 'pricing' && (
+        <FormulaPricingCalculator
+          initialVars={{
+            silverWeightGrams: formData.silver_weight_g,
+            stoneCost: formData.stone_cost,
+            manufacturingCost: formData.manufacturing_cost,
+            packagingCost: formData.packaging_cost,
+            laborCost: formData.labor_cost,
+            overheadCost: formData.overhead_cost,
+            profitMarginPercent: formData.profit_margin_percent,
+          }}
+          onChange={(calc) => {
+            handleUpdateField('selling_price', calc.calculatedSellingPrice);
+            handleUpdateField('purchase_cost', calc.totalProductionCost);
+            handleUpdateField('silver_cost', calc.silverMaterialCost);
+          }}
+        />
+      )}
+
+      {/* Tab 5: Relations Engine */}
+      {activeTab === 'relations' && (
+        <ProductRelationsManager
+          relations={formData.relations || []}
+          onChange={(updatedRelations) => handleUpdateField('relations', updatedRelations)}
+        />
+      )}
+
+      {/* Tab 6: Extensible Dual QR & Dynamic Router */}
+      {activeTab === 'identifiers' && (
+        <DualQRCodePreview
+          sku={formData.sku}
+          slug={formData.slug}
+          destinationType={formData.qr_destination_type || 'product'}
+          onDestinationChange={(newDest) => handleUpdateField('qr_destination_type', newDest as QRDestinationType)}
+        />
+      )}
+
+      {/* Tab 7: SEO Engine */}
+      {activeTab === 'seo' && (
+        <div className="space-y-6 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md">
+          <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">محرك محركات البحث SEO ومعاينة جوجل</h3>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">عنوان الصفحة Meta Title:</label>
+              <input
+                type="text"
+                value={formData.meta_title || ''}
+                onChange={(e) => handleUpdateField('meta_title', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-medium text-slate-300">وصف البحث Meta Description:</label>
+              <textarea
+                rows={3}
+                value={formData.meta_description || ''}
+                onChange={(e) => handleUpdateField('meta_description', e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tab 8: Timeline */}
+      {activeTab === 'timeline' && (
+        <ProductActivityTimeline logs={formData.activity_logs || []} />
+      )}
+
+      {/* Tab 9: Media Placeholder */}
+      {activeTab === 'media' && (
+        <MediaPlaceholderTab primaryImage={formData.primary_image} mediaUrls={formData.media_urls || []} />
+      )}
+
+      {/* Tab 10: Memories Panel */}
+      {activeTab === 'memories' && (
+        <BaherMemoriesPanel />
+      )}
+
+      {/* Modals & Drawers */}
+      <PrintableLabelsModal
+        isOpen={isLabelsModalOpen}
+        onClose={() => setIsLabelsModalOpen(false)}
+        productName={formData.name_ar}
+        sku={formData.sku}
+        barcode={formData.barcode || ''}
+        price={formData.selling_price}
+      />
+
+      <BaherBrainDrawer
+        isOpen={isAiDrawerOpen}
+        onClose={() => setIsAiDrawerOpen(false)}
+        productNameAr={formData.name_ar}
+        productNameEn={formData.name_en}
+        silverWeightGrams={formData.silver_weight_g || 7.5}
+        onApplyAIResult={(field, val) => handleUpdateField(field as keyof Product, val)}
+      />
+
+      <LiveProductPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        product={formData}
+      />
+
+      <ProductVersionHistoryModal
+        isOpen={isVersionModalOpen}
+        onClose={() => setIsVersionModalOpen(false)}
+        product={formData}
+        onRestore={(restored) => setFormData(restored)}
+      />
     </div>
   );
 }

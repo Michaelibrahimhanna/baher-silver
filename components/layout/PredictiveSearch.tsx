@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, X, TrendingUp, Clock } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { searchProducts, products } from "@/lib/products";
 import { usePathname } from "next/navigation";
+import { Product } from "@/lib/types";
 
 interface PredictiveSearchProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ interface PredictiveSearchProps {
 
 export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchProps) {
   const [query, setQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
   const pathname = usePathname();
   const locale = pathname.startsWith('/ar') ? 'ar' : 'en';
   const isAr = locale === 'ar';
@@ -27,9 +28,24 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
     ? ["سوار زركون", "خواتم خطوبة", "فضة 925"] 
     : ["Zircon Bracelet", "Engagement Rings", "925 Silver"];
 
-  const searchResults = query.trim().length > 0 
-    ? searchProducts(query) 
-    : products.slice(0, 4);
+  // Real Database Query Search Effect
+  useEffect(() => {
+    let isCancelled = false;
+    async function fetchSearch() {
+      try {
+        const url = query.trim().length > 0 ? `/api/products?query=${encodeURIComponent(query)}` : '/api/products';
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!isCancelled && data.success && Array.isArray(data.products)) {
+          setSearchResults(data.products.slice(0, 6));
+        }
+      } catch (e) {
+        console.error('Search fetch error', e);
+      }
+    }
+    fetchSearch();
+    return () => { isCancelled = true; };
+  }, [query]);
 
   // Lock body scroll when open
   useEffect(() => {
@@ -59,7 +75,7 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
               <Search className="w-6 h-6 text-primary/70 shrink-0" />
               <input
                 type="text"
-                placeholder={isAr ? "ابحث عن مجوهرات، خواتم، قلائد..." : "Search for jewelry, collections..."}
+                placeholder={isAr ? "ابحث في قاعدة البيانات عن مجوهرات، خواتم، قلائد..." : "Search database for jewelry, collections..."}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="flex-1 text-xl md:text-2xl font-light bg-transparent text-foreground outline-none placeholder:text-muted-foreground focus:ring-0 border-none"
@@ -124,12 +140,12 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                 )}
               </div>
 
-              {/* Right Column: Suggested Products */}
+              {/* Right Column: Suggested Products from Database Engine */}
               <div className="md:col-span-8 space-y-6">
                 <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {query.length > 0 
-                    ? (isAr ? `نتائج البحث (${searchResults.length})` : `Search Results (${searchResults.length})`)
-                    : (isAr ? "منتجات مقترحة" : "Suggested Products")}
+                    ? (isAr ? `نتائج البحث من قاعدة البيانات (${searchResults.length})` : `Database Search Results (${searchResults.length})`)
+                    : (isAr ? "منتجات مقترحة من قاعدة البيانات" : "Suggested Database Products")}
                 </h3>
                 {searchResults.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-8">
@@ -138,7 +154,8 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {searchResults.map((product) => {
-                      const name = product.name[locale as 'en'|'ar'] || product.name.en;
+                      const pAny = product as unknown as { name_en?: string };
+                      const name = product.name?.[locale] || product.name?.en || pAny.name_en || 'Product';
                       return (
                         <Link
                           key={product.id}
@@ -148,7 +165,7 @@ export default function PredictiveSearch({ isOpen, onClose }: PredictiveSearchPr
                         >
                           <div className="relative w-16 h-16 bg-secondary/10 rounded-sm overflow-hidden shrink-0">
                             <Image
-                              src={product.image}
+                              src={product.image || 'https://images.unsplash.com/photo-1605100804763-247f6612d543?q=80&w=800'}
                               alt={name}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-500"

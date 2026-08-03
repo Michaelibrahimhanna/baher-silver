@@ -16,6 +16,13 @@ import { notificationService } from '../lib/services/notifications';
 import { shippingCarrierService } from '../lib/services/shippingCarriers';
 import { trackingEngine } from '../lib/analytics/trackingEngine';
 import { OrderAggregate, PricingSnapshot, ShippingSnapshot } from '../lib/types/orderAggregate';
+import { createProductVersionSnapshot, restoreProductVersion } from '../lib/product-versioning';
+import { canRoleTransition, createInitialWorkflow, transitionWorkflowState } from '../lib/approval-workflow';
+import { softDeleteProduct, restoreProductFromRecycleBin, filterActiveProducts, filterSoftDeletedProducts } from '../lib/recycle-bin';
+import { calculateProductHealthScore } from '../lib/product-health-score';
+import { generateQRRouterConfig, resolveQRDestinationUrl } from '../lib/qr-router';
+import { Product } from '../types/catalog';
+
 
 let passedTests = 0;
 let totalTests = 0;
@@ -447,9 +454,150 @@ async function runSuite() {
     assert.equal(emailSent, true);
   });
 
+  console.log('\n--- 13. ENTERPRISE CAPABILITIES ARCHITECTURE TESTS ---');
+  test('Product Versioning & Restore Engine Snapshot Creation', () => {
+    const dummyProduct: Product = {
+      id: 'p-test-ver-1',
+      slug: 'p-test-ver-1',
+      sku: 'SKU-TEST-1',
+      name_ar: 'خاتم إصدار أول',
+      name_en: 'Initial Ring Version',
+      selling_price: 100,
+      current_stock: 5,
+      primary_image: 'https://images.unsplash.com/photo-1605100804763',
+      status: 'published',
+      visibility: 'public',
+      publishing_status: 'immediate',
+      featured: false,
+      best_seller: false,
+      new_arrival: false,
+      version_history: [],
+    };
+
+    const v1 = createProductVersionSnapshot(dummyProduct, 'Admin', 'Initial Version Save');
+    assert.equal(v1.version_number, 1);
+    assert.equal(v1.snapshot.selling_price, 100);
+
+    dummyProduct.version_history = [v1];
+    dummyProduct.selling_price = 250;
+
+    const restored = restoreProductVersion(dummyProduct, v1.version_id);
+    assert.equal(restored.selling_price, 100);
+  });
+
+  test('Approval Workflow Role Transitions & Permission Guards', () => {
+    assert.equal(canRoleTransition('editor', 'draft', 'pending_review'), true);
+    assert.equal(canRoleTransition('editor', 'pending_review', 'published'), false);
+    assert.equal(canRoleTransition('publisher', 'approved', 'published'), true);
+
+    let wf = createInitialWorkflow('ed-1');
+    assert.equal(wf.current_state, 'draft');
+
+    wf = transitionWorkflowState(wf, 'editor', 'ed-1', 'Editor User', 'pending_review');
+    assert.equal(wf.current_state, 'pending_review');
+  });
+
+  test('Soft Delete & Recycle Bin Restoration Architecture', () => {
+    const pActive: Product = {
+      id: 'p-act-1',
+      slug: 'p-act-1',
+      sku: 'SKU-ACT-1',
+      name_ar: 'منتج نشط',
+      name_en: 'Active Product',
+      selling_price: 150,
+      current_stock: 10,
+      primary_image: 'https://images.unsplash.com/photo-1605100804763',
+      status: 'published',
+      visibility: 'public',
+      publishing_status: 'immediate',
+      featured: false,
+      best_seller: false,
+      new_arrival: false,
+      is_soft_deleted: false,
+      deleted_at: null,
+    };
+    
+    const pSoftDeleted = softDeleteProduct(pActive);
+    assert.equal(pSoftDeleted.is_soft_deleted, true);
+    assert.equal(pSoftDeleted.status, 'archived');
+    assert.ok(pSoftDeleted.deleted_at);
+
+    const products = [pActive, pSoftDeleted];
+    const activeList = filterActiveProducts(products);
+    const deletedList = filterSoftDeletedProducts(products);
+
+    assert.equal(activeList.length, 1);
+    assert.equal(deletedList.length, 1);
+
+    const restored = restoreProductFromRecycleBin(pSoftDeleted);
+    assert.equal(restored.is_soft_deleted, false);
+    assert.equal(restored.deleted_at, null);
+  });
+
+  test('AI Product Health Score 7-Metric Evaluation', () => {
+    const dummyProduct: Product = {
+      id: 'p-health-1',
+      slug: 'p-health-1',
+      sku: 'SKU-MAIN',
+      barcode: '6291000123456',
+      name_ar: 'خاتم فضة ممتاز',
+      name_en: 'Premium Silver Ring',
+      short_description_ar: 'وصف قصير',
+      short_description_en: 'Short description',
+      description_ar: 'وصف تفصيلي كامل للقطعة',
+      description_en: 'Full detailed description for product',
+      meta_title: 'خاتم فضة عيار 925 فاخر جداً',
+      meta_description: 'تسوق أفضل خاتم فضة عيار 925 بتصميم ملكي فاخر',
+      keywords: ['فضة', 'خاتم'],
+      selling_price: 200,
+      current_stock: 5,
+      silver_cost: 50,
+      labor_cost: 20,
+      profit_margin_percent: 40,
+      specifications: [
+        { id: '1', key_ar: 'العيار', key_en: 'Purity', value_ar: '925', value_en: '925' },
+        { id: '2', key_ar: 'المقاس', key_en: 'Size', value_ar: '7', value_en: '7' }
+      ],
+      variants: [{ id: 'v1', product_id: 'p-health-1', sku: 'SKU-V1', regular_price: 200, current_stock: 5, pricing_strategy: 'manual', status: 'published' }],
+      category_name: 'rings',
+      collection_name: 'Heritage',
+      material_name: 'Silver 925',
+      primary_image: 'https://images.unsplash.com/photo-1605100804763',
+      media_urls: ['https://images.unsplash.com/photo-1605100804763'],
+      status: 'published',
+      visibility: 'public',
+      publishing_status: 'immediate',
+      featured: false,
+      best_seller: false,
+      new_arrival: false,
+    };
+
+    const health = calculateProductHealthScore(dummyProduct);
+    assert.ok(health.overallScore >= 90);
+    assert.equal(health.grade, 'A+');
+  });
+
+  test('Dynamic QR Router Resolution & Configurable Destinations', () => {
+    const config = generateQRRouterConfig('silver-ring-slug', 'warranty');
+    assert.equal(config.destination_type, 'warranty');
+    assert.ok(config.router_token.startsWith('BSQR-'));
+
+    const res = resolveQRDestinationUrl(config, 'silver-ring-slug', 'https://bahersilver.com');
+    assert.equal(res.isDisabled, false);
+    assert.ok(res.targetUrl.includes('/warranty/verify'));
+
+    // Test Baher Memories disabled safeguard
+    const memoriesConfig = generateQRRouterConfig('silver-ring-slug', 'memories');
+    const memoriesRes = resolveQRDestinationUrl(memoriesConfig, 'silver-ring-slug', 'https://bahersilver.com');
+    assert.equal(memoriesRes.isDisabled, true);
+    assert.ok(memoriesRes.message?.includes('Baher Memories'));
+  });
+
+
   console.log('\n======================================================');
   console.log(`  TEST RESULTS: ${passedTests} / ${totalTests} PASSED (100% PASS RATE)`);
   console.log('======================================================\n');
 }
 
 runSuite().catch(console.error);
+

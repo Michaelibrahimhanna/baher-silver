@@ -14,12 +14,26 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [scrolled, setScrolled] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [dynamicCategories, setDynamicCategories] = React.useState<{ id: string; name: { en: string; ar: string }; slug: string }[]>([]);
+
   const { scrollY, scrollYProgress } = useScroll();
   const pathname = usePathname();
   const router = useRouter();
 
   const cart = useStore((state) => state.cart);
   const cartItemCount = cart?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+
+  // Fetch real categories dynamically from Database API
+  React.useEffect(() => {
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.categories) {
+          setDynamicCategories(data.categories);
+        }
+      })
+      .catch(err => console.error('Failed to load dynamic categories in Header:', err));
+  }, []);
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -45,13 +59,26 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
 
   const isAr = locale === 'ar';
 
-  const navLinks = [
+  const baseNavLinks = [
     { name: dict.header?.home || (isAr ? 'الرئيسية' : 'Home'), href: `/${locale}` },
     { name: dict.header?.collections || (isAr ? 'المجموعات' : 'Collections'), href: `/${locale}/collections` },
-    { name: dict.header?.rings || (isAr ? 'خواتم' : 'Rings'), href: `/${locale}/category/rings` },
-    { name: dict.header?.necklaces || (isAr ? 'قلائد' : 'Necklaces'), href: `/${locale}/category/necklaces` },
-    { name: dict.header?.bracelets || (isAr ? 'أساور' : 'Bracelets'), href: `/${locale}/category/bracelets` },
-    { name: dict.header?.earrings || (isAr ? 'أقراط' : 'Earrings'), href: `/${locale}/category/earrings` },
+  ];
+
+  const categoryNavLinks = dynamicCategories.length > 0
+    ? dynamicCategories.map(c => ({
+        name: isAr ? c.name.ar : c.name.en,
+        href: `/${locale}/category/${c.slug}`,
+      }))
+    : [
+        { name: dict.header?.rings || (isAr ? 'خواتم' : 'Rings'), href: `/${locale}/category/rings` },
+        { name: dict.header?.necklaces || (isAr ? 'قلائد' : 'Necklaces'), href: `/${locale}/category/necklaces` },
+        { name: dict.header?.bracelets || (isAr ? 'أساور' : 'Bracelets'), href: `/${locale}/category/bracelets` },
+        { name: dict.header?.earrings || (isAr ? 'أقراط' : 'Earrings'), href: `/${locale}/category/earrings` },
+      ];
+
+  const navLinks = [
+    ...baseNavLinks,
+    ...categoryNavLinks,
     { name: dict.header?.journal || (isAr ? 'المجلة' : 'Journal'), href: `/${locale}/journal` },
   ];
 
@@ -107,12 +134,12 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex flex-1 justify-center space-x-8 rtl:space-x-reverse">
+          <nav className="hidden lg:flex flex-1 justify-center space-x-8 rtl:space-x-reverse overflow-x-auto py-2">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="group relative text-[11px] tracking-[0.15em] uppercase font-medium text-foreground/80 hover:text-white transition-colors duration-300 py-2"
+                className="group relative text-[11px] tracking-[0.15em] uppercase font-medium text-foreground/80 hover:text-white transition-colors duration-300 py-2 whitespace-nowrap"
               >
                 {link.name}
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[1px] bg-primary transition-all duration-500 group-hover:w-full opacity-0 group-hover:opacity-100 shadow-[0_0_8px_rgba(229,228,226,0.8)]" />

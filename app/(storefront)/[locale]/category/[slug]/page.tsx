@@ -1,4 +1,4 @@
-import { getProductsByCategory } from "@/lib/products";
+import { getProducts } from "@/lib/db/productEngine";
 import { categories } from "@/lib/categories";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import Filters from "@/components/product/Filters";
@@ -35,7 +35,8 @@ export default async function CategoryPLP({ params, searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams;
   const dict = await getDictionary(locale);
 
-  let products = getProductsByCategory(slug);
+  // Fetch real products from Database Engine
+  let products = getProducts({ category: slug, status: 'published' });
 
   if (resolvedSearchParams.sort === 'price-asc') {
     products = [...products].sort((a, b) => a.price - b.price);

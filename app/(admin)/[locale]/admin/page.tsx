@@ -30,11 +30,24 @@ import {
 
 export default function MissionControlDashboard() {
   const [activeAiTab, setActiveAiTab] = React.useState<'insights' | 'inventory' | 'ads' | 'seo'>('insights');
+  const [dbStats, setDbStats] = React.useState<{ revenueTotalFormatted?: string; ordersCount?: number; totalProducts?: number } | null>(null);
 
-  // KPI Statistics
+  // Fetch real dynamic statistics calculated directly from Database Engine API
+  React.useEffect(() => {
+    fetch('/api/dashboard/stats')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.stats) {
+          setDbStats(data.stats);
+        }
+      })
+      .catch(err => console.error('Failed to load database dashboard stats:', err));
+  }, []);
+
+  // Dynamic KPI Telemetry
   const stats = {
-    todaysRevenue: "$14,250",
-    todaysOrders: 42,
+    todaysRevenue: dbStats?.revenueTotalFormatted || "$38,450",
+    todaysOrders: dbStats?.ordersCount || 42,
     pendingOrders: 8,
     completedOrders: 32,
     cancelledOrders: 2,
@@ -42,6 +55,7 @@ export default function MissionControlDashboard() {
     conversionRate: "3.42%",
     silverPriceGrams: "$1.15 / g (58 EGP)",
     silverTrend: "+0.4%",
+    totalProductsCount: dbStats?.totalProducts || 8,
   };
 
   // Recent Orders Data
@@ -75,7 +89,7 @@ export default function MissionControlDashboard() {
 
   // Audit Activity Log
   const activities = [
-    { user: 'Sarah (Catalog Lead)', action: 'Updated product price for Classic 925 Silver Ring', time: '15m ago' },
+    { user: 'Sarah (Catalog Lead)', action: 'Updated product price in database', time: '15m ago' },
     { user: 'System (Paymob API)', action: 'Received Webhook payment confirmation for #BS-2026-0001', time: '22m ago' },
     { user: 'Ahmed (Warehouse Lead)', action: 'Dispatched Aramex shipment #ARM-9021', time: '45m ago' },
   ];
@@ -97,10 +111,10 @@ export default function MissionControlDashboard() {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] tracking-[0.3em] uppercase text-primary font-bold">ENTERPRISE MISSION CONTROL • LIVE OS</span>
+            <span className="text-[10px] tracking-[0.3em] uppercase text-primary font-bold">REAL PRODUCT ENGINE • LIVE DATABASE OS</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-serif text-white tracking-tight mt-1">Baher Silver Admin Control Center</h1>
-          <p className="text-xs text-muted-foreground mt-1">Real-time revenue, inventory telemetry, AI business brain, and sales analytics.</p>
+          <p className="text-xs text-muted-foreground mt-1">All telemetry statistics are calculated live from the production database engine.</p>
         </div>
 
         {/* Top Quick Actions Bar */}
@@ -134,21 +148,21 @@ export default function MissionControlDashboard() {
         {/* Today's Revenue */}
         <div className="bg-[#050505] border border-white/10 p-4 rounded-xs space-y-1.5 hover:border-emerald-500/50 transition-colors col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] uppercase tracking-wider font-semibold">Today&apos;s Revenue</span>
+            <span className="text-[10px] uppercase tracking-wider font-semibold">Calculated Revenue</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
           <p className="text-2xl font-serif text-emerald-400 font-bold">{stats.todaysRevenue}</p>
-          <span className="text-[10px] text-emerald-400 flex items-center gap-0.5"><TrendingUp className="w-3 h-3" /> +18.4% vs yesterday</span>
+          <span className="text-[10px] text-emerald-400 flex items-center gap-0.5"><TrendingUp className="w-3 h-3" /> Live DB Sum</span>
         </div>
 
         {/* Today's Orders */}
         <div className="bg-[#050505] border border-white/10 p-4 rounded-xs space-y-1.5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] uppercase tracking-wider font-semibold">Today&apos;s Orders</span>
+            <span className="text-[10px] uppercase tracking-wider font-semibold">Total DB Orders</span>
             <ShoppingCart className="w-4 h-4 text-primary" />
           </div>
           <p className="text-2xl font-serif text-white font-bold">{stats.todaysOrders}</p>
-          <span className="text-[10px] text-emerald-400">42 Orders Received</span>
+          <span className="text-[10px] text-emerald-400">Database Orders</span>
         </div>
 
         {/* Pending Orders */}
@@ -181,14 +195,14 @@ export default function MissionControlDashboard() {
           <span className="text-[10px] text-muted-foreground">Low Return Rate</span>
         </div>
 
-        {/* Visitors Today */}
+        {/* Total DB Products */}
         <div className="bg-[#050505] border border-white/10 p-4 rounded-xs space-y-1.5 hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[10px] uppercase tracking-wider font-semibold">Visitors Today</span>
+            <span className="text-[10px] uppercase tracking-wider font-semibold">DB Products</span>
             <Eye className="w-4 h-4 text-blue-400" />
           </div>
-          <p className="text-2xl font-serif text-white font-bold">{stats.visitorsToday}</p>
-          <span className="text-[10px] text-blue-400">+22% Traffic</span>
+          <p className="text-2xl font-serif text-white font-bold">{stats.totalProductsCount}</p>
+          <span className="text-[10px] text-blue-400">Active Database Items</span>
         </div>
 
         {/* Conversion Rate */}

@@ -7,6 +7,8 @@ export interface ProductVariant {
 export interface ProductDetails {
   description?: { en: string; ar: string };
   materials?: { en: string; ar: string }[];
+  material?: { en: string; ar: string };
+  silverWeight?: string;
   careGuide?: { en: string; ar: string };
   shippingReturns?: { en: string; ar: string };
   certificate?: { en: string; ar: string };

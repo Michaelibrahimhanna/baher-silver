@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getProductBySlug } from '@/lib/products';
+import { getProductBySlugOrId } from '@/lib/db/productEngine';
 import ProductGallery from '@/components/product/ProductGallery';
 import { Metadata } from 'next';
 import ProductPageClient from './ProductPageClient';
@@ -10,7 +10,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
-  const product = getProductBySlug(resolvedParams.slug);
+  const product = getProductBySlugOrId(resolvedParams.slug);
 
   if (!product) {
     return {
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const resolvedParams = await params;
-  const product = getProductBySlug(resolvedParams.slug);
+  const product = getProductBySlugOrId(resolvedParams.slug);
 
   if (!product) {
     notFound();
