@@ -21,16 +21,26 @@ import {
   Calendar as CalendarIcon,
   Tag,
   Megaphone,
-  Palette,
-  MapPin,
   BarChart3,
+  MapPin,
   Activity,
+  Sliders,
   Bot
 } from 'lucide-react';
+
+import { getSavedDashboardWidgets, saveDashboardWidgets, DashboardWidgetConfig } from '@/lib/services/dashboardWidgetStore';
 
 export default function MissionControlDashboard() {
   const [activeAiTab, setActiveAiTab] = React.useState<'insights' | 'inventory' | 'ads' | 'seo'>('insights');
   const [dbStats, setDbStats] = React.useState<{ revenueTotalFormatted?: string; ordersCount?: number; totalProducts?: number } | null>(null);
+  const [widgets, setWidgets] = React.useState<DashboardWidgetConfig[]>(() => getSavedDashboardWidgets());
+  const [isEditingWidgets, setIsEditingWidgets] = React.useState(false);
+
+  const handleToggleWidget = (id: string) => {
+    const updated = widgets.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w));
+    setWidgets(updated);
+    saveDashboardWidgets(updated);
+  };
 
   // Fetch real dynamic statistics calculated directly from Database Engine API
   React.useEffect(() => {
@@ -134,13 +144,39 @@ export default function MissionControlDashboard() {
               <Megaphone className="w-3.5 h-3.5 text-primary" /> Campaign
             </button>
           </Link>
-          <Link href="/admin/cms">
-            <button className="bg-white/10 text-white border border-white/20 px-3 py-2.5 rounded-xs text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-white/20 transition-colors">
-              <Palette className="w-3.5 h-3.5 text-primary" /> CMS
-            </button>
-          </Link>
+          <button
+            type="button"
+            onClick={() => setIsEditingWidgets(!isEditingWidgets)}
+            className="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:bg-amber-500/30 transition-colors"
+          >
+            <Sliders className="w-3.5 h-3.5 text-amber-400" />
+            {isEditingWidgets ? 'حفظ الودجتس (Save Widgets)' : 'تخصيص الودجتس (Customize Widgets)'}
+          </button>
         </div>
       </div>
+
+      {/* Customization Bar */}
+      {isEditingWidgets && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2">
+          <h4 className="text-xs font-bold text-amber-300">إظهار / إخفاء الودجتس المطلوبة (Widget Customization):</h4>
+          <div className="flex flex-wrap gap-2 text-xs">
+            {widgets.map((w) => (
+              <button
+                key={w.id}
+                type="button"
+                onClick={() => handleToggleWidget(w.id)}
+                className={`rounded-xl px-3 py-1.5 font-bold transition-all border ${
+                  w.visible
+                    ? 'bg-amber-500 text-black border-amber-400'
+                    : 'bg-black/40 text-slate-400 border-white/10 hover:text-white'
+                }`}
+              >
+                {w.title_ar} {w.visible ? '✓' : '✗'}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 13 Enterprise Widgets Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">

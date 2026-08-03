@@ -20,8 +20,16 @@ import { createProductVersionSnapshot, restoreProductVersion } from '../lib/prod
 import { canRoleTransition, createInitialWorkflow, transitionWorkflowState } from '../lib/approval-workflow';
 import { softDeleteProduct, restoreProductFromRecycleBin, filterActiveProducts, filterSoftDeletedProducts } from '../lib/recycle-bin';
 import { calculateProductHealthScore } from '../lib/product-health-score';
-import { generateQRRouterConfig, resolveQRDestinationUrl } from '../lib/qr-router';
+import { generateQRRouterConfig, resolveQRDestinationUrl, ROUTER_DESTINATION_MAP } from '../lib/qr-router';
 import { Product } from '../types/catalog';
+import { pluginEngine } from '../lib/plugins/pluginEngine';
+import { GlobalSearchService } from '../lib/services/globalSearch';
+import { CommandPaletteService } from '../lib/services/commandPaletteService';
+import { globalActivityBus } from '../lib/services/globalActivity';
+import { enterpriseNotificationStore } from '../lib/services/enterpriseNotificationStore';
+import { settingsEngine } from '../lib/services/settingsEngine';
+import { themeEngine, DEFAULT_THEME } from '../lib/services/themeEngine';
+import { BaherBrainAiService } from '../lib/services/baherBrainAi';
 
 
 let passedTests = 0;
@@ -591,6 +599,110 @@ async function runSuite() {
     const memoriesRes = resolveQRDestinationUrl(memoriesConfig, 'silver-ring-slug', 'https://bahersilver.com');
     assert.equal(memoriesRes.isDisabled, true);
     assert.ok(memoriesRes.message?.includes('Baher Memories'));
+  });
+
+  console.log('\n--- 14. ADVANCED ENTERPRISE CAPABILITIES TESTS ---');
+  test('Plugin Architecture Registration & Hook Execution Engine', () => {
+    pluginEngine.registerPlugin({
+      id: 'unit-test-plugin',
+      name: 'Unit Test Plugin',
+      version: '1.0.0',
+      description: 'Test plugin',
+      enabled: true,
+      hooks: {
+        calculate_discount: (data: unknown) => ({ ...(data as Record<string, unknown>), discount: 50 }),
+      },
+    });
+
+    const plugin = pluginEngine.getPlugin('unit-test-plugin');
+    assert.ok(plugin);
+    assert.equal(plugin.enabled, true);
+
+    const hooked = pluginEngine.executeHook('calculate_discount', { discount: 0 });
+    assert.equal(hooked.discount, 50);
+  });
+
+  test('Global Search Engine Multi-Domain Indexing', () => {
+    const hits = GlobalSearchService.search('خاتم');
+    assert.ok(hits.length > 0);
+    assert.equal(hits[0].category, 'product');
+
+    const orderHits = GlobalSearchService.search('BS-2026-000099');
+    assert.ok(orderHits.length > 0);
+  });
+
+  test('Command Palette Action Registry (Ctrl+K)', () => {
+    CommandPaletteService.registerAction({
+      id: 'cmd-test-1',
+      title: 'Test Command',
+      category: 'Actions',
+      perform: () => {},
+    });
+
+    const actions = CommandPaletteService.searchActions('Test Command');
+    assert.ok(actions.length > 0);
+    assert.equal(actions[0].id, 'cmd-test-1');
+  });
+
+  test('Global Activity Bus Real-Time Logging', () => {
+    const evt = globalActivityBus.logEvent({
+      domain: 'security',
+      actor_name: 'Security Guard',
+      actor_role: 'System',
+      title_ar: 'حدث أمني',
+      title_en: 'Security Event',
+      description_ar: 'تفاصيل الحدث',
+      description_en: 'Event details',
+      severity: 'info',
+    });
+
+    assert.ok(evt.id.startsWith('act-'));
+    const secEvents = globalActivityBus.getEvents('security');
+    assert.ok(secEvents.length > 0);
+  });
+
+  test('Enterprise Notification Store Unread Counter', () => {
+    const initialUnread = enterpriseNotificationStore.getUnreadCount();
+    enterpriseNotificationStore.addNotification({
+      category: 'stock_alert',
+      title_ar: 'تنبيه مخزون',
+      title_en: 'Stock Alert',
+      message_ar: 'انخفاض مخزون',
+      message_en: 'Low stock',
+    });
+
+    assert.equal(enterpriseNotificationStore.getUnreadCount(), initialUnread + 1);
+  });
+
+  test('Central Settings Engine Configuration Persistence', () => {
+    const settings = settingsEngine.getSettings();
+    assert.ok(settings.general.storeNameEn.includes('Baher'));
+    assert.equal(settings.tax.standardVatPercent, 14.0);
+
+    const updated = settingsEngine.updateSettings({ general: { ...settings.general, primaryCurrency: 'USD' } });
+    assert.equal(updated.general.primaryCurrency, 'USD');
+  });
+
+  test('Dynamic Theme Engine Styling Configuration', () => {
+    const theme = themeEngine.getTheme();
+    assert.ok(theme.primaryColor);
+    themeEngine.applyTheme(DEFAULT_THEME);
+    assert.equal(themeEngine.getTheme().id, DEFAULT_THEME.id);
+  });
+
+  test('Conversational Baher Brain AI Assistant Natural Language Intent Parsing', () => {
+    const resNav = BaherBrainAiService.processUserCommand('عرض الطلبات', 'ar');
+    assert.equal(resNav.executedAction?.actionType, 'navigate');
+    assert.equal(resNav.executedAction?.payload?.url, '/admin/orders');
+
+    const resCurr = BaherBrainAiService.processUserCommand('تغيير العملة إلى USD', 'ar');
+    assert.equal(resCurr.executedAction?.actionType, 'update_setting');
+  });
+
+  test('Universal Dynamic QR Router Destination Metadata Extensions', () => {
+    assert.ok(ROUTER_DESTINATION_MAP.events);
+    assert.ok(ROUTER_DESTINATION_MAP.video_messages);
+    assert.ok(ROUTER_DESTINATION_MAP.gift_pages);
   });
 
 

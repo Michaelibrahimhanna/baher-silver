@@ -53,6 +53,24 @@ export const ROUTER_DESTINATION_MAP: Record<
     defaultTargetPattern: '/memories/[token]',
     isDisabled: true,
   },
+  events: {
+    name_ar: 'معارض وفعاليات باهر',
+    name_en: 'Events & Exhibitions',
+    description: 'صفحة الفعاليات الخاصة والدعوات الحصرية لمعارض باهر سيلفر',
+    defaultTargetPattern: '/events?token=[token]',
+  },
+  video_messages: {
+    name_ar: 'رسائل الفيديو والإهداء المخصصة',
+    name_en: 'Video Messages & Greeting',
+    description: 'استعراض رسالة الفيديو المرفقة بالإهداء الفضي',
+    defaultTargetPattern: '/greetings/video?token=[token]',
+  },
+  gift_pages: {
+    name_ar: 'بطاقات الإهداء وتغليف الهدية',
+    name_en: 'Gift Page & Personal Card',
+    description: 'استعراض بطاقة المعايدة وتفاصيل إهداء قطعة الفضة',
+    defaultTargetPattern: '/greetings/card?token=[token]',
+  },
   future_services: {
     name_ar: 'خدمات مستقبلية قابلة للتهيئة (Custom Webhook)',
     name_en: 'Configurable Future Service Endpoint',

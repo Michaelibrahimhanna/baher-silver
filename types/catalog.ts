@@ -297,6 +297,9 @@ export type QRDestinationType =
   | 'repair' 
   | 'certificate' 
   | 'memories' 
+  | 'events'
+  | 'video_messages'
+  | 'gift_pages'
   | 'future_services';
 
 export interface QRRouterConfig {

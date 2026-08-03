@@ -3,11 +3,20 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Search, ShoppingBag, Menu, X, Globe, User } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Globe, User, Bell, Palette, Bot, Command, History } from 'lucide-react';
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import type { Dictionary } from '@/lib/dictionary';
 import PredictiveSearch from './PredictiveSearch';
 import { useStore } from '@/lib/store';
+import { enterpriseNotificationStore } from '@/lib/services/enterpriseNotificationStore';
+
+// Admin Enterprise Suite Modals & Drawers
+import { CommandPaletteModal } from '../admin/CommandPaletteModal';
+import { GlobalSearchModal } from '../admin/GlobalSearchModal';
+import { NotificationCenterDrawer } from '../admin/NotificationCenterDrawer';
+import { ThemeBuilderDrawer } from '../admin/ThemeBuilderDrawer';
+import { BaherBrainChatDrawer } from '../admin/BaherBrainChatDrawer';
+import { GlobalActivityDrawer } from '../admin/GlobalActivityDrawer';
 
 export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [hidden, setHidden] = React.useState(false);
@@ -16,12 +25,23 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [dynamicCategories, setDynamicCategories] = React.useState<{ id: string; name: { en: string; ar: string }; slug: string }[]>([]);
 
+  // Enterprise Drawers & Modals State
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = React.useState(false);
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = React.useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
+  const [isThemeBuilderOpen, setIsThemeBuilderOpen] = React.useState(false);
+  const [isAiChatOpen, setIsAiChatOpen] = React.useState(false);
+  const [isActivityOpen, setIsActivityOpen] = React.useState(false);
+
   const { scrollY, scrollYProgress } = useScroll();
   const pathname = usePathname();
   const router = useRouter();
 
   const cart = useStore((state) => state.cart);
   const cartItemCount = cart?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+  const unreadNotifCount = enterpriseNotificationStore.getUnreadCount();
+
+  const isAdminRoute = pathname.includes('/admin');
 
   // Fetch real categories dynamically from Database API
   React.useEffect(() => {
@@ -147,8 +167,67 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
             ))}
           </nav>
 
-          {/* Right Action Icons & Language Switcher */}
-          <div className="flex-1 flex justify-end items-center space-x-5 rtl:space-x-reverse">
+          {/* Right Action Icons & Enterprise Toolbar */}
+          <div className="flex-1 flex justify-end items-center space-x-4 rtl:space-x-reverse">
+            {isAdminRoute && (
+              <>
+                {/* Command Palette Ctrl+K */}
+                <button
+                  type="button"
+                  onClick={() => setIsCommandPaletteOpen(true)}
+                  className="hidden md:flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/20"
+                >
+                  <Command className="h-3.5 w-3.5" />
+                  <span>Ctrl+K</span>
+                </button>
+
+                {/* Baher Brain AI */}
+                <button
+                  type="button"
+                  onClick={() => setIsAiChatOpen(true)}
+                  className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/20"
+                >
+                  <Bot className="h-4 w-4 text-amber-400" />
+                  <span className="hidden sm:inline">AI Brain</span>
+                </button>
+
+                {/* Theme Builder */}
+                <button
+                  type="button"
+                  onClick={() => setIsThemeBuilderOpen(true)}
+                  className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                  title="Theme Builder"
+                >
+                  <Palette className="h-5 w-5" />
+                </button>
+
+                {/* Activity Center */}
+                <button
+                  type="button"
+                  onClick={() => setIsActivityOpen(true)}
+                  className="p-1.5 text-slate-400 hover:text-white transition-colors"
+                  title="Activity Center"
+                >
+                  <History className="h-5 w-5" />
+                </button>
+
+                {/* Notification Center */}
+                <button
+                  type="button"
+                  onClick={() => setIsNotificationsOpen(true)}
+                  className="relative p-1.5 text-slate-400 hover:text-white transition-colors"
+                  title="Notifications"
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadNotifCount > 0 && (
+                    <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-amber-500 text-black text-[9px] font-black flex items-center justify-center">
+                      {unreadNotifCount}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
+
             <button
               onClick={toggleLanguage}
               className="hidden lg:flex items-center gap-1.5 text-xs tracking-widest text-primary/90 hover:text-white transition-colors duration-300 border border-primary/30 hover:border-primary px-3 py-1 rounded-full bg-primary/10 hover:bg-primary/20"
@@ -159,7 +238,7 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
             </button>
 
             <button 
-              onClick={() => setSearchOpen(true)}
+              onClick={() => setIsGlobalSearchOpen(true)}
               className="text-foreground/80 hover:text-white transition-all duration-300 group hover:scale-110 p-1"
               aria-label="Search"
             >
@@ -198,6 +277,39 @@ export function Header({ dict, locale }: { dict: Dictionary; locale: string }) {
       />
       
       <PredictiveSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Enterprise Modals & Drawers */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onOpenAiChat={() => setIsAiChatOpen(true)}
+        onOpenThemeBuilder={() => setIsThemeBuilderOpen(true)}
+      />
+
+      <GlobalSearchModal
+        isOpen={isGlobalSearchOpen}
+        onClose={() => setIsGlobalSearchOpen(false)}
+      />
+
+      <NotificationCenterDrawer
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+      />
+
+      <ThemeBuilderDrawer
+        isOpen={isThemeBuilderOpen}
+        onClose={() => setIsThemeBuilderOpen(false)}
+      />
+
+      <BaherBrainChatDrawer
+        isOpen={isAiChatOpen}
+        onClose={() => setIsAiChatOpen(false)}
+      />
+
+      <GlobalActivityDrawer
+        isOpen={isActivityOpen}
+        onClose={() => setIsActivityOpen(false)}
+      />
 
       {/* Mobile Drawer Menu */}
       <AnimatePresence>
