@@ -764,9 +764,14 @@ export default function EnterpriseProductEditor() {
         <ProductActivityTimeline logs={formData.activity_logs || []} />
       )}
 
-      {/* Tab 9: Media Placeholder */}
+      {/* Tab 9: Media — Real Product Source Upload */}
       {activeTab === 'media' && (
-        <MediaPlaceholderTab primaryImage={formData.primary_image} mediaUrls={formData.media_urls || []} />
+        <MediaPlaceholderTab
+          primaryImage={formData.primary_image}
+          mediaUrls={formData.media_urls || []}
+          onPrimaryImageChange={(url) => setFormData((prev) => ({ ...prev, primary_image: url }))}
+          onMediaUrlsChange={(urls) => setFormData((prev) => ({ ...prev, media_urls: urls }))}
+        />
       )}
 
       {/* Tab 10: Memories Panel */}
