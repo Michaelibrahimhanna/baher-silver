@@ -125,6 +125,21 @@ export default function MaterialsPage() {
               render: (item) => <span className="text-[#888888]">{item.market_cost?.toFixed(2) || '0.00'} / {item.unit_id}</span>
             },
             {
+              key: 'safety_threshold',
+              title: 'Safety Reorder Threshold',
+              render: (item: any) => (
+                <span
+                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                    item.min_stock && item.min_stock > 0
+                      ? 'bg-slate-800 text-slate-200 border-slate-700'
+                      : 'text-[#666666] italic border-transparent'
+                  }`}
+                >
+                  {item.min_stock && item.min_stock > 0 ? `${item.min_stock} ${item.unit_id || 'g'}` : 'Not Set'}
+                </span>
+              )
+            },
+            {
               key: 'actions',
               title: '',
               render: (item) => (

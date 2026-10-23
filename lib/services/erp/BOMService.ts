@@ -7,7 +7,7 @@ export class BOMService {
   static async getBOMsForVariant(variantId: string): Promise<BOM[]> {
     const { data, error } = await supabase
       .from('boms')
-      .select('*, items:bom_items(*, material:materials(*))')
+      .select('*, items:bom_items(*, material:materials(*), gemstone:gemstones(*))')
       .eq('variant_id', variantId)
       .order('version', { ascending: false });
 
@@ -18,7 +18,7 @@ export class BOMService {
   static async getActiveBOMForVariant(variantId: string): Promise<BOM | null> {
     const { data, error } = await supabase
       .from('boms')
-      .select('*, items:bom_items(*, material:materials(*))')
+      .select('*, items:bom_items(*, material:materials(*), gemstone:gemstones(*))')
       .eq('variant_id', variantId)
       .eq('is_active', true)
       .single();

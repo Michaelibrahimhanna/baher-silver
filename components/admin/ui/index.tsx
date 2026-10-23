@@ -42,7 +42,7 @@ export const Select = ({ children, className }: { children: React.ReactNode, cla
 export const MultiSelect = () => (
   <div className="flex flex-wrap gap-2 p-2 border border-white/10 rounded-md bg-[#121212]">
     <Badge>Silver 925 <X className="w-3 h-3 ml-1 inline cursor-pointer hover:text-white" /></Badge>
-    <Badge>Gold 18k <X className="w-3 h-3 ml-1 inline cursor-pointer hover:text-white" /></Badge>
+    <Badge>Fine Silver 999 <X className="w-3 h-3 ml-1 inline cursor-pointer hover:text-white" /></Badge>
     <input placeholder="Add more..." className="bg-transparent border-none outline-none text-sm text-white flex-1 min-w-[100px]" />
   </div>
 );

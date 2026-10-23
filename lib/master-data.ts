@@ -13,6 +13,7 @@ export const MASTER_PURITY_LEVELS: MasterPurityLevel[] = [
   { id: 'pur-950', slug: 'silver-950', name_ar: 'فضة عيار 950 (Britannia Silver)', name_en: '950 Britannia Silver', code: '950', purity_value: 0.950, is_active: true },
   { id: 'pur-999', slug: 'silver-999', name_ar: 'فضة نية عيار 999 (Fine Silver)', name_en: '999 Fine Silver', code: '999', purity_value: 0.999, is_active: true },
   { id: 'pur-900', slug: 'silver-900', name_ar: 'فضة عيار 900 (Coin Silver)', name_en: '900 Coin Silver', code: '900', purity_value: 0.900, is_active: true },
+  { id: 'pur-800', slug: 'silver-800', name_ar: 'فضة عيار 800 (تراثية وأنتيك)', name_en: '800 Heritage Silver', code: '800', purity_value: 0.800, is_active: true },
 ];
 
 export const MASTER_STONE_TYPES: MasterStoneType[] = [

@@ -36,6 +36,33 @@ export const categories: Category[] = [
     },
     slug: 'earrings',
     image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'c5',
+    name: {
+      en: 'Watches',
+      ar: 'ساعات'
+    },
+    slug: 'watches',
+    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'c6',
+    name: {
+      en: 'Accessories & Care',
+      ar: 'إكسسوارات وعناية'
+    },
+    slug: 'accessories',
+    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    id: 'c7',
+    name: {
+      en: 'Packaging & Gifts',
+      ar: 'تغليف وهدايا'
+    },
+    slug: 'packaging',
+    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
   }
 ];
 

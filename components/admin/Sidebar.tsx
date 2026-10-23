@@ -10,6 +10,8 @@ import {
   Layers, 
   Boxes, 
   ShoppingCart, 
+  Receipt,
+  Scale,
   Users, 
   Megaphone, 
   Sparkles,
@@ -25,10 +27,12 @@ export function Sidebar({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (v:
   
   const links = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Retail POS', href: '/admin/pos', icon: Receipt, badge: 'POS' },
     { name: 'Products', href: '/admin/catalog/products', icon: Package },
     { name: 'Categories', href: '/admin/catalog/categories', icon: Tags },
     { name: 'Collections', href: '/admin/catalog/collections', icon: Layers },
     { name: 'Inventory', href: '/admin/erp/inventory', icon: Boxes, count: 3 },
+    { name: 'Dual Ledger', href: '/admin/erp/accounts', icon: Scale, badge: 'ERP' },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart, count: 12 },
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Marketing', href: '/admin/marketing', icon: Megaphone },

@@ -49,7 +49,7 @@ export default function TransferDetailPage() {
             <h3 className="text-lg font-serif text-white mb-6">Transfer Items</h3>
             <div className="p-8 border border-white/5 bg-[#0A0A0A] rounded-md text-center">
               <p className="text-[#888888] mb-4">Silver Chains - 500g</p>
-              <p className="text-[#888888]">Gold Rings - 150g</p>
+              <p className="text-[#888888]">Silver Rings 925 - 150g</p>
             </div>
           </div>
         </div>

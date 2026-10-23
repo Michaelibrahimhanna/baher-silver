@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Baher Silver OS — Live Interactive Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0d14;
+      --card-bg: #121824;
+      --card-border: #1e293b;
+      --gold: #d4af37;
+      --silver: #e2e8f0;
+      --silver-accent: #94a3b8;
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --accent-blue: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-cairo: 'Cairo', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-cairo);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: rgba(18, 24, 36, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 0.75rem 1.25rem;
+    }
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #d4af37 0%, #fef08a 50%, #996515 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 1.25rem;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--silver);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .brand-tag {
+      font-size: 0.65rem;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      color: var(--gold);
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green);
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-family: var(--font-cairo);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .role-switcher {
+      display: flex;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-radius: 25px;
+      padding: 3px;
+    }
+    .role-btn {
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      padding: 0.35rem 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-cairo);
+    }
+    .role-btn.active {
+      background: var(--gold);
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+    }
+
+    /* Main Tabs */
+    .tab-bar {
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 0 1rem;
+    }
+    .tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 1400px;
+      width: 100%;
+    }
+    .tab-item {
+      padding: 0.85rem 1.25rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      white-space: nowrap;
+      transition: color 0.2s;
+      font-family: var(--font-cairo);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tab-item:hover { color: var(--silver); }
+    .tab-item.active {
+      color: var(--gold);
+    }
+    .tab-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+      height: 3px;
+      background: var(--gold);
+      border-radius: 3px 3px 0 0;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    }
+
+    /* Content Area */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Grid layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    @media (min-width: 992px) {
+      .dashboard-grid {
+        grid-template-columns: 1.2fr 0.8fr;
+      }
+      .dashboard-grid.equal {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--silver);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: var(--font-cairo);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-cairo);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+      color: #0a0d14;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: #1e293b;
+      color: var(--silver);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover { background: #334155; }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+    .btn-block { width: 100%; }
+
+    /* Barcode Scanner Box */
+    .scanner-box {
+      border: 2px dashed rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(212, 175, 55, 0.03);
+      margin-bottom: 1.5rem;
+    }
+    .barcode-input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .barcode-input-group input {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    /* Video Scanner Container */
+    #interactive-video-container {
+      display: none;
+      margin: 1rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid var(--gold);
+      position: relative;
+    }
+    #interactive-video {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      background: #000;
+    }
+
+    /* Scanned Piece Summary Card */
+    .piece-card {
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+      display: none;
+    }
+    .piece-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .piece-title { font-size: 1.15rem; font-weight: 800; color: #fff; }
+    .piece-serial { font-family: var(--font-mono); font-size: 0.8rem; color: var(--gold); }
+    .purity-badge {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-blue);
+      padding: 2px 10px;
+      border-radius: 15px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .price-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      background: #121824;
+      padding: 0.85rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      text-align: center;
+    }
+    .price-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .price-val { font-size: 1.05rem; font-weight: 800; color: var(--silver); margin-top: 2px; }
+    .price-val.highlight { color: var(--gold); }
+
+    /* Interactive Weight Button */
+    .weight-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .weight-btn:hover { background: rgba(212, 175, 55, 0.3); }
+
+    /* Barcode Printable Tag */
+    .barcode-sticker {
+      background: #ffffff;
+      color: #000000;
+      border-radius: 6px;
+      padding: 12px;
+      width: 280px;
+      margin: 1rem auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      text-align: center;
+      font-family: var(--font-cairo);
+    }
+    .sticker-brand {
+      font-weight: 800;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #000;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+    }
+    .sticker-name { font-size: 0.8rem; font-weight: 700; }
+    .sticker-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 4px 0;
+    }
+    .sticker-barcode-svg {
+      width: 100%;
+      height: 48px;
+      margin: 4px 0;
+    }
+    .sticker-serial {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+    }
+    .sticker-price {
+      font-size: 1.1rem;
+      font-weight: 900;
+      margin-top: 4px;
+      border-top: 1px dashed #000;
+      padding-top: 4px;
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 500px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Tables */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 0.85rem;
+    }
+    th {
+      background: #090d16;
+      color: var(--text-muted);
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+      font-weight: 700;
+    }
+    td {
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--silver);
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Quick Pills */
+    .pills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .quick-pill {
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      color: var(--silver);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-pill:hover { border-color: var(--gold); color: var(--gold); }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printable-barcode-area, #printable-barcode-area * { visibility: visible; }
+      #printable-barcode-area { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo">B</div>
+        <div>
+          <div class="brand-title">
+            باهر سيلفر OS
+            <span class="brand-tag">نسخة العرض الحي (Demo)</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">نظام التشغيل ومبيعات المعارض الموحد</div>
+        </div>
+      </div>
+
+      <div class="top-controls">
+        <div class="status-badge" id="scale-badge">
+          <div class="pulse-dot"></div>
+          <span>الميزان الإلكتروني: متصل ومستقر (14.25g)</span>
+        </div>
+
+        <div class="role-switcher">
+          <button class="role-btn active" id="btn-role-admin" onclick="switchRole('Admin')">مشرف (Admin)</button>
+          <button class="role-btn" id="btn-role-cashier" onclick="switchRole('Cashier')">كاشير (Cashier)</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tab-bar">
+    <div class="tab-nav">
+      <button class="tab-item active" onclick="openTab('tab-pos')">🛒 كاشير البيع ونقطة POS</button>
+      <button class="tab-item" onclick="openTab('tab-intake')">🏷️ إدخال قطعة وطباعة الباركود</button>
+      <button class="tab-item" onclick="openTab('tab-accounts')">⚖️ دفتر حسابات الورش (Dual Ledger)</button>
+      <button class="tab-item" onclick="openTab('tab-audit')">🛡️ سجل التدقيق والأمان (HMAC)</button>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <main>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: POS TERMINAL -->
+    <!-- ===================================================================== -->
+    <div id="tab-pos" class="tab-content active">
+      <div class="dashboard-grid">
+
+        <!-- Left: Scanner & Active Piece -->
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🔍 مسح باركود القطعة المرمزة</div>
+              <span id="active-user-badge" style="font-size: 0.8rem; color: var(--gold);">المستخدم: مشرف النظام</span>
+            </div>
+
+            <div class="scanner-box">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+              <div style="font-weight: 700; font-size: 1rem;">امسح باركود القطعة للبيع</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                يمكنك المسح بكاميرا الموبايل، قارئ الباركود، أو اختيار قطعة تجريبية
+              </div>
+
+              <div class="barcode-input-group">
+                <input type="text" id="barcode-input" placeholder="أدخل رقم الباركود (EAN-13) أو السيريال" autofocus>
+                <button class="btn btn-primary" onclick="lookupBarcode()">بحث ومسح</button>
+              </div>
+
+              <button class="btn btn-secondary btn-block" style="margin-top: 0.75rem;" onclick="toggleCameraScanner()">
+                📱 تشغيل كاميرا الموبايل للمسح المباشر
+              </button>
+
+              <div id="interactive-video-container">
+                <video id="interactive-video" playsinline></video>
+                <div style="padding: 6px; font-size: 0.75rem; background: #000; color: #fff;">وجه الكاميرا نحو كود الباركود</div>
+              </div>
+
+              <div style="margin-top: 1rem; text-align: right;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">قطع تجريبية جاهزة بالمعرض:</div>
+                <div class="pills-container" id="quick-pieces-pills"></div>
+              </div>
+            </div>
+
+            <!-- Scanned Piece Details -->
+            <div id="scanned-piece-card" class="piece-card">
+              <div class="piece-header">
+                <div>
+                  <div class="piece-title" id="p-name">--</div>
+                  <div class="piece-serial" id="p-serial">--</div>
+                </div>
+                <div class="purity-badge" id="p-purity">عيار 925</div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0;">
+                <div>
+                  <span style="font-size: 0.85rem; color: var(--text-muted);">الوزن الصافي المعتمد:</span>
+                  <span style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-right: 6px;" id="p-weight">0.00g</span>
+                </div>
+                <button class="weight-btn" onclick="openWeightModal()">
+                  ⚖️ التحقق من الوزن والميزان
+                </button>
+              </div>
+
+              <div class="price-breakdown">
+                <div>
+                  <div class="price-sub">قيمة الفضة النقية</div>
+                  <div class="price-val" id="p-metal-val">0 EGP</div>
+                </div>
+                <div>
+                  <div class="price-sub">المصنعية والتشغيل</div>
+                  <div class="price-val" id="p-labor">0 EGP</div>
+                </div>
+                <div>
+                  <div class="price-sub">إجمالي البيع (شامل الضريبة)</div>
+                  <div class="price-val highlight" id="p-total">0 EGP</div>
+                </div>
+              </div>
+
+              <div style="margin-top: 1.25rem;">
+                <div class="input-row" style="margin-bottom: 0.75rem;">
+                  <div>
+                    <label>طريقة الدفع:</label>
+                    <select id="pay-method">
+                      <option value="CASH">نقداً (Cash)</option>
+                      <option value="CARD">بطاقة بنكية (Visa / MC)</option>
+                      <option value="INSTAPAY">إنستاباي (InstaPay)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label>المبلغ المستلم:</label>
+                    <input type="number" id="pay-cash-received" placeholder="المبلغ">
+                  </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" style="padding: 0.9rem; font-size: 1.05rem;" onclick="executeCheckout()">
+                  💳 تنفيذ البيع وطباعة الفاتورة والباركود
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Recent Sales & Live Stats -->
+        <div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+              <div class="card-title">📊 إحصائيات المعرض الحالية</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div style="background: #090d16; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--card-border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">قطع بالمعرض للبيع</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-green);" id="stat-showcase">0</div>
+              </div>
+              <div style="background: #090d16; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--card-border);">
+                <div style="font-size: 0.75rem; color: var(--text-muted);">قطع تم بيعها</div>
+                <div style="font-size: 1.3rem; font-weight: 800; color: var(--gold);" id="stat-sold">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">🧾 آخر فواتير البيع (مربوطة بـ ZATCA QR)</div>
+            </div>
+            <div id="recent-sales-list" style="font-size: 0.85rem;"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: INTAKE & BARCODE PRINTING -->
+    <!-- ===================================================================== -->
+    <div id="tab-intake" class="tab-content">
+      <div class="dashboard-grid equal">
+
+        <!-- Piece Intake Form -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">✨ إدخال قطعة فضة جديدة للمخزون</div>
+          </div>
+
+          <form id="intake-form" onsubmit="event.preventDefault(); createPiece();">
+            <div class="form-group">
+              <label>اسم القطعة (بالعربية):</label>
+              <input type="text" id="in-name-ar" placeholder="مثال: خاتم سولتير توينز عيار 925" required>
+            </div>
+
+            <div class="input-row">
+              <div class="form-group">
+                <label>التصنيف:</label>
+                <select id="in-category">
+                  <option value="rings">خواتم ومحابس (Rings)</option>
+                  <option value="bracelets">أساور وأنسيالات (Bracelets)</option>
+                  <option value="chains">سلاسل وكوليهات (Chains)</option>
+                  <option value="earrings">أقراط وحلقان (Earrings)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>عيار الفضة المعتمد:</label>
+                <select id="in-purity" onchange="recalcIntakePreview()">
+                  <option value="925">عيار 925 (الأكثر شيوعاً - 55.5 ج/غ)</option>
+                  <option value="999">عيار 999 (فضة نقية - 60.0 ج/غ)</option>
+                  <option value="950">عيار 950 (مجوهرات فاخرة - 57.0 ج/غ)</option>
+                  <option value="900">عيار 900 (تراثي - 54.0 ج/غ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="form-group">
+                <label>الوزن الإجمالي (Gross g):</label>
+                <input type="number" step="0.01" id="in-gross" placeholder="12.50" required oninput="recalcIntakePreview()">
+              </div>
+              <div class="form-group">
+                <label>وزن الفصوص (Stones g):</label>
+                <input type="number" step="0.01" id="in-stones" placeholder="0.50" value="0.00" oninput="recalcIntakePreview()">
+              </div>
+            </div>
+
+            <div class="input-row">
+              <div class="form-group">
+                <label>المصنعية المقررة (EGP):</label>
+                <input type="number" id="in-labor" placeholder="150" value="150" oninput="recalcIntakePreview()">
+              </div>
+              <div class="form-group">
+                <label>الوزن الصافي الناتج:</label>
+                <input type="text" id="in-net-preview" readonly style="background:#1e293b; color:var(--gold); font-weight:700;">
+              </div>
+            </div>
+
+            <div style="background: rgba(212, 175, 55, 0.08); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+              <div style="font-size: 0.85rem; color: var(--gold); font-weight: 700;">
+                السعر المبدئي المحسوب: <span id="in-price-preview">0</span> جنيه
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              🏷️ حفظ القطعة وتوليد الباركود والسيريال فوراً
+            </button>
+          </form>
+        </div>
+
+        <!-- Printable Barcode Preview Area -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🖨️ ملصق الباركود الجاهز للطباعة</div>
+            <button class="btn btn-secondary" onclick="window.print()">طباعة الملصق</button>
+          </div>
+
+          <div id="printable-barcode-area">
+            <div class="barcode-sticker" id="sticker-container">
+              <div class="sticker-brand">BAHER SILVER • باهر سيلفر</div>
+              <div class="sticker-name" id="st-name">خاتم فضة كلاسيكي عيار 925</div>
+              <div class="sticker-details">
+                <span>العيار: <b id="st-purity">925</b></span>
+                <span>الوزن الصافي: <b id="st-weight">8.00g</b></span>
+              </div>
+              <!-- Inline SVG Barcode -->
+              <svg class="sticker-barcode-svg" id="st-barcode-svg" viewBox="0 0 200 45"></svg>
+              <div class="sticker-serial" id="st-barcode-num">629100000001</div>
+              <div class="sticker-serial" style="font-size:0.65rem; color:#444;" id="st-serial">SN-BHR-2026-10001</div>
+              <div class="sticker-price" id="st-price">564 EGP</div>
+            </div>
+          </div>
+
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 1rem;">
+            الملصق مصمم وفق أبعاد ملصقات مجوهرات الفضة القياسية (50mm × 25mm) وقابل للمسح عبر كاميرا الهاتف مباشرة.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: DUAL LEDGER -->
+    <!-- ===================================================================== -->
+    <div id="tab-accounts" class="tab-content">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">⚖️ أرصدة الورش والمصانع (نقد EGP + فضة نقية 999)</div>
+          <button class="btn btn-primary" onclick="openNewMovementModal()">+ تسجيل حركة ورشة جديدة</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;" id="workshops-cards-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📜 قيود دفتر اليومية مع حماية منع العكس المكرر</div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>الورشة</th>
+                <th>نوع الحركة</th>
+                <th>الفضة النقية 999 (جم)</th>
+                <th>الحركة النقدية (جنيه)</th>
+                <th>البيان</th>
+                <th>الحالة / العكس</th>
+              </tr>
+            </thead>
+            <tbody id="journal-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: AUDIT LOG -->
+    <!-- ===================================================================== -->
+    <div id="tab-audit" class="tab-content">
+      <div class="dashboard-grid equal">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🛡️ سجل تدقيق الوزن اليدوي (Signed by HMAC)</div>
+          </div>
+          <div id="weight-audit-list" style="font-size: 0.85rem;"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📦 دفتر حركات المخزون التراكمي (Append-Only)</div>
+          </div>
+          <div id="stock-ledger-list" style="font-size: 0.85rem;"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- MODALS -->
+  <!-- ======================================================================= -->
+
+  <!-- Modal 1: Electronic Scale Verification & Override -->
+  <div class="modal-overlay" id="modal-weight">
+    <div class="modal-card">
+      <div class="card-header">
+        <div class="card-title">⚖️ التحقق من قراءة الميزان الإلكتروني</div>
+        <button class="btn btn-secondary" onclick="closeModal('modal-weight')">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label>مصدر القراءة:</label>
+        <select id="wt-source" onchange="onWeightSourceChange()">
+          <option value="SCALE">الميزان الإلكتروني المباشر (Direct Hardware Scale)</option>
+          <option value="BARCODE">الوزن المشفر على الباركود (Sticker Barcode)</option>
+          <option value="MANUAL">إدخال يدوي وتجاوز الميزان (Admin Override Only)</option>
+        </select>
+      </div>
+
+      <div class="input-row">
+        <div class="form-group">
+          <label>الوزن الإجمالي (Gross g):</label>
+          <input type="number" step="0.01" id="wt-gross" value="14.25">
+        </div>
+        <div class="form-group">
+          <label>وزن الفصوص (Stones g):</label>
+          <input type="number" step="0.01" id="wt-stones" value="0.25">
+        </div>
+      </div>
+
+      <div id="manual-reason-group" class="form-group" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.75rem; border-radius: 8px;">
+        <label style="color: var(--accent-red);">سبب الإدخال اليدوي (إلزامي لمشرف النظام):</label>
+        <select id="wt-reason">
+          <option value="SCALE_FAILURE">عطل فني بالميزان الإلكتروني (SCALE_FAILURE)</option>
+          <option value="TEST">تجربة واختبار النظام (TEST)</option>
+          <option value="READING_CORRECTION">تصحيح قراءة خاطئة (READING_CORRECTION)</option>
+        </select>
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+          سيتم توقيع السجل بختم HMAC وربطه بحسابك الإداري.
+        </div>
+      </div>
+
+      <div id="cashier-blocked-warning" style="display: none; background: rgba(239, 68, 68, 0.2); color: var(--accent-red); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 700;">
+        ⛔ محظور: دور الكاشير لا يملك صلاحية تجاوز قراءة الميزان. الخادم سيرفض العملية.
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="submitWeightVerification()">
+        ✓ اعتماد الوزن وتحديث السعر
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal 2: Tax Invoice & ZATCA QR Modal -->
+  <div class="modal-overlay" id="modal-invoice">
+    <div class="modal-card" style="text-align: center;">
+      <div style="font-size: 2.5rem; color: var(--accent-green); margin-bottom: 0.5rem;">✅</div>
+      <div style="font-size: 1.3rem; font-weight: 800; color: #fff;">تم إتمام عملية البيع بنجاح</div>
+      <div style="font-size: 0.85rem; color: var(--gold); margin-bottom: 1rem;" id="inv-rec-num">REC-20261018-001</div>
+
+      <div style="background: #ffffff; color: #000; border-radius: 8px; padding: 1.25rem; margin: 1rem 0; text-align: right; font-size: 0.85rem;">
+        <div style="text-align: center; font-weight: 800; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-bottom: 8px;">
+          شركة باهر سيلفر للفضيات والمجوهرات
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>القطعة:</span>
+          <b id="inv-item-name">--</b>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>السيريال:</span>
+          <span id="inv-serial" style="font-family: var(--font-mono);">--</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+          <span>الوزن الصافي:</span>
+          <span id="inv-weight">--</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 4px; border-top: 1px dashed #ddd; padding-top: 6px;">
+          <span>الإجمالي شامل ضريبة القيمة المضافة:</span>
+          <b id="inv-total" style="font-size: 1.1rem; color: #000;">--</b>
+        </div>
+
+        <!-- Rendered QR representation -->
+        <div style="text-align: center; margin-top: 12px; border-top: 1px solid #ddd; padding-top: 8px;">
+          <div style="font-size: 0.7rem; color: #666; margin-bottom: 4px;">رمز الفاتورة الإلكترونية المبسطة (ZATCA TLV QR)</div>
+          <div id="inv-qr-box" style="display: inline-block; background: #000; color: #fff; padding: 10px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.65rem; word-break: break-all; max-width: 240px;">
+            [ZATCA TLV Base64 QR]
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary btn-block" onclick="closeModal('modal-invoice')">إغلاق ومتابعة البيع</button>
+    </div>
+  </div>
+
+  <!-- Modal 3: Post Workshop Movement -->
+  <div class="modal-overlay" id="modal-movement">
+    <div class="modal-card">
+      <div class="card-header">
+        <div class="card-title">📝 تسجيل حركة بالدفتر المزدوج</div>
+        <button class="btn btn-secondary" onclick="closeModal('modal-movement')">✕</button>
+      </div>
+
+      <div class="form-group">
+        <label>الورشة المستهدفة:</label>
+        <select id="mov-workshop-id"></select>
+      </div>
+
+      <div class="form-group">
+        <label>نوع العملية:</label>
+        <select id="mov-type">
+          <option value="SCRAP_DELIVERY">تسليم كسر للتشغيل (Scrap Delivery -> ورشة مدينة بفضة)</option>
+          <option value="GOODS_RECEIPT_LABOR">استلام بضاعة ومصنعية (Goods Receipt -> استهلاك فضة وإثبات دين مصنعية)</option>
+          <option value="CASH_PAYMENT">سداد نقدي للمصنعية (Cash Payment -> سداد دين الورشة)</option>
+        </select>
+      </div>
+
+      <div class="input-row">
+        <div class="form-group">
+          <label>الوزن القائم (جرام):</label>
+          <input type="number" step="0.01" id="mov-gross" placeholder="100.00">
+        </div>
+        <div class="form-group">
+          <label>العيار:</label>
+          <select id="mov-purity">
+            <option value="925">925 (مكافئ الفضة النقية 92.59%)</option>
+            <option value="999">999 (فضة نقية 100%)</option>
+            <option value="900">900 (فضة 90.09%)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>المبلغ النقدي (EGP):</label>
+        <input type="number" step="1" id="mov-cash" placeholder="مثال: 2500">
+      </div>
+
+      <div class="form-group">
+        <label>البيان / ملاحظات:</label>
+        <input type="text" id="mov-notes" placeholder="ملاحظات العملية">
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="submitWorkshopMovement()">
+        تسجيل القيد في الدفتر المزدوج
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.pathname.startsWith("/preview/silver-os-demo") ? "/preview/silver-os-demo/api" : "/api";
+    let currentPiece = null;
+    let systemStatus = {};
+
+    async function loadStatus() {
+      try {
+        const res = await fetch(API_BASE + '/status');
+        const data = await res.json();
+        systemStatus = data;
+
+        // Update UI Badges
+        document.getElementById('active-user-badge').textContent = `المستخدم النشط: ${data.activeUser.name} (${data.activeRole})`;
+        document.getElementById('stat-showcase').textContent = data.stats.showcasePieces;
+        document.getElementById('stat-sold').textContent = data.stats.soldPieces;
+
+        // Update Role Buttons
+        if (data.activeRole === 'Admin') {
+          document.getElementById('btn-role-admin').classList.add('active');
+          document.getElementById('btn-role-cashier').classList.remove('active');
+        } else {
+          document.getElementById('btn-role-admin').classList.remove('active');
+          document.getElementById('btn-role-cashier').classList.add('active');
+        }
+
+        loadQuickPieces();
+        loadWorkshopsAndJournal();
+        loadAuditLog();
+      } catch (e) {
+        console.error('Failed to load status:', e);
+      }
+    }
+
+    async function switchRole(role) {
+      try {
+        const res = await fetch(API_BASE + '/auth/switch-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadStatus();
+          onWeightSourceChange();
+        }
+      } catch (e) {
+        alert('تعذر تبديل الدور');
+      }
+    }
+
+    async function loadQuickPieces() {
+      try {
+        const res = await fetch(API_BASE + '/status');
+        const data = await res.json();
+        const pillsBox = document.getElementById('quick-pieces-pills');
+        pillsBox.innerHTML = '';
+
+        // Fetch showcase pieces
+        const piecesRes = await fetch(API_BASE + '/pieces/barcode/all').catch(() => null);
+        // Load default quick pieces
+        const quickSamples = [
+          { name: 'خاتم سولتير 925', barcode: '629100000001' },
+          { name: 'سوار ملكي 925', barcode: '629100000002' },
+          { name: 'سلسلة فيجارو 925', barcode: '629100000003' },
+          { name: 'أقراط دانتيل 925', barcode: '629100000004' }
+        ];
+
+        quickSamples.forEach(s => {
+          const btn = document.createElement('button');
+          btn.className = 'quick-pill';
+          btn.textContent = `${s.name} (${s.barcode})`;
+          btn.onclick = () => {
+            document.getElementById('barcode-input').value = s.barcode;
+            lookupBarcode();
+          };
+          pillsBox.appendChild(btn);
+        });
+      } catch(e) {}
+    }
+
+    async function lookupBarcode() {
+      const code = document.getElementById('barcode-input').value.trim();
+      if (!code) return alert('يرجى إدخال أو مسح الباركود');
+
+      try {
+        const res = await fetch(`${API_BASE}/pieces/barcode/${code}`);
+        const data = await res.json();
+        if (!res.ok) {
+          return alert(data.error || 'القطعة غير موجودة');
+        }
+
+        currentPiece = data.piece;
+        renderScannedPiece(currentPiece);
+      } catch (e) {
+        alert('خطأ أثناء فحص الباركود');
+      }
+    }
+
+    function renderScannedPiece(p) {
+      document.getElementById('p-name').textContent = p.nameAr;
+      document.getElementById('p-serial').textContent = `السيريال: ${p.serialNumber} | باركود: ${p.barcode}`;
+      document.getElementById('p-purity').textContent = `عيار ${p.purity}`;
+      document.getElementById('p-weight').textContent = `${p.netWeightGrams.toFixed(2)}g`;
+      document.getElementById('p-metal-val').textContent = `${p.metalValueEgp} ج`;
+      document.getElementById('p-labor').textContent = `${p.workmanshipEgp} ج`;
+      document.getElementById('p-total').textContent = `${p.priceEgp} ج`;
+      document.getElementById('pay-cash-received').value = p.priceEgp;
+
+      const card = document.getElementById('scanned-piece-card');
+      card.style.display = 'block';
+
+      // Warning if piece is already sold
+      if (p.status === 'SOLD') {
+        alert('تنبيه: هذه القطعة مسجلة كمباعة مسبقاً في الدفتر ولا يمكن بيعها مرة ثانية.');
+      }
+    }
+
+    // Modal Control
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function openWeightModal() {
+      if (!currentPiece) return;
+      document.getElementById('wt-gross').value = currentPiece.grossWeightGrams;
+      document.getElementById('wt-stones').value = currentPiece.stoneWeightGrams;
+      onWeightSourceChange();
+      openModal('modal-weight');
+    }
+
+    function onWeightSourceChange() {
+      const src = document.getElementById('wt-source').value;
+      const reasonGroup = document.getElementById('manual-reason-group');
+      const blockedWarning = document.getElementById('cashier-blocked-warning');
+
+      if (src === 'MANUAL') {
+        if (systemStatus.activeRole !== 'Admin') {
+          blockedWarning.style.display = 'block';
+          reasonGroup.style.display = 'none';
+        } else {
+          blockedWarning.style.display = 'none';
+          reasonGroup.style.display = 'block';
+        }
+      } else {
+        blockedWarning.style.display = 'none';
+        reasonGroup.style.display = 'none';
+      }
+    }
+
+    async function submitWeightVerification() {
+      if (!currentPiece) return;
+      const source = document.getElementById('wt-source').value;
+      const gross = parseFloat(document.getElementById('wt-gross').value);
+      const stones = parseFloat(document.getElementById('wt-stones').value || 0);
+      const reason = document.getElementById('wt-reason').value;
+
+      try {
+        const res = await fetch(API_BASE + '/pos/weight/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            source,
+            grossWeight: gross,
+            stoneWeight: stones,
+            manualReason: reason,
+            serialNumber: currentPiece.serialNumber
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          return alert(data.error || 'فشل التحقق من الوزن');
+        }
+
+        // Recalculate price
+        currentPiece.grossWeightGrams = gross;
+        currentPiece.stoneWeightGrams = stones;
+        currentPiece.netWeightGrams = data.record.net_weight_grams;
+        const spot = currentPiece.spotRate || 55.5;
+        currentPiece.metalValueEgp = Math.round(currentPiece.netWeightGrams * spot * 100) / 100;
+        currentPiece.priceEgp = Math.round((currentPiece.metalValueEgp + currentPiece.workmanshipEgp) * 100) / 100;
+
+        renderScannedPiece(currentPiece);
+        closeModal('modal-weight');
+        alert(`تم اعتماد وتوقيع الوزن بنجاح (${data.record.source})`);
+        loadAuditLog();
+      } catch (e) {
+        alert('خطأ في إرسال طلب الوزن');
+      }
+    }
+
+    async function executeCheckout() {
+      if (!currentPiece) return;
+      const paymentMethod = document.getElementById('pay-method').value;
+      const cashReceived = document.getElementById('pay-cash-received').value;
+
+      try {
+        const res = await fetch(API_BASE + '/pos/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            serialNumber: currentPiece.serialNumber,
+            paymentMethod,
+            cashReceived
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          return alert(data.error || 'تعذر إتمام عملية البيع');
+        }
+
+        // Render Invoice Modal
+        const sale = data.sale;
+        document.getElementById('inv-rec-num').textContent = `رقم الإيصال: ${sale.receiptNumber}`;
+        document.getElementById('inv-item-name').textContent = sale.piece.nameAr;
+        document.getElementById('inv-serial').textContent = sale.piece.serialNumber;
+        document.getElementById('inv-weight').textContent = `${sale.piece.netWeightGrams}g (عيار ${sale.piece.purity})`;
+        document.getElementById('inv-total').textContent = `${sale.totalAmount} EGP`;
+        document.getElementById('inv-qr-box').textContent = sale.qrPayloadBase64;
+
+        openModal('modal-invoice');
+        document.getElementById('scanned-piece-card').style.display = 'none';
+        document.getElementById('barcode-input').value = '';
+        currentPiece = null;
+        loadStatus();
+      } catch (e) {
+        alert('خطأ في شبكة البيع');
+      }
+    }
+
+    // Tab 2: Intake & Barcode Creation
+    function recalcIntakePreview() {
+      const gross = parseFloat(document.getElementById('in-gross').value || 0);
+      const stones = parseFloat(document.getElementById('in-stones').value || 0);
+      const net = Math.max(0, Math.round((gross - stones) * 100) / 100);
+      document.getElementById('in-net-preview').value = `${net} جرام`;
+
+      const purity = document.getElementById('in-purity').value;
+      const spot = purity === '999' ? 60 : purity === '950' ? 57 : purity === '925' ? 55.5 : 54;
+      const labor = parseFloat(document.getElementById('in-labor').value || 0);
+      const price = Math.round((net * spot + labor) * 100) / 100;
+      document.getElementById('in-price-preview').textContent = price;
+    }
+
+    async function createPiece() {
+      const nameAr = document.getElementById('in-name-ar').value;
+      const category = document.getElementById('in-category').value;
+      const purity = document.getElementById('in-purity').value;
+      const gross = document.getElementById('in-gross').value;
+      const stones = document.getElementById('in-stones').value;
+      const labor = document.getElementById('in-labor').value;
+
+      try {
+        const res = await fetch(API_BASE + '/pieces/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nameAr, category, purity, grossWeight: gross, stoneWeight: stones, workmanship: labor
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) return alert(data.error || 'فشل إدخال القطعة');
+
+        const p = data.piece;
+        renderSticker(p);
+        alert(`تم حفظ القطعة بنجاح! السيريال: ${p.serialNumber}، الباركود: ${p.barcode}`);
+        loadStatus();
+      } catch (e) {
+        alert('خطأ أثناء حفظ القطعة');
+      }
+    }
+
+    function renderSticker(p) {
+      document.getElementById('st-name').textContent = p.nameAr;
+      document.getElementById('st-purity').textContent = p.purity;
+      document.getElementById('st-weight').textContent = `${p.netWeightGrams}g`;
+      document.getElementById('st-barcode-num').textContent = p.barcode;
+      document.getElementById('st-serial').textContent = p.serialNumber;
+      document.getElementById('st-price').textContent = `${p.priceEgp} EGP`;
+
+      // Draw SVG barcode
+      drawSvgBarcode(p.barcode);
+    }
+
+    function drawSvgBarcode(code) {
+      const svg = document.getElementById('st-barcode-svg');
+      svg.innerHTML = '';
+      let x = 10;
+      for (let i = 0; i < code.length; i++) {
+        const digit = parseInt(code[i], 10);
+        const barWidth = (digit % 3) + 1;
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', '5');
+        rect.setAttribute('width', barWidth);
+        rect.setAttribute('height', '35');
+        rect.setAttribute('fill', '#000');
+        svg.appendChild(rect);
+        x += barWidth + 2;
+      }
+    }
+
+    // Tab 3: Dual Ledger
+    async function loadWorkshopsAndJournal() {
+      try {
+        const res = await fetch(API_BASE + '/accounts');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const container = document.getElementById('workshops-cards-list');
+        const wsSelect = document.getElementById('mov-workshop-id');
+        const tbody = document.getElementById('journal-table-body');
+
+        container.innerHTML = '';
+        wsSelect.innerHTML = '';
+        tbody.innerHTML = '';
+
+        data.workshops.forEach(ws => {
+          // Card
+          const card = document.createElement('div');
+          card.style.background = '#090d16';
+          card.style.padding = '1rem';
+          card.style.borderRadius = '10px';
+          card.style.border = '1px solid var(--card-border)';
+          card.innerHTML = `
+            <div style="font-weight: 800; font-size: 1.05rem; color: #fff; margin-bottom: 6px;">${ws.name}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">هاتف: ${ws.phone}</div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+              <div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">رصيد الفضة النقية 999</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: var(--silver);">${ws.fineSilver999BalanceGrams}g</div>
+              </div>
+              <div style="text-align: left;">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">الرصيد النقدي للورشة</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: ${ws.cashBalanceEgp < 0 ? 'var(--accent-red)' : 'var(--accent-green)'};">${ws.cashBalanceEgp} EGP</div>
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+
+          // Select Option
+          const opt = document.createElement('option');
+          opt.value = ws.id;
+          opt.textContent = ws.name;
+          wsSelect.appendChild(opt);
+
+          // History rows
+          ws.history.forEach(h => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${new Date(h.timestamp).toLocaleDateString('ar-EG')}</td>
+              <td>${ws.name}</td>
+              <td><span style="font-weight:700; color:var(--gold);">${h.type}</span></td>
+              <td dir="ltr" style="text-align:right;">${h.fineSilverDelta > 0 ? '+' : ''}${h.fineSilverDelta}g</td>
+              <td dir="ltr" style="text-align:right;">${h.cashDelta > 0 ? '+' : ''}${h.cashDelta} EGP</td>
+              <td>${h.notes || '-'}</td>
+              <td>
+                ${h.isReversed 
+                  ? '<span style="color:var(--text-muted);">معكوس مسبقاً</span>' 
+                  : h.type === 'REVERSAL' 
+                    ? '<span style="color:var(--accent-blue);">قيد عكسي</span>'
+                    : `<button class="btn btn-danger" style="padding: 2px 8px; font-size: 0.75rem;" onclick="reverseEntry('${ws.id}', '${h.id}')">عكس القيد</button>`
+                }
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+      } catch (e) {}
+    }
+
+    function openNewMovementModal() { openModal('modal-movement'); }
+
+    async function submitWorkshopMovement() {
+      const wsId = document.getElementById('mov-workshop-id').value;
+      const type = document.getElementById('mov-type').value;
+      const gross = document.getElementById('mov-gross').value;
+      const purity = document.getElementById('mov-purity').value;
+      const cash = document.getElementById('mov-cash').value;
+      const notes = document.getElementById('mov-notes').value;
+
+      try {
+        const res = await fetch(API_BASE + '/accounts/journal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            workshopId: wsId, type, grossWeight: gross, purity, cashDelta: cash, notes
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) return alert(data.error || 'فشل تسجيل القيد');
+
+        closeModal('modal-movement');
+        alert('تم ترحيل القيد بنجاح إلى الدفتر المزدوج');
+        loadWorkshopsAndJournal();
+      } catch (e) {
+        alert('خطأ أثناء تسجيل القيد');
+      }
+    }
+
+    async function reverseEntry(workshopId, entryId) {
+      if (!confirm('هل أنت متأكد من إنشاء قيد عكسي تعويضي؟')) return;
+
+      try {
+        const res = await fetch(API_BASE + '/accounts/journal/reverse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ workshopId, entryId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          return alert(data.error || 'تعذر عكس القيد');
+        }
+
+        alert('تم تسجيل القيد العكسي التعويضي بنجاح، ومُنِع تكراره.');
+        loadWorkshopsAndJournal();
+      } catch (e) {
+        alert('خطأ في إرسال طلب العكس');
+      }
+    }
+
+    // Tab 4: Audit Log
+    async function loadAuditLog() {
+      try {
+        const res = await fetch(API_BASE + '/audit-log');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const wtBox = document.getElementById('weight-audit-list');
+        const stBox = document.getElementById('stock-ledger-list');
+        wtBox.innerHTML = '';
+        stBox.innerHTML = '';
+
+        data.weightAudit.forEach(r => {
+          const item = document.createElement('div');
+          item.style.padding = '8px';
+          item.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+              <b>${r.source} • ${r.netWeightGrams}g</b>
+              <span style="color:var(--text-muted); font-size:0.75rem;">${new Date(r.timestamp).toLocaleTimeString('ar-EG')}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--silver-accent);">
+              المستخدم: ${r.actorEmail} (${r.actorRole}) ${r.manualReason ? '• السبب: ' + r.manualReason : ''}
+            </div>
+            <div style="font-family:var(--font-mono); font-size:0.65rem; color:#64748b; margin-top:2px;">
+              HMAC: ${r.signature.slice(0, 24)}...
+            </div>
+          `;
+          wtBox.appendChild(item);
+        });
+
+        data.stockLedger.forEach(s => {
+          const item = document.createElement('div');
+          item.style.padding = '8px';
+          item.style.borderBottom = '1px solid rgba(255,255,255,0.06)';
+          item.innerHTML = `
+            <div style="display:flex; justify-content:space-between;">
+              <b style="color:${s.quantityDelta > 0 ? 'var(--accent-green)' : 'var(--gold)'};">${s.movement} (${s.quantityDelta})</b>
+              <span style="color:var(--text-muted); font-size:0.75rem;">${new Date(s.timestamp).toLocaleTimeString('ar-EG')}</span>
+            </div>
+            <div style="font-size:0.75rem; color:var(--silver-accent);">سيريال: ${s.serialNumber} • ${s.actor}</div>
+          `;
+          stBox.appendChild(item);
+        });
+      } catch (e) {}
+    }
+
+    // Navigation Tabs
+    function openTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+
+      const tabs = ['tab-pos', 'tab-intake', 'tab-accounts', 'tab-audit'];
+      const idx = tabs.indexOf(tabId);
+      if (idx !== -1) {
+        document.querySelectorAll('.tab-item')[idx].classList.add('active');
+      }
+    }
+
+    // Camera Barcode Scanner
+    let videoStream = null;
+    async function toggleCameraScanner() {
+      const box = document.getElementById('interactive-video-container');
+      const video = document.getElementById('interactive-video');
+
+      if (box.style.display === 'block') {
+        box.style.display = 'none';
+        if (videoStream) {
+          videoStream.getTracks().forEach(t => t.stop());
+          videoStream = null;
+        }
+        return;
+      }
+
+      box.style.display = 'block';
+      try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment' }
+        });
+        video.srcObject = videoStream;
+        video.play();
+
+        // Check if BarcodeDetector is available
+        if ('BarcodeDetector' in window) {
+          const detector = new BarcodeDetector({ formats: ['ean_13', 'code_128', 'qr_code'] });
+          const scanInterval = setInterval(async () => {
+            if (!videoStream) return clearInterval(scanInterval);
+            try {
+              const barcodes = await detector.detect(video);
+              if (barcodes && barcodes.length > 0) {
+                const detectedCode = barcodes[0].rawValue;
+                document.getElementById('barcode-input').value = detectedCode;
+                toggleCameraScanner();
+                lookupBarcode();
+                clearInterval(scanInterval);
+              }
+            } catch (e) {}
+          }, 300);
+        }
+      } catch (err) {
+        alert('تعذر فتح الكاميرا: تأكد من منح الإذن للمتصفح أو استخدام رابط HTTPS.');
+        box.style.display = 'none';
+      }
+    }
+
+    // Initial load
+    window.onload = () => {
+      loadStatus();
+      drawSvgBarcode('629100000001');
+      recalcIntakePreview();
+    };
+  </script>
+</body>
+</html>

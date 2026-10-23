@@ -18,7 +18,7 @@ This document serves as the comprehensive schema and architecture manual for the
 **Relationships**: One-to-Many with `products`.
 
 ## 2. `materials`
-**Purpose**: Primary material composition (e.g., "Silver 925", "Gold 18K").
+**Purpose**: Primary material composition (e.g., "Silver 925", "Fine Silver 999").
 - `id` (UUID): Primary Key.
 - `slug`, `name_ar`, `name_en`.
 **Usage**: Allows global filtering by material independently of custom attributes.

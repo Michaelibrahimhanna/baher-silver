@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
+import { assertApiAuth, handleApiAuthError } from '@/lib/auth/apiGuard';
 
 export async function POST(request: Request) {
   try {
+    await assertApiAuth(request, {
+      requiredPermission: 'product:manage',
+      actionDescription: 'Media Upload'
+    });
+
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
 
@@ -26,7 +32,6 @@ export async function POST(request: Request) {
       url: permanentDataUrl,
     });
   } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : 'Failed to process file';
-    return NextResponse.json({ success: false, error: errorMsg }, { status: 500 });
+    return handleApiAuthError(error);
   }
 }

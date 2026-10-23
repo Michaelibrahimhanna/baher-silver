@@ -148,6 +148,15 @@ export default function SuppliersPage() {
               render: (item) => <span className="text-[#888888]">{item.country || '-'}</span>
             },
             {
+              key: 'lead_time',
+              title: 'Lead Time (Days)',
+              render: (item: any) => (
+                <span className="text-[#888888] font-mono">
+                  {item.lead_time_days ? `${item.lead_time_days} days` : '-'}
+                </span>
+              )
+            },
+            {
               key: 'status',
               title: 'Status',
               render: (item) => (

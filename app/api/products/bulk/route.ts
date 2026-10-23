@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { assertApiAuth, handleApiAuthError } from '@/lib/auth/apiGuard';
 
 export async function POST(req: NextRequest) {
   try {
+    await assertApiAuth(req, {
+      requiredPermission: 'product:manage',
+      actionDescription: 'Bulk Product Operations'
+    });
+
     const body = await req.json();
     const { action, productIds, payload } = body;
 
@@ -44,7 +50,6 @@ export async function POST(req: NextRequest) {
       message,
     });
   } catch (err: unknown) {
-    const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ success: false, error: errorMsg }, { status: 500 });
+    return handleApiAuthError(err);
   }
 }

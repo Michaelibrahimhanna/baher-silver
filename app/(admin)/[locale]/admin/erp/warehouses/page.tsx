@@ -2,37 +2,96 @@
 
 import * as React from 'react';
 import { Button } from '@/components/admin/ui';
-import { Plus, Building2, TrendingUp, AlertTriangle, ArrowRightLeft, Layers } from 'lucide-react';
+import { Building2, TrendingUp, AlertTriangle, ArrowRightLeft, Layers, ShieldCheck, RefreshCw } from 'lucide-react';
 import { DataTable } from '@/components/admin/tables/DataTable';
 import { CrudLayout } from '@/components/admin/crud/CrudLayout';
-import { useWarehouses } from '@/lib/hooks/useERP';
+import { MASTER_WAREHOUSES } from '@/lib/master-data';
 import Link from 'next/link';
 
 export default function WarehousesPage() {
   const [search, setSearch] = React.useState('');
-  const { data: warehouses, isLoading } = useWarehouses();
+  const [stockData, setStockData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // Mock KPIs for now, later fetched from an analytics service
+  const fetchStock = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/inventory/stock');
+      if (res.ok) {
+        const data = await res.json();
+        setStockData(data);
+      }
+    } catch (e) {
+      console.error('Failed to load stock data for warehouses', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    fetchStock();
+  }, [fetchStock]);
+
+  const summary = stockData?.summary || {
+    total_on_hand: 0,
+    vault_stock: 0,
+    showcase_stock: 0,
+    available_stock: 0
+  };
+
   const kpis = [
-    { label: 'Total Warehouses', value: warehouses?.length || 0, icon: Building2, color: 'text-blue-400' },
-    { label: 'Stock Value', value: 'E£ 4.2M', icon: TrendingUp, color: 'text-green-400' },
-    { label: 'Pending Transfers', value: 12, icon: ArrowRightLeft, color: 'text-orange-400' },
-    { label: 'Low Stock Alerts', value: 8, icon: AlertTriangle, color: 'text-red-400' },
-    { label: 'Overall Occupancy', value: '78%', icon: Layers, color: 'text-purple-400' },
-    { label: 'Inventory Accuracy', value: '99.8%', icon: TrendingUp, color: 'text-emerald-400' },
+    { label: 'Active Warehouses', value: MASTER_WAREHOUSES.length, icon: Building2, color: 'text-blue-400' },
+    { label: 'Central Vault Stock', value: summary.vault_stock, icon: Layers, color: 'text-emerald-400' },
+    { label: 'Showcase Floor Stock', value: summary.showcase_stock, icon: TrendingUp, color: 'text-amber-400' },
+    { label: 'Available Stock', value: summary.available_stock, icon: ShieldCheck, color: 'text-purple-400' },
+    { label: 'Total Stock On Hand', value: summary.total_on_hand, icon: Building2, color: 'text-cyan-400' },
+    { label: 'Inventory Accuracy', value: '100%', icon: ShieldCheck, color: 'text-green-400' },
   ];
+
+  const warehouseRows = MASTER_WAREHOUSES.map((wh) => {
+    // Count pieces in this warehouse from stockData
+    let onHandCount = 0;
+    let vaultCount = 0;
+    let showcaseCount = 0;
+
+    if (stockData?.balances) {
+      for (const b of stockData.balances) {
+        const wb = b.warehouse_breakdown?.[wh.id];
+        if (wb) {
+          onHandCount += wb.on_hand || 0;
+          vaultCount += wb.vault || 0;
+          showcaseCount += wb.showcase || 0;
+        }
+      }
+    }
+
+    return {
+      ...wh,
+      on_hand: onHandCount,
+      vault: vaultCount,
+      showcase: showcaseCount
+    };
+  });
 
   return (
     <CrudLayout 
-      title="Warehouses & Stock" 
-      description="Manage locations, monitor inventory accuracy, and orchestrate transfers."
+      title="Warehouses & Vault Locations" 
+      description="Manage central vaults, branch safes, showcases, and fulfillment centers."
       headerActions={
-        <>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            className="gap-2 text-[#888888] hover:text-white"
+            onClick={fetchStock}
+            disabled={loading}
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           <Link href="/admin/erp/warehouses/transfers">
-            <Button variant="secondary" className="gap-2"><ArrowRightLeft className="w-4 h-4" /> Transfers</Button>
+            <Button variant="primary" className="gap-2"><ArrowRightLeft className="w-4 h-4" /> Move / Transfer</Button>
           </Link>
-          <Button variant="primary" className="gap-2"><Plus className="w-4 h-4" /> New Warehouse</Button>
-        </>
+        </div>
       }
     >
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -47,31 +106,54 @@ export default function WarehousesPage() {
 
       <div className="animate-in fade-in duration-700">
         <DataTable
-          data={warehouses || []}
+          data={warehouseRows}
           keyExtractor={(item) => item.id}
-          isLoading={isLoading}
+          isLoading={loading}
           searchQuery={search}
           onSearchChange={setSearch}
           searchPlaceholder="Search warehouses..."
           columns={[
             {
               key: 'code',
-              title: 'Code',
-              render: (item) => <span className="text-[#888888] font-mono">{item.code}</span>
+              title: 'Code / Location',
+              render: (item) => (
+                <div>
+                  <span className="text-[#888888] font-mono text-xs">{item.id}</span>
+                  <span className="text-amber-400 font-mono text-[10px] block">{item.location_code}</span>
+                </div>
+              )
             },
             {
               key: 'name',
               title: 'Warehouse Name',
               render: (item) => (
-                <Link href={`/admin/erp/warehouses/${item.id}`} className="text-white font-medium hover:text-primary transition-colors">
-                  {item.name}
-                </Link>
+                <div>
+                  <span className="text-white font-medium block">{item.name_en}</span>
+                  <span className="text-[#888888] text-xs">{item.name_ar}</span>
+                </div>
               )
             },
             {
-              key: 'type',
-              title: 'Type',
-              render: (item) => <span className="text-[#888888]">{item.type?.name || '-'}</span>
+              key: 'capacity',
+              title: 'Capacity',
+              render: (item) => (
+                <span className="text-[#aaaaaa] font-mono text-xs">
+                  {item.capacity ? item.capacity.toLocaleString() : '—'} units
+                </span>
+              )
+            },
+            {
+              key: 'live_stock',
+              title: 'Live Stock Breakdown',
+              render: (item) => (
+                <div className="text-xs font-mono">
+                  <span className="text-emerald-400">Vault: {item.vault}</span>
+                  <span className="text-[#666666] mx-1.5">|</span>
+                  <span className="text-amber-400">Showcase: {item.showcase}</span>
+                  <span className="text-[#666666] mx-1.5">|</span>
+                  <span className="text-white font-bold">Total: {item.on_hand}</span>
+                </div>
+              )
             },
             {
               key: 'status',
@@ -88,3 +170,4 @@ export default function WarehousesPage() {
     </CrudLayout>
   );
 }
+

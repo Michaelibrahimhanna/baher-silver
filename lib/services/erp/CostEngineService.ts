@@ -64,7 +64,8 @@ export class CostEngineService {
     const tax_amount = priceBeforeTax * (Number(config.tax_rate || 0) / 100);
     const discount_amount = priceBeforeTax * (Number(config.discount_rate || 0) / 100);
     
-    const final_selling_price = priceBeforeTax + tax_amount - discount_amount;
+    const rawPrice = priceBeforeTax + tax_amount - discount_amount;
+    const final_selling_price = Math.max(0, Number(rawPrice.toFixed(2)));
 
     const calculation: Partial<CostCalculationHistory> = {
       material_cost,

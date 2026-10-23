@@ -54,9 +54,9 @@ export function restoreProductFromRecycleBin(product: Product): Product {
 }
 
 export function filterActiveProducts(products: Product[]): Product[] {
-  return products.filter((p) => !p.is_soft_deleted && p.deleted_at === null);
+  return products.filter((p) => !p.is_soft_deleted && !p.deleted_at);
 }
 
 export function filterSoftDeletedProducts(products: Product[]): Product[] {
-  return products.filter((p) => p.is_soft_deleted || p.deleted_at !== null);
+  return products.filter((p) => Boolean(p.is_soft_deleted || p.deleted_at));
 }

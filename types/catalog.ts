@@ -1,7 +1,10 @@
+import type { IndividualPiece } from '@/lib/types';
+
 export type ProductStatus = 'draft' | 'published' | 'hidden' | 'archived' | 'out_of_stock' | 'coming_soon' | 'pre_order' | 'discontinued';
 export type VisibilityStatus = 'public' | 'hidden';
 export type PublishingStatus = 'immediate' | 'scheduled';
-export type SilverPurity = '925' | '950' | '999';
+export type ProductProfileType = 'SILVER_JEWELRY' | 'NON_SILVER_RETAIL';
+export type SilverPurity = '800' | '900' | '925' | '950' | '999';
 export type GenderTarget = 'women' | 'men' | 'unisex';
 
 export interface Brand {
@@ -320,9 +323,12 @@ export interface Product {
   subcategory_id?: string | null;
   collection_id?: string | null;
   template_id?: string | null;
+  profile_type?: ProductProfileType;
   slug: string;
   sku: string;
   barcode?: string;
+  is_serialized?: boolean;
+  pieces?: IndividualPiece[];
   internal_qr?: string;
   customer_qr?: string;
   qr_destination_type?: QRDestinationType;
@@ -422,7 +428,12 @@ export interface Product {
   deleted_at?: string | null;
 
   // Relations & Extras
-  brand?: Pick<Brand, 'name_en'> | null;
+  brand?: string | Pick<Brand, 'name_en'> | null;
+  model_number?: string;
+  warranty_period?: string;
+  material_description?: string;
+  package_weight_grams?: number;
+  tax_classification?: string;
   material?: Pick<Material, 'name_en'> | null;
   variants?: ProductVariant[];
   relations?: ProductRelationItem[];

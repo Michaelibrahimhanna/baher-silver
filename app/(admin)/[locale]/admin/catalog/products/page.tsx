@@ -20,11 +20,16 @@ import {
   Archive,
   Activity,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Printer,
+  Barcode,
+  Scan,
+  ExternalLink
 } from 'lucide-react';
 import type { Product } from '@/types/catalog';
 import { softDeleteProduct, restoreProductFromRecycleBin, filterActiveProducts, filterSoftDeletedProducts } from '@/lib/recycle-bin';
 import { calculateProductHealthScore } from '@/lib/product-health-score';
+import { PrintableLabelsModal } from '@/components/admin/catalog/PrintableLabelsModal';
 
 function ProductsContent() {
   const searchParams = useSearchParams();
@@ -36,8 +41,25 @@ function ProductsContent() {
   const [query, setQuery] = React.useState(searchParams?.get('search') || '');
   const [selectedCategory, setSelectedCategory] = React.useState(searchParams?.get('category') || 'all');
   const [selectedStatus, setSelectedStatus] = React.useState(searchParams?.get('status') || 'all');
+  const [selectedProfile, setSelectedProfile] = React.useState<string>(searchParams?.get('profile') || 'all');
   const [sortBy, setSortBy] = React.useState(searchParams?.get('sort') || 'newest');
   const [currentPage, setCurrentPage] = React.useState(Number(searchParams?.get('page')) || 1);
+
+  // Barcode Scanner & Rapid Lookup State
+  const [barcodeInput, setBarcodeInput] = React.useState('');
+  const [isBarcodeLookingUp, setIsBarcodeLookingUp] = React.useState(false);
+  const [barcodeLookupResult, setBarcodeLookupResult] = React.useState<{
+    found: boolean;
+    match_type: 'product' | 'piece';
+    product: Product;
+    piece?: any;
+    location?: string;
+    lifecycle_status?: string;
+  } | null>(null);
+  const [barcodeError, setBarcodeError] = React.useState<string | null>(null);
+
+  // Label Printing Modal State
+  const [printingProduct, setPrintingProduct] = React.useState<Product | null>(null);
 
   // Real Database Products & Categories State
   const [allProductsList, setAllProductsList] = React.useState<Product[]>([]);
@@ -57,6 +79,7 @@ function ProductsContent() {
             ...(query ? { query } : {}),
             ...(selectedCategory !== 'all' ? { category: selectedCategory } : {}),
             ...(selectedStatus !== 'all' ? { status: selectedStatus } : {}),
+            ...(selectedProfile !== 'all' ? { profile_type: selectedProfile } : {}),
           }).toString()}`
         ).then((r) => r.json()),
       ]);
@@ -70,7 +93,7 @@ function ProductsContent() {
     } finally {
       setIsLoading(false);
     }
-  }, [query, selectedCategory, selectedStatus]);
+  }, [query, selectedCategory, selectedStatus, selectedProfile]);
 
   React.useEffect(() => {
     let active = true;
@@ -82,6 +105,34 @@ function ProductsContent() {
     void load();
     return () => { active = false; };
   }, [fetchProducts]);
+
+  // Dedicated Barcode / Piece Fast Lookup Action
+  const handleBarcodeLookup = async (codeToSearch?: string) => {
+    const code = (codeToSearch !== undefined ? codeToSearch : barcodeInput).trim();
+    if (!code) {
+      setBarcodeLookupResult(null);
+      setBarcodeError(null);
+      return;
+    }
+    setIsBarcodeLookingUp(true);
+    setBarcodeError(null);
+    try {
+      const res = await fetch(`/api/barcode/lookup?code=${encodeURIComponent(code)}`);
+      const data = await res.json();
+      const payload = data.result || data;
+      if (res.ok && payload.found) {
+        setBarcodeLookupResult(payload);
+        setBarcodeError(null);
+      } else {
+        setBarcodeLookupResult(null);
+        setBarcodeError(data.message || data.error || 'لم يتم العثور على أي منتج أو قطعة مطابقة لهذا الباركود');
+      }
+    } catch (e: any) {
+      setBarcodeError(e.message || 'فشل الاتصال بمحرك الباركود');
+    } finally {
+      setIsBarcodeLookingUp(false);
+    }
+  };
 
   // Soft Delete Action (Move to Recycle Bin)
   const handleSoftDelete = (product: Product) => {
@@ -252,6 +303,108 @@ function ProductsContent() {
         </div>
       </div>
 
+      {/* Real-time Barcode Scanner & Rapid Verification Bar */}
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 backdrop-blur-md space-y-3">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs">
+            <Scan className="w-4 h-4 animate-pulse" />
+            <span>ماسح الباركود الفوري (Instant Barcode & Piece Scanner):</span>
+            <span className="text-[10px] text-slate-400 font-normal">يدعم EAN-13 والرموز التسلسلية للقطع Code-128</span>
+          </div>
+          {barcodeLookupResult && (
+            <button
+              onClick={() => { setBarcodeLookupResult(null); setBarcodeInput(''); }}
+              className="text-[10px] text-slate-400 hover:text-white underline"
+            >
+              مسح النتيجة (Clear Scan)
+            </button>
+          )}
+        </div>
+
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Barcode className="w-4 h-4 text-amber-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="امسح بالباركود سكانر أو أدخل رقم الباركود (EAN-13) أو الرقم التسلسلي للقطعة..."
+              value={barcodeInput}
+              onChange={(e) => {
+                setBarcodeInput(e.target.value);
+                if (e.target.value.length >= 8) {
+                  handleBarcodeLookup(e.target.value);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleBarcodeLookup();
+                }
+              }}
+              className="w-full bg-slate-950 border border-amber-500/30 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 font-mono focus:outline-none focus:border-amber-400"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => handleBarcodeLookup()}
+            disabled={isBarcodeLookingUp || !barcodeInput.trim()}
+            className="bg-amber-500 text-black px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-400 disabled:opacity-50 transition-colors flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+          >
+            {isBarcodeLookingUp ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Scan className="w-3.5 h-3.5" />}
+            بحث سريع
+          </button>
+        </div>
+
+        {/* Scan Result Feedback */}
+        {barcodeLookupResult && (
+          <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3.5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+              <div>
+                <div className="font-bold text-white flex items-center gap-2">
+                  <span>{barcodeLookupResult.product.name_ar || barcodeLookupResult.product.name_en}</span>
+                  <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-mono text-emerald-300 uppercase border border-emerald-500/30">
+                    {barcodeLookupResult.match_type === 'piece' ? 'مطابقة قطعة تسلسلية (Serialized Piece)' : 'مطابقة منتج (Master Product)'}
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-300 font-mono mt-0.5 flex flex-wrap gap-x-3">
+                  <span>SKU: {barcodeLookupResult.product.sku}</span>
+                  <span>الباركود: {barcodeLookupResult.product.barcode}</span>
+                  {barcodeLookupResult.piece && (
+                    <>
+                      <span>السيريال: {barcodeLookupResult.piece.serial_number}</span>
+                      <span>الموقع: {barcodeLookupResult.piece.location_code || 'VAULT'}</span>
+                      <span className="text-amber-300 font-semibold">الحالة: {barcodeLookupResult.piece.lifecycle_status}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setPrintingProduct(barcodeLookupResult.product)}
+                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border border-white/20"
+              >
+                <Printer className="w-3.5 h-3.5 text-amber-400" />
+                طباعة الملصق
+              </button>
+              <Link
+                href={`/admin/catalog/products/${barcodeLookupResult.product.id}`}
+                className="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow"
+              >
+                فتح السجل
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {barcodeError && (
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-2.5 text-xs text-rose-300 flex items-center gap-2">
+            <span>{barcodeError}</span>
+          </div>
+        )}
+      </div>
+
       {/* Filter & Search Toolbar */}
       <div className="bg-[#050505] border border-white/10 p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search */}
@@ -283,6 +436,16 @@ function ProductsContent() {
                 {(c.name as { en?: string })?.en || (c.slug as string)}
               </option>
             ))}
+          </select>
+
+          <select
+            value={selectedProfile}
+            onChange={(e) => setSelectedProfile(e.target.value)}
+            className="bg-slate-900 border border-white/10 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-amber-500 font-semibold"
+          >
+            <option value="all">All Profiles</option>
+            <option value="SILVER_JEWELRY">✨ Silver Jewelry</option>
+            <option value="NON_SILVER_RETAIL">🛍️ Retail Merchandise</option>
           </select>
 
           <select
@@ -368,7 +531,20 @@ function ProductsContent() {
                         <span className="text-[11px] text-slate-400">{nameAr}</span>
                       </td>
 
-                      <td className="p-4 font-mono text-[11px] text-amber-400">{p.sku || p.id}</td>
+                      <td className="p-4 font-mono text-[11px]">
+                        <span className="text-amber-400 block">{p.sku || p.id}</span>
+                        <div className="mt-1">
+                          {p.profile_type === 'NON_SILVER_RETAIL' ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                              🛍️ Retail {p.brand ? `(${p.brand})` : ''}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-700/60 text-slate-300 border border-slate-600">
+                              ✨ Silver {p.silver_purity || '925'}
+                            </span>
+                          )}
+                        </div>
+                      </td>
 
                       {/* AI Health Score Badge */}
                       <td className="p-4">
@@ -423,6 +599,13 @@ function ProductsContent() {
                             </>
                           ) : (
                             <>
+                              <button
+                                onClick={() => setPrintingProduct(p)}
+                                title="طباعة ملصق الباركود (Barcode / Labels)"
+                                className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </button>
                               <Link href={`/en/product/${p.slug}`} target="_blank" className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg">
                                 <Eye className="w-4 h-4" />
                               </Link>
@@ -476,6 +659,18 @@ function ProductsContent() {
           </div>
         </div>
       </div>
+
+      {/* Printable Labels Modal */}
+      {printingProduct && (
+        <PrintableLabelsModal
+          isOpen={Boolean(printingProduct)}
+          onClose={() => setPrintingProduct(null)}
+          productName={printingProduct.name_ar || printingProduct.name_en || ''}
+          sku={printingProduct.sku || printingProduct.id}
+          barcode={printingProduct.barcode || ''}
+          price={printingProduct.selling_price || 0}
+        />
+      )}
     </div>
   );
 }

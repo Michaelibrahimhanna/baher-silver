@@ -24,11 +24,17 @@ import {
   CheckCircle2,
   Eye,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Barcode,
+  MapPin,
+  Boxes,
+  Plus,
+  Check
 } from 'lucide-react';
 import type { Product, ProductStatus, QRDestinationType } from '@/types/catalog';
+import type { IndividualPiece, PieceLifecycleStatus } from '@/lib/types';
 import { MASTER_PURITY_LEVELS, MASTER_STONE_TYPES, MASTER_STONE_COLORS, MASTER_FINISHES, MASTER_SUPPLIERS, MASTER_WAREHOUSES, CUSTOM_FIELD_DEFINITIONS, PRODUCT_TEMPLATES } from '@/lib/master-data';
-import { generateSKU, generateEAN13Barcode } from '@/lib/catalog-identifiers';
+import { generateSKU, generateEAN13Barcode, generatePieceSerialNumber, validateBarcodeFormat } from '@/lib/catalog-identifiers';
 import { duplicateProduct } from '@/lib/catalog-duplication';
 import { createProductVersionSnapshot } from '@/lib/product-versioning';
 import { createInitialWorkflow } from '@/lib/approval-workflow';
@@ -60,6 +66,7 @@ export default function EnterpriseProductEditor() {
 
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveMessage, setSaveMessage] = React.useState<string | null>(null);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
 
   // Modals & Drawers State
   const [isLabelsModalOpen, setIsLabelsModalOpen] = React.useState(false);
@@ -75,9 +82,12 @@ export default function EnterpriseProductEditor() {
   // Initial Product Form State
   const [formData, setFormData] = React.useState<Product>({
     id: isNew ? 'prod-new-item' : id,
+    profile_type: 'SILVER_JEWELRY',
     template_id: 'tmpl-ring',
     sku: generateSKU('ring', 'SIL'),
     barcode: generateEAN13Barcode(),
+    is_serialized: true,
+    pieces: [],
     internal_qr: 'QR-INT-BS-RING-101',
     customer_qr: 'QR-CUST-silver-ring-101',
     qr_destination_type: 'product',
@@ -215,6 +225,73 @@ export default function EnterpriseProductEditor() {
     }
   };
 
+  // Load real product from API if editing existing product
+  React.useEffect(() => {
+    if (isNew) return;
+    let active = true;
+    const loadProduct = async () => {
+      try {
+        const res = await fetch(`/api/products/${id}`);
+        const data = await res.json();
+        if (res.ok && data.success && data.product && active) {
+          const p = data.product;
+          setFormData(prev => ({
+            ...prev,
+            ...p,
+            is_serialized: p.is_serialized !== false,
+            pieces: p.pieces || []
+          }));
+        }
+      } catch (err) {
+        console.error('Failed to load product from API', err);
+      }
+    };
+    void loadProduct();
+    return () => { active = false; };
+  }, [id, isNew]);
+
+  // Physical Piece Management Handlers
+  const handleAddPiece = () => {
+    const nextSeq = (formData.pieces?.length || 0) + 1;
+    const prefix = formData.profile_type === 'NON_SILVER_RETAIL' ? 'RET' : 'BHR';
+    const newSerial = generatePieceSerialNumber(prefix, nextSeq);
+    const newPieceBarcode = generateEAN13Barcode();
+    const newPiece: IndividualPiece = {
+      id: `pc_${Date.now()}`,
+      product_id: formData.id,
+      sku: formData.sku,
+      serial_number: newSerial,
+      barcode: newPieceBarcode,
+      organization_id: 'org_baher_silver',
+      warehouse_id: formData.warehouse_id || 'wh-cairo-main',
+      location_code: 'SHOWCASE-01',
+      current_weight_grams: Number(formData.silver_weight_g || 0),
+      lifecycle_status: 'IN_SHOWCASE',
+      cost_basis: Number(formData.purchase_cost || 0),
+      retail_price: Number(formData.selling_price || 0),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    setFormData(prev => ({
+      ...prev,
+      pieces: [...(prev.pieces || []), newPiece]
+    }));
+  };
+
+  const handleRemovePiece = (serial: string) => {
+    setFormData(prev => ({
+      ...prev,
+      pieces: (prev.pieces || []).filter(pc => pc.serial_number !== serial)
+    }));
+  };
+
+  const handleUpdatePieceStatus = (serial: string, status: PieceLifecycleStatus) => {
+    setFormData(prev => ({
+      ...prev,
+      pieces: (prev.pieces || []).map(pc => pc.serial_number === serial ? { ...pc, lifecycle_status: status, updated_at: new Date().toISOString() } : pc)
+    }));
+  };
+
   // Discard Local Draft
   const handleDiscardLocalDraft = () => {
     try {
@@ -248,26 +325,46 @@ export default function EnterpriseProductEditor() {
     }
   };
 
-  // Save Product Handler & Version Snapshot Creation
-  const handleSave = () => {
+  // Save Product Handler & API Persistence
+  const handleSave = async () => {
     setIsSaving(true);
+    setSaveError(null);
 
-    const versionSnapshot = createProductVersionSnapshot(
-      formData,
-      'Administrator',
-      `Save snapshot at ${new Date().toLocaleTimeString('ar-EG')}`
-    );
+    try {
+      const versionSnapshot = createProductVersionSnapshot(
+        formData,
+        'Administrator',
+        `Save snapshot at ${new Date().toLocaleTimeString('ar-EG')}`
+      );
 
-    const updatedVersions = [versionSnapshot, ...(formData.version_history || [])];
+      const updatedVersions = [versionSnapshot, ...(formData.version_history || [])];
 
-    setTimeout(() => {
-      setIsSaving(false);
+      const payload = {
+        ...formData,
+        version_history: updatedVersions,
+        updated_at: new Date().toISOString()
+      };
+
+      const url = isNew ? '/api/products' : `/api/products/${id}`;
+      const method = isNew ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to save product');
+      }
+
       setFormData(prev => ({
         ...prev,
-        version_history: updatedVersions,
-        updated_at: new Date().toISOString(),
+        ...data.product,
+        version_history: updatedVersions
       }));
-      setSaveMessage(`تم حفظ كافة التغييرات وإنشاء النسخة الإصدارية #${versionSnapshot.version_number} بنجاح!`);
+      setSaveMessage(`تم حفظ كافة التغييرات والباركود بنجاح!`);
 
       // Clear local dirty draft on explicit save
       try {
@@ -277,7 +374,12 @@ export default function EnterpriseProductEditor() {
       }
 
       setTimeout(() => setSaveMessage(null), 3500);
-    }, 600);
+    } catch (err: any) {
+      setSaveError(err.message || 'فشل حفظ المنتج');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -420,6 +522,13 @@ export default function EnterpriseProductEditor() {
         </div>
       )}
 
+      {saveError && (
+        <div className="flex items-center gap-2 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-xs font-semibold text-rose-300">
+          <AlertCircle className="h-5 w-5 text-rose-400 flex-shrink-0" />
+          <span>{saveError}</span>
+        </div>
+      )}
+
       {/* Product AI Health Score Card Widget */}
       <ProductHealthScoreCard product={formData} />
 
@@ -431,7 +540,7 @@ export default function EnterpriseProductEditor() {
           { id: 'variants', label: 'المتغيرات (Variants Matrix)', icon: Tag },
           { id: 'pricing', label: 'محرك التسعير (Formula Engine)', icon: Calculator },
           { id: 'relations', label: 'المنتجات المرتبطة (Relations)', icon: Network },
-          { id: 'identifiers', label: 'الـ QR والموجّه الديناميكي', icon: QrCode },
+          { id: 'identifiers', label: 'الباركود ومصفوفة القطع (Barcode & Pieces)', icon: Barcode },
           { id: 'seo', label: 'محرك الـ SEO و SERP', icon: Search },
           { id: 'timeline', label: 'سجل النشاطات (Timeline)', icon: History },
           { id: 'media', label: 'الميديا (Placeholder)', icon: ImageIcon },
@@ -466,7 +575,131 @@ export default function EnterpriseProductEditor() {
       {activeTab === 'general' && (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-5 rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md">
-            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">المعلومات والوصف الأساسي</h3>
+            <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">المعلومات والملف التجاري الأساسي</h3>
+
+            {/* Commercial Profile Selector */}
+            <div className="rounded-xl border border-white/10 bg-slate-950/60 p-4 space-y-3">
+              <label className="block text-xs font-bold text-white">
+                نوع ملف المنتج التجاري (Commercial Product Profile) *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateField('profile_type', 'SILVER_JEWELRY');
+                    if (!formData.silver_purity) handleUpdateField('silver_purity', '925');
+                    if (formData.sku.startsWith('RET-')) {
+                      handleUpdateField('sku', formData.sku.replace('RET-', 'SIL-'));
+                    }
+                  }}
+                  className={`p-3 rounded-xl border text-right transition-all flex flex-col gap-1 ${
+                    (formData.profile_type || 'SILVER_JEWELRY') === 'SILVER_JEWELRY'
+                      ? 'border-amber-500/60 bg-amber-500/10 text-white shadow-md'
+                      : 'border-white/10 bg-black/40 text-slate-400 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-300">✨ مجوهرات فضة (Silver Jewelry)</span>
+                    {(formData.profile_type || 'SILVER_JEWELRY') === 'SILVER_JEWELRY' && (
+                      <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    خواتم، أساور، سلاسل، أقراط فضية عيار 925/900/950/999 مع تتبع الوزن والقطع الفردية.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleUpdateField('profile_type', 'NON_SILVER_RETAIL');
+                    handleUpdateField('silver_purity', undefined);
+                    handleUpdateField('silver_weight_g', undefined);
+                    handleUpdateField('labor_cost', 0);
+                    if (formData.sku.startsWith('SIL-')) {
+                      handleUpdateField('sku', formData.sku.replace('SIL-', 'RET-'));
+                    }
+                  }}
+                  className={`p-3 rounded-xl border text-right transition-all flex flex-col gap-1 ${
+                    formData.profile_type === 'NON_SILVER_RETAIL'
+                      ? 'border-indigo-500/60 bg-indigo-500/10 text-white shadow-md'
+                      : 'border-white/10 bg-black/40 text-slate-400 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-indigo-300">🛍️ بضاعة تجارية عامة (Retail Merchandise)</span>
+                    {formData.profile_type === 'NON_SILVER_RETAIL' && (
+                      <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    ساعات، نظارات، إكسسوارات، منظفات فضة، عبوات هدايا. ممنوع دخولها في أوامر التصنيع.
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            {/* Non-Silver Commercial Retail Merchandise Details */}
+            {formData.profile_type === 'NON_SILVER_RETAIL' && (
+              <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-4">
+                <div className="border-b border-indigo-500/20 pb-2">
+                  <h4 className="text-xs font-bold text-indigo-300">بيانات البضاعة التجارية (Commercial Retail Attributes)</h4>
+                  <p className="text-[11px] text-slate-400">هذه المنتجات تباع في التجزئة والـ POS فقط ولا تخضع لأي عيارات أو عمليات سكب وتصنيع.</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-300">العلامة التجارية (Brand):</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Baher Care, Casio, etc."
+                      value={typeof formData.brand === 'string' ? formData.brand : (formData.brand?.name_en || '')}
+                      onChange={(e) => handleUpdateField('brand', e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-300">رقم الموديل / الطراز (Model Number):</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. MOD-8821"
+                      value={formData.model_number || ''}
+                      onChange={(e) => handleUpdateField('model_number', e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-300">فترة الضمان التجاري (Warranty Period):</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 12 Months Official Guarantee"
+                      value={formData.warranty_period || ''}
+                      onChange={(e) => handleUpdateField('warranty_period', e.target.value)}
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-medium text-slate-300">الوزن الإجمالي للعبوة بالجرام (Package Weight g):</label>
+                    <input
+                      type="number"
+                      placeholder="50"
+                      value={formData.package_weight_grams || ''}
+                      onChange={(e) => handleUpdateField('package_weight_grams', Number(e.target.value))}
+                      className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-medium text-slate-300">وصف المواد والمواصفات (Material / Construction):</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Stainless steel case, quartz movement, mineral glass"
+                    value={formData.material_description || ''}
+                    onChange={(e) => handleUpdateField('material_description', e.target.value)}
+                    className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 text-xs text-white"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Template Selector */}
             <div className="space-y-1.5">
@@ -593,18 +826,28 @@ export default function EnterpriseProductEditor() {
             <h3 className="text-base font-bold text-white border-b border-white/10 pb-3">ربط البيانات المرجعية المركزية (Master Data System)</h3>
             
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-slate-300">نقاء الفضة (Purity):</label>
-                <select
-                  value={formData.purity_level_id || ''}
-                  onChange={(e) => handleUpdateField('purity_level_id', e.target.value)}
-                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
-                >
-                  {MASTER_PURITY_LEVELS.map(p => (
-                    <option key={p.id} value={p.id}>{p.name_ar}</option>
-                  ))}
-                </select>
-              </div>
+              {formData.profile_type === 'NON_SILVER_RETAIL' ? (
+                <div className="sm:col-span-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-3 text-xs text-indigo-300 flex items-center gap-2">
+                  <span>🛍️ هذا المنتج معرف كـ <strong>بضاعة تجارية عامة (Retail Merchandise)</strong>. لا تنطبق عليه عيارات الفضة الخالصة أو نسب النقاء المعدنية.</span>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-slate-300">نقاء الفضة (Purity):</label>
+                  <select
+                    value={formData.purity_level_id || 'pur-925'}
+                    onChange={(e) => {
+                      handleUpdateField('purity_level_id', e.target.value);
+                      const purityCode = e.target.value === 'pur-900' ? '900' : e.target.value === 'pur-950' ? '950' : e.target.value === 'pur-999' ? '999' : '925';
+                      handleUpdateField('silver_purity', purityCode);
+                    }}
+                    className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                  >
+                    {MASTER_PURITY_LEVELS.map(p => (
+                      <option key={p.id} value={p.id}>{p.name_ar}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-medium text-slate-300">نوع الحجر (Stone Type):</label>
@@ -720,14 +963,232 @@ export default function EnterpriseProductEditor() {
         />
       )}
 
-      {/* Tab 6: Extensible Dual QR & Dynamic Router */}
+      {/* Tab 6: Unified Product Barcode, SKU & Serialized Pieces Matrix */}
       {activeTab === 'identifiers' && (
-        <DualQRCodePreview
-          sku={formData.sku}
-          slug={formData.slug}
-          destinationType={formData.qr_destination_type || 'product'}
-          onDestinationChange={(newDest) => handleUpdateField('qr_destination_type', newDest as QRDestinationType)}
-        />
+        <div className="space-y-6">
+          {/* Master Barcode & SKU Card */}
+          <div className="rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Barcode className="h-5 w-5 text-amber-400" />
+                  الهوية الموحدة للمنتج والباركود المعتمد (Product Identity & Barcode Master)
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  تحديد المعرّفات المرجعية القياسية (EAN-13 و SKU) وربطها بأنظمة الكاشير (POS)، المجرودات، ودورة حياة القطع الفردية.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLabelsModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 shadow-md shadow-cyan-500/10"
+              >
+                <Printer className="h-4 w-4 text-cyan-400" />
+                طباعة الملصقات الحرارية (Print Labels)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+              {/* SKU Field */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-300">
+                    رمز التخزين التعريفي الموحد (SKU):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateField('sku', generateSKU(formData.category_name || 'jew', 'SIL'))}
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    توليد SKU تلقائي
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={formData.sku}
+                  onChange={(e) => handleUpdateField('sku', e.target.value)}
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3.5 py-2.5 text-xs text-white font-mono uppercase tracking-wider focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              {/* Barcode Field with Live Check Digit Validation */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium text-slate-300">
+                    الباركود الدولي المعتمد (Barcode EAN-13 / Code-128):
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateField('barcode', generateEAN13Barcode())}
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    توليد باركود EAN-13
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={formData.barcode || ''}
+                  onChange={(e) => handleUpdateField('barcode', e.target.value)}
+                  placeholder="6291000..."
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3.5 py-2.5 text-xs text-white font-mono tracking-widest focus:outline-none focus:border-cyan-400"
+                />
+
+                {/* Live Barcode Validator Status */}
+                {(() => {
+                  const validation = validateBarcodeFormat(formData.barcode || '');
+                  if (validation.valid) {
+                    return (
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-400">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>باركود صالح مطابق لمعايير {validation.format} (Valid Check Digit)</span>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="flex items-center gap-1.5 text-[11px] text-rose-400">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>{validation.error || 'صيغة الباركود غير صالحة'}</span>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Serialization Toggle */}
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="is_serialized_toggle"
+                checked={formData.is_serialized !== false}
+                onChange={(e) => handleUpdateField('is_serialized', e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-amber-500 text-amber-500 focus:ring-amber-400"
+              />
+              <label htmlFor="is_serialized_toggle" className="cursor-pointer space-y-1">
+                <span className="block text-xs font-bold text-amber-300">
+                  تتبع القطع الفردية المرقمة تسلسلياً (Individual Serialized Piece Tracking)
+                </span>
+                <span className="block text-[11px] text-slate-400 leading-relaxed">
+                  عند تفعيل هذا الخيار، تعامل كل قطعة فضة ككيان مادي منفصل برقم تسلسلي مخصص (Serial Number)، باركود فردي، موقع محدد (فاترينة عرض أو خزينة)، ودورة حياة تبدأ من التصنيع وحتى البيع النهائي.
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Physical Serialized Pieces Matrix */}
+          {formData.is_serialized !== false && (
+            <div className="rounded-2xl border border-white/10 bg-black/40 p-6 backdrop-blur-md space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2">
+                  <Boxes className="h-5 w-5 text-amber-400" />
+                  <div>
+                    <h3 className="text-base font-bold text-white">
+                      مصفوفة القطع الفردية المرقمة (Physical Serialized Pieces Matrix)
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      إجمالي القطع المسجلة في الخزائن والفاترينات: <span className="text-amber-400 font-bold">{formData.pieces?.length || 0} قطعة</span>
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddPiece}
+                  className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-black hover:bg-amber-400 transition-all shadow-md shadow-amber-500/20"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  إصدار قطعة فيزيائية جديدة (Mint Piece)
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-right text-xs">
+                  <thead className="bg-white/5 text-amber-400 uppercase text-[10px] tracking-wider font-semibold border-b border-white/10">
+                    <tr>
+                      <th className="p-3">الرقم التسلسلي (Serial)</th>
+                      <th className="p-3">باركود القطعة</th>
+                      <th className="p-3">الموقع / الفاترينة</th>
+                      <th className="p-3">الوزن</th>
+                      <th className="p-3">حالة دورة الحياة</th>
+                      <th className="p-3 text-left">إجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {!formData.pieces || formData.pieces.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
+                          لا توجد قطع فردية مسجلة حتى الآن. اضغط على زر &quot;إصدار قطعة فيزيائية جديدة&quot; لإضافة أول قطعة في الخزينة.
+                        </td>
+                      </tr>
+                    ) : (
+                      formData.pieces.map((piece) => (
+                        <tr key={piece.serial_number} className="hover:bg-white/5 transition-colors">
+                          <td className="p-3 font-mono font-bold text-amber-400">
+                            {piece.serial_number}
+                          </td>
+                          <td className="p-3 font-mono text-slate-300">
+                            {piece.barcode}
+                          </td>
+                          <td className="p-3">
+                            <span className="flex items-center gap-1 text-slate-300 font-mono text-[11px]">
+                              <MapPin className="w-3 h-3 text-cyan-400" />
+                              {piece.location_code || 'VAULT-01'}
+                            </span>
+                          </td>
+                          <td className="p-3 font-mono text-slate-200">
+                            {piece.current_weight_grams ? `${piece.current_weight_grams} g` : '—'}
+                          </td>
+                          <td className="p-3">
+                            <select
+                              value={piece.lifecycle_status}
+                              onChange={(e) => handleUpdatePieceStatus(piece.serial_number, e.target.value as PieceLifecycleStatus)}
+                              className={`rounded-lg px-2.5 py-1 text-[10px] font-bold border ${
+                                piece.lifecycle_status === 'IN_SHOWCASE'
+                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                  : piece.lifecycle_status === 'SOLD'
+                                  ? 'bg-blue-500/20 text-blue-300 border-blue-500/30'
+                                  : piece.lifecycle_status === 'IN_VAULT'
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                  : 'bg-slate-800 text-slate-300 border-white/10'
+                              } bg-slate-900 focus:outline-none`}
+                            >
+                              <option value="IN_VAULT">في الخزينة (IN_VAULT)</option>
+                              <option value="IN_SHOWCASE">في فاترينة العرض (IN_SHOWCASE)</option>
+                              <option value="RESERVED">محجوز لعميل (RESERVED)</option>
+                              <option value="SOLD">تم البيع (SOLD)</option>
+                              <option value="MAINTENANCE">صيانة وتلميع (MAINTENANCE)</option>
+                              <option value="RETURNED">مرتجع (RETURNED)</option>
+                            </select>
+                          </td>
+                          <td className="p-3 text-left">
+                            <button
+                              type="button"
+                              onClick={() => handleRemovePiece(piece.serial_number)}
+                              title="حذف القطعة"
+                              className="p-1 text-rose-400 hover:bg-rose-500/20 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Dynamic QR Router Section */}
+          <DualQRCodePreview
+            sku={formData.sku}
+            slug={formData.slug}
+            destinationType={formData.qr_destination_type || 'product'}
+            onDestinationChange={(newDest) => handleUpdateField('qr_destination_type', newDest as QRDestinationType)}
+          />
+        </div>
       )}
 
       {/* Tab 7: SEO Engine */}

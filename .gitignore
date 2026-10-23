@@ -49,4 +49,10 @@ scripts/find-vercel-url.mjs
 scripts/verify-routes.mjs
 scripts/test-live-routes.mjs
 
+# runtime local state & test artifacts
+.data/
+.data_phase_c_test/
+.mip/
+
+
 

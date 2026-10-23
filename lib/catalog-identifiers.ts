@@ -87,3 +87,50 @@ export function generateDualQRCodes(
     }
   };
 }
+
+/**
+ * Generates an Enterprise Serial Number for an individual piece.
+ * Pattern: SN-BHR-{YEAR}-{COUNTER_PADDED}
+ */
+export function generatePieceSerialNumber(prefix: string = 'BHR', sequence?: number): string {
+  const year = new Date().getFullYear();
+  const counter = sequence !== undefined ? sequence : Math.floor(1000 + Math.random() * 9000);
+  const padded = String(counter).padStart(5, '0');
+  return `SN-${prefix.toUpperCase()}-${year}-${padded}`;
+}
+
+/**
+ * Validates whether a barcode string conforms to either:
+ * 1. EAN-13 (13 digits with valid check digit)
+ * 2. Code-128 / Alphanumeric standard barcode (4 to 32 alphanumeric chars)
+ */
+export function validateBarcodeFormat(barcode: string): { valid: boolean; format: 'EAN-13' | 'CODE-128' | 'UNKNOWN'; error?: string } {
+  if (!barcode || typeof barcode !== 'string') {
+    return { valid: false, format: 'UNKNOWN', error: 'Barcode must be a non-empty string' };
+  }
+  const clean = barcode.trim();
+  if (clean.length < 4 || clean.length > 32) {
+    return { valid: false, format: 'UNKNOWN', error: 'Barcode length must be between 4 and 32 characters' };
+  }
+
+  // Check EAN-13
+  if (/^\d{13}$/.test(clean)) {
+    let sum = 0;
+    for (let i = 0; i < 12; i++) {
+      const digit = parseInt(clean[i], 10);
+      sum += i % 2 === 0 ? digit : digit * 3;
+    }
+    const checkDigit = (10 - (sum % 10)) % 10;
+    if (parseInt(clean[12], 10) === checkDigit) {
+      return { valid: true, format: 'EAN-13' };
+    }
+    return { valid: false, format: 'EAN-13', error: `Invalid EAN-13 check digit. Expected ${checkDigit}, got ${clean[12]}` };
+  }
+
+  // Check Code-128 (alphanumeric, dashes, underscores)
+  if (/^[A-Za-z0-9\-_]+$/.test(clean)) {
+    return { valid: true, format: 'CODE-128' };
+  }
+
+  return { valid: false, format: 'UNKNOWN', error: 'Barcode contains invalid characters. Use digits or standard alphanumeric.' };
+}

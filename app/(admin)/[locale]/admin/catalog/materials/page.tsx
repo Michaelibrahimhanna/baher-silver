@@ -11,7 +11,7 @@ export default function MaterialsPage() {
   return (
     <GenericCrudPage
       title="Materials"
-      description="Manage raw materials and compositions (e.g. Silver 925, Gold 18K)."
+      description="Manage raw materials and compositions (e.g. Silver 925, Fine Silver 999)."
       entityName="Material"
       data={data}
       isLoading={isLoading}

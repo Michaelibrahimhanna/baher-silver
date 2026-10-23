@@ -130,6 +130,46 @@ export const products: Product[] = [
     details: {
       description: { en: 'Charming crystal stud earrings designed for everyday minimalist elegance.', ar: 'أقراط ستاد ناعمة مرصعة ببلورات براقة صممت للأناقة اليومية.' }
     }
+  },
+  {
+    id: 'ret-1',
+    slug: 'baher-luxury-polishing-cloth',
+    name: { en: 'Baher Silver Polishing Cloth', ar: 'قماشة تلميع الفضة الفاخرة' },
+    price: 35,
+    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    category: 'accessories',
+    profile_type: 'NON_SILVER_RETAIL',
+    stockStatus: 'IN_STOCK',
+    isNew: false,
+    brand: 'Baher Care',
+    model_number: 'BC-POL-01',
+    warranty_period: 'None',
+    material_description: 'Microfiber with anti-tarnish micro-abrasives',
+    package_weight_grams: 45,
+    tax_classification: 'STANDARD_VAT_14',
+    details: {
+      description: { en: 'Professional dual-sided micro-abrasive silver polishing cloth.', ar: 'قماشة تلميع احترافية مزدوجة لإزالة الأكسدة واستعادة بريق الفضة الفوري.' }
+    }
+  },
+  {
+    id: 'ret-2',
+    slug: 'luxury-velvet-presentation-box',
+    name: { en: 'Luxury Velvet Presentation Box', ar: 'علبة هدايا قطيفة فاخرة' },
+    price: 50,
+    image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    category: 'packaging',
+    profile_type: 'NON_SILVER_RETAIL',
+    stockStatus: 'IN_STOCK',
+    isNew: false,
+    brand: 'Baher Packaging',
+    model_number: 'BP-BOX-02',
+    warranty_period: 'None',
+    material_description: 'Italian velvet casing with satin interior cushion',
+    package_weight_grams: 120,
+    tax_classification: 'STANDARD_VAT_14',
+    details: {
+      description: { en: 'Premium handcrafted velvet presentation jewelry box.', ar: 'علبة مجوهرات قطيفة فاخرة مبطنة بالساتان لحفظ وتقديم الهدايا.' }
+    }
   }
 ];
 
