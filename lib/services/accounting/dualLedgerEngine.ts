@@ -38,6 +38,8 @@ export type JournalEntryType =
   | 'CASH_PAYMENT'         // Cash payment to workshop -> Cash balance improves (+Cash)
   | 'CASH_RECEIPT'         // Cash received from merchant -> Cash balance decreases (-Cash)
   | 'METAL_SETTLEMENT'     // Pure metal settlement / bar handover
+  | 'WHOLESALE_INVOICE'    // Wholesale sale to trader -> Increases trader debt (+Cash, +999 Silver)
+  | 'WHOLESALE_RETURN'     // Wholesale return from trader -> Decreases trader debt (-Cash, -999 Silver)
   | 'REVERSAL';            // Append-only reversal of a previous entry
 
 export interface OpenAccount {
@@ -136,6 +138,13 @@ export class DualLedgerEngine {
     return { netWeight, fineSilver999 };
   }
 
+  public static computeSignature(payload: any): string {
+    return crypto
+      .createHmac('sha256', 'BAHER_SILVER_DUAL_LEDGER_SALT_2026')
+      .update(JSON.stringify(payload))
+      .digest('hex');
+  }
+
   /**
    * Registers a new workshop / merchant open account.
    */
@@ -218,6 +227,12 @@ export class DualLedgerEngine {
       } else if (input.entryType === 'GOODS_RECEIPT_LABOR') {
         // Shop received goods from workshop -> Workshop silver debt consumed
         fineSilverDelta = -calc.fineSilver999;
+      } else if (input.entryType === 'WHOLESALE_INVOICE') {
+        // Factory issued goods to trader -> Trader silver debt increases
+        fineSilverDelta = input.fineSilver999Delta !== undefined ? input.fineSilver999Delta : calc.fineSilver999;
+      } else if (input.entryType === 'WHOLESALE_RETURN') {
+        // Trader returned goods to factory -> Trader silver debt decreases
+        fineSilverDelta = input.fineSilver999Delta !== undefined ? input.fineSilver999Delta : -calc.fineSilver999;
       } else if (input.fineSilver999Delta === undefined) {
         fineSilverDelta = calc.fineSilver999;
       }

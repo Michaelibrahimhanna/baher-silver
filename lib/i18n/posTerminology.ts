@@ -108,7 +108,9 @@ export const POS_TERMINOLOGY = {
     receipt_discount: 'الخصم الممنوح (Discount):',
     receipt_manager_override: 'اعتماد المدير الاستثنائي (Manager Override):',
     receipt_total: 'الإجمالي الصافي المدفوع (Net Total):',
-    zatca_qr_caption: 'رمز التحقق الإلكتروني المعتمد ZATCA / ETA',
+    internal_qr_caption: 'رمز التحقق الداخلي لإيصال البيع (Internal Store QR)',
+    eta_official_caption: 'منظومة الإيصال الإلكتروني مصلحة الضرائب المصرية (ETA e-Receipt)',
+    zatca_qr_caption: 'رمز التحقق الداخلي لإيصال البيع (Internal Store QR)',
     next_customer_btn: 'فاتورة جديدة / العميل التالي (New Sale) ←'
   },
   en: {
@@ -211,7 +213,9 @@ export const POS_TERMINOLOGY = {
     receipt_discount: 'Discount:',
     receipt_manager_override: 'Manager Override:',
     receipt_total: 'Net Total Paid:',
-    zatca_qr_caption: 'ZATCA / ETA Electronic Tax Verification QR',
+    internal_qr_caption: 'Internal Store Verification QR',
+    eta_official_caption: 'Egyptian Tax Authority (ETA) Official e-Receipt',
+    zatca_qr_caption: 'Internal Store Verification QR',
     next_customer_btn: 'New Sale / Next Customer ->'
   }
 };

@@ -16,8 +16,14 @@ import {
 } from './types';
 
 // In-Memory Persistent Stores
-const cashShiftsStore: Map<string, POSCashShift> = new Map();
-const cashJournalStore: POSCashJournalEntry[] = [];
+const globalForShifts = globalThis as unknown as {
+  __baherCashShiftsStore?: Map<string, POSCashShift>;
+  __baherCashJournalStore?: POSCashJournalEntry[];
+};
+const cashShiftsStore: Map<string, POSCashShift> =
+  globalForShifts.__baherCashShiftsStore || (globalForShifts.__baherCashShiftsStore = new Map());
+const cashJournalStore: POSCashJournalEntry[] =
+  globalForShifts.__baherCashJournalStore || (globalForShifts.__baherCashJournalStore = []);
 
 // Seed an initial open shift for standard development/demo if empty
 function initializeDefaultShift() {

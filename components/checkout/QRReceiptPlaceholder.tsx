@@ -41,11 +41,11 @@ export function QRReceiptPlaceholder({ order, locale = 'en' }: QRReceiptPlacehol
         <div className="flex items-center gap-2">
           <QrCode className="w-5 h-5 text-amber-500" />
           <h3 className="font-extrabold text-sm uppercase tracking-wider">
-            {locale === 'ar' ? 'الإيصال الرقمي المشفر ZATCA / E-Receipt' : 'Signed E-Receipt QR Verification'}
+            {locale === 'ar' ? 'رمز التحقق الداخلي للإيصال (Store Receipt QR)' : 'Signed E-Receipt QR Verification'}
           </h3>
         </div>
         <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">
-          ZATCA / ETA Standard
+          Internal Store Verification
         </span>
       </div>
 

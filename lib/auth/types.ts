@@ -91,6 +91,9 @@ export type Permission =
   | 'account:journal:post'
   | 'account:reversal'
   | 'account:settlement'
+  // Settings Scopes (Milestone 2)
+  | 'settings:read'
+  | 'settings:manage'
   // Scrap & Metal Exchange Scopes
   | 'scrap:buyback';
 
@@ -156,7 +159,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'account:journal:post',
     'account:reversal',
     'account:settlement',
-    'scrap:buyback'
+    'scrap:buyback',
+    'settings:read',
+    'settings:manage'
   ],
   Admin: [
     'org:members:manage',
@@ -217,7 +222,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'account:journal:post',
     'account:reversal',
     'account:settlement',
-    'scrap:buyback'
+    'scrap:buyback',
+    'settings:read',
+    'settings:manage'
   ],
   Developer: [
     'project:create',
@@ -276,7 +283,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'ai:business_query:full',
     'weight:override',
     'account:read',
-    'scrap:buyback'
+    'scrap:buyback',
+    'settings:read'
   ],
   Cashier: [
     'pos:sale:create',
@@ -288,7 +296,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'customer:read',
     'customer:manage',
     'ai:business_query:basic',
-    'scrap:buyback'
+    'scrap:buyback',
+    'settings:read'
   ],
   InventoryOperator: [
     'inventory:read',

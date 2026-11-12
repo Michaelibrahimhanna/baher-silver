@@ -103,7 +103,7 @@
     "order_number": "رقم الطلب التجاري:",
     "timeline_title": "تتبع حالة الطلب السحابية",
     "invoice_title": "الفاتورة الضريبية الرقمية",
-    "qr_title": "الإيصال الرقمي المشفر ZATCA / E-Receipt",
+    "qr_title": "رمز التحقق الداخلي للإيصال (Store Receipt QR)",
     "return_catalog": "العودة للمتجر والكتالوج"
   },
   "categories": {

@@ -131,7 +131,7 @@ export function OrderSuccessClient({ orderIdParam, locale = 'en' }: OrderSuccess
       {/* PRINTABLE INVOICE PLACEHOLDER */}
       <InvoicePlaceholder order={order} locale={locale} />
 
-      {/* SIGNED ZATCA QR RECEIPT PLACEHOLDER */}
+      {/* INTERNAL STORE VERIFICATION QR PLACEHOLDER */}
       <QRReceiptPlaceholder order={order} locale={locale} />
 
       {/* RETURN HOME CTA */}

@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { MobileBarcodeScanner } from '@/components/admin/pos/MobileBarcodeScanner';
 import type { POSSaleTransaction, POSCashShift, POSZReport } from '@/lib/services/pos/types';
+import { loadWeightPolicyFromSettings } from '@/lib/services/pos/weightPolicyConfig';
 import { getPosTerminology } from '@/lib/i18n/posTerminology';
 
 interface CartLine {
@@ -72,10 +73,14 @@ export default function POSConsolePage() {
   const [cart, setCart] = React.useState<CartLine[]>([]);
   const [globalDiscount, setGlobalDiscount] = React.useState(0);
 
-  // Weight & Scale Verification State (Silver OS)
+  // Centralized Business Settings & Commercial Policy State
+  const [storeSettings, setStoreSettings] = React.useState<any | null>(null);
+  const [settingsFromCache, setSettingsFromCache] = React.useState(false);
+
+  // Weight & Scale Verification State (Silver OS — EK-1200 RS232 Local Bridge)
   const [isWeightModalOpen, setIsWeightModalOpen] = React.useState(false);
   const [activeWeightCartIndex, setActiveWeightCartIndex] = React.useState<number | null>(null);
-  const [weightSource, setWeightSource] = React.useState<'SCALE' | 'BARCODE' | 'MANUAL'>('SCALE');
+  const [weightSource, setWeightSource] = React.useState<'SCALE' | 'MANUAL'>('SCALE');
   const [weightGrossInput, setWeightGrossInput] = React.useState<number | ''>('');
   const [weightStoneInput, setWeightStoneInput] = React.useState<number | ''>(0);
   const [manualReasonInput, setManualReasonInput] = React.useState<'TEST' | 'SCALE_FAILURE' | 'READING_CORRECTION'>('SCALE_FAILURE');
@@ -84,7 +89,9 @@ export default function POSConsolePage() {
   const [weightLoading, setWeightLoading] = React.useState(false);
   const [weightError, setWeightError] = React.useState<string | null>(null);
   const [weightSuccessRecord, setWeightSuccessRecord] = React.useState<any | null>(null);
-  const [simulatedScaleWeight, setSimulatedScaleWeight] = React.useState<number>(14.25);
+  const [simulatedScaleWeight, setSimulatedScaleWeight] = React.useState<number>(14.50);
+  const [liveScaleFrameHex, setLiveScaleFrameHex] = React.useState<string>('02 30 30 30 2B 30 30 31 34 35 30 32 41 36 3A 03');
+  const [liveScaleAttestation, setLiveScaleAttestation] = React.useState<any | null>(null);
 
   // Discount & Manager Override State (Phase 4B.4)
   const [isDiscountModalOpen, setIsDiscountModalOpen] = React.useState(false);
@@ -206,6 +213,50 @@ export default function POSConsolePage() {
     fetchActiveShift();
   }, [fetchActiveShift]);
 
+  // Load Server-Authoritative Business Settings with Offline Fallback
+  React.useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings?platform=desktop&branchId=BR-CAIRO-MAIN');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.settings) {
+            setStoreSettings(data.settings);
+            setSettingsFromCache(false);
+            loadWeightPolicyFromSettings(data.settings);
+            if (typeof window !== 'undefined' && window.localStorage) {
+              window.localStorage.setItem(
+                'baher_desktop_settings_cache',
+                JSON.stringify({
+                  settings: data.settings,
+                  metadata: data.metadata,
+                  cachedAt: new Date().toISOString()
+                })
+              );
+            }
+            return;
+          }
+        }
+      } catch (_) {}
+
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const cached = window.localStorage.getItem('baher_desktop_settings_cache');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setStoreSettings(parsed.settings);
+            setSettingsFromCache(true);
+            if (parsed.settings) {
+              loadWeightPolicyFromSettings(parsed.settings);
+            }
+          } catch (_) {}
+        }
+      }
+    }
+
+    loadSettings();
+  }, []);
+
   // Cart Calculations
   const subtotal = cart.reduce((acc, item) => acc + item.totalPrice, 0);
   const finalTotal = Math.max(0, subtotal - globalDiscount);
@@ -321,7 +372,28 @@ export default function POSConsolePage() {
     setManagerOverrideDetails(null);
   };
 
-  // Weight Modal Helpers (Silver OS)
+  // Weight Modal Helpers (Silver OS — EK-1200 RS232 Local Scale Bridge)
+  const handlePollEK1200Bridge = async () => {
+    setWeightError(null);
+    try {
+      const res = await fetch('/api/pos/scale/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'capture', terminalId: activeShift?.terminal_id || 'POS-01' })
+      });
+      const data = await res.json();
+      if (data.success && data.capture) {
+        setSimulatedScaleWeight(data.capture.grossWeightGrams);
+        if (data.capture.rawFrameHex) setLiveScaleFrameHex(data.capture.rawFrameHex);
+        if (data.scaleAttestation) setLiveScaleAttestation(data.scaleAttestation);
+      } else {
+        setWeightError(data.message || data.error || 'EK-1200 scale reading unstable or disconnected.');
+      }
+    } catch (err: any) {
+      setWeightError(err.message || 'Failed to poll EK-1200 Local Scale Bridge.');
+    }
+  };
+
   const openWeightModalForCartItem = (idx: number) => {
     const item = cart[idx];
     if (!item) return;
@@ -333,7 +405,9 @@ export default function POSConsolePage() {
     setWeightSuccessRecord(null);
     setWeightManagerEmail('');
     setWeightManagerPassword('');
+    setLiveScaleAttestation(null);
     setIsWeightModalOpen(true);
+    handlePollEK1200Bridge();
   };
 
   const handleVerifyWeight = async () => {
@@ -355,7 +429,10 @@ export default function POSConsolePage() {
           source: weightSource,
           grossWeightGrams: gross,
           stoneWeightGrams: stone,
+          registeredGrossWeightGrams: item.weightGrams,
+          scaleAttestation: weightSource === 'SCALE' ? liveScaleAttestation : undefined,
           manualReason: weightSource === 'MANUAL' ? manualReasonInput : undefined,
+          varianceOverrideReason: manualReasonInput,
           sku: item.sku,
           serialNumber: item.serialNumber,
           managerEmail: weightManagerEmail.trim() || undefined,
@@ -795,6 +872,19 @@ export default function POSConsolePage() {
               <span>No Active Shift &bull; Till Locked</span>
             </div>
           )}
+
+          <div
+            data-testid="settings-sync-status"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs border font-medium ${
+              settingsFromCache
+                ? 'bg-amber-500/10 border-amber-500/20 text-amber-400'
+                : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+            }`}
+            title={settingsFromCache ? 'Running on local offline cached settings' : 'Synchronized with server-authoritative settings'}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>{settingsFromCache ? 'Policy: Cached' : 'Policy: Live'}</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -1459,7 +1549,7 @@ export default function POSConsolePage() {
                     <p className="font-bold text-slate-800">{item.product_name}</p>
                     <p className="text-[10px] text-slate-500">
                       {item.profile_type === 'SILVER_JEWELRY'
-                        ? `925 Silver &bull; ${item.weight_grams}g`
+                        ? `925 Silver Jewelry`
                         : 'Retail Merchandise'}
                       {item.serial_number && ` &bull; S/N: ${item.serial_number}`}
                     </p>
@@ -1503,7 +1593,7 @@ export default function POSConsolePage() {
               </div>
             </div>
 
-            {/* ZATCA / ETA QR Code Representation */}
+            {/* Internal Store Verification QR */}
             <div className="flex flex-col items-center pt-2 pb-1">
               <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-center">
                 <Barcode className="w-16 h-8 mx-auto text-slate-700" />
@@ -1512,7 +1602,7 @@ export default function POSConsolePage() {
                 </p>
               </div>
               <p className="text-[9px] text-slate-400 mt-2 text-center">
-                ZATCA / ETA Electronic Receipt &bull; Authentic Baher Silver
+                Internal Store Verification Code &bull; Authentic Baher Silver
               </p>
             </div>
 
@@ -2473,8 +2563,8 @@ export default function POSConsolePage() {
               </button>
             </div>
 
-            {/* Source Mode Selector */}
-            <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
+            {/* Source Mode Selector (EK-1200 RS232 Scale vs Authorized Manual Override; Barcode Weight Forbidden) */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1 rounded-xl border border-slate-800">
               <button
                 type="button"
                 onClick={() => setWeightSource('SCALE')}
@@ -2485,19 +2575,7 @@ export default function POSConsolePage() {
                 }`}
               >
                 <Scale className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'الميزان' : 'Scale'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setWeightSource('BARCODE')}
-                className={`py-2 rounded-lg font-semibold text-xs flex items-center justify-center gap-1.5 transition ${
-                  weightSource === 'BARCODE'
-                    ? 'bg-amber-500 text-slate-950 shadow'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Receipt className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'الباركود' : 'Barcode'}</span>
+                <span>{isRtl ? 'ميزان EK-1200 (RS232)' : 'EK-1200 Scale (RS232)'}</span>
               </button>
               <button
                 type="button"
@@ -2509,40 +2587,39 @@ export default function POSConsolePage() {
                 }`}
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'يدوي (Admin)' : 'Manual'}</span>
+                <span>{isRtl ? 'تجاوز يدوي (Admin)' : 'Manual Override (Admin)'}</span>
               </button>
             </div>
 
-            {/* SCALE MODE */}
+            {/* SCALE MODE (EK-1200 Direct RS232 Local Scale Bridge) */}
             {weightSource === 'SCALE' && (
               <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-col items-center gap-3">
-                <div className="flex items-center gap-2 text-emerald-400 text-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>{isRtl ? 'الميزان متصل وثابت' : 'Scale Online & Stable'}</span>
+                <div className="flex items-center justify-between w-full text-xs">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>{isRtl ? 'جسر EK-1200 المحلي متصل (9600 8N1)' : 'EK-1200 Local RS232 Bridge Online (9600 8N1)'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePollEK1200Bridge}
+                    className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-[10px] font-mono"
+                  >
+                    Poll S\r\n
+                  </button>
                 </div>
                 <div className="text-4xl font-mono font-bold text-white tracking-wider">
                   {simulatedScaleWeight.toFixed(2)}{' '}
                   <span className="text-sm text-slate-400 font-sans">g</span>
                 </div>
-                <p className="text-[10px] text-slate-500">
-                  {isRtl ? 'القراءة اللحظية من منفذ الميزان الإلكتروني' : 'Authoritative reading from connected digital scale'}
+                <div className="w-full bg-slate-900/90 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+                  <span>STX..ETX (16B):</span>
+                  <span className="text-amber-300">{liveScaleFrameHex}</span>
+                </div>
+                <p className="text-[10px] text-slate-500 text-center">
+                  {isRtl
+                    ? 'الباركود يحمل معرف القطعة فقط ولا يتضمن الوزن أبدًا • القراءة موقعة رقميًا من جسر الميزان المحلي'
+                    : 'Barcode contains piece ID only (never weight) • Signed attestation from In-Store EK-1200 RS232 Bridge'}
                 </p>
-              </div>
-            )}
-
-            {/* BARCODE MODE */}
-            {weightSource === 'BARCODE' && (
-              <div className="space-y-3">
-                <label className="block text-slate-300 font-medium text-[11px]">
-                  {isRtl ? 'الوزن المضمن بالباركود (جرام)' : 'Weight from Scale Barcode (grams)'}
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={weightGrossInput}
-                  onChange={(e) => setWeightGrossInput(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-white font-mono text-base focus:border-amber-500"
-                />
               </div>
             )}
 

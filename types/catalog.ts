@@ -7,6 +7,49 @@ export type ProductProfileType = 'SILVER_JEWELRY' | 'NON_SILVER_RETAIL';
 export type SilverPurity = '800' | '900' | '925' | '950' | '999';
 export type GenderTarget = 'women' | 'men' | 'unisex';
 
+/**
+ * Silver benchmark rate source classification.
+ * Under NO circumstances is a manual or fixing rate classified as a live streaming feed.
+ */
+export type SilverRateSource =
+  | 'MANUAL_BENCHMARK'     // Entered by authorized store supervisor/admin
+  | 'OFFICIAL_FIXING'      // Daily official trade fixing rate
+  | 'SYSTEM_BENCHMARK'     // Static fallback benchmark (strictly non-live)
+  | 'SIMULATED_TEST';      // Automated integration test fixture
+
+export interface SilverSpotRateRecord {
+  id: string;
+  organization_id: string;
+  branch_id?: string;      // Optional branch-level scoping
+  amount_per_gram: number; // Spot price of 1.000g Fine Silver 999 in EGP
+  currency: 'EGP';
+  purity_basis: '999';
+  source: SilverRateSource;
+  is_live_market_feed: false; // Explicitly false: no paid/live API is used
+  effective_at: string;    // ISO 8601 UTC timestamp
+  created_by?: string;     // Actor user ID
+  created_at: string;
+  expires_at?: string;     // Staleness threshold
+  notes?: string;
+}
+
+export interface MetalRateCalculationResult {
+  purity: SilverPurity;
+  spotRate999: number;
+  purityRatio: number;        // e.g. 925 / 999 = 0.9259259...
+  unroundedMetalRate: number; // spotRate999 * (purity / 999)
+  effectiveMetalRate: number; // Rounded to 2 decimal places using half-up money rounding
+  currency: 'EGP';
+}
+
+export interface LineMetalValueCalculation {
+  netWeightGrams: number;
+  unroundedMetalRate: number;
+  rawMetalValue: number;      // netWeightGrams * unroundedMetalRate
+  roundedMetalValue: number;  // roundToMoney(rawMetalValue)
+  metalValueCents: number;    // integer piastres/cents
+}
+
 export interface Brand {
   id: string;
   slug: string;

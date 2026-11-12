@@ -16,7 +16,7 @@ class QRReceiptService {
   private sellerVatId = '300-482-918';
 
   /**
-   * Encodes TLV (Tag-Length-Value) structure per ZATCA / Egyptian E-Receipt Standard:
+   * Encodes TLV (Tag-Length-Value) structure for Internal Store Receipt Verification (Decoupled from government ETA APIs):
    * Tag 1: Seller Name
    * Tag 2: VAT Registration Number
    * Tag 3: Timestamp

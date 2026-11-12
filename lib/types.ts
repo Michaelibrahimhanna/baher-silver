@@ -25,8 +25,11 @@ export type PieceLifecycleStatus =
   | 'RESERVED'
   | 'SOLD'
   | 'RETURNED'
-  | 'MAINTENANCE'
+  | 'RETURN_PENDING_INSPECTION'
   | 'QUARANTINED'
+  | 'REPAIR_REQUIRED'
+  | 'RETURNED_AVAILABLE'
+  | 'MAINTENANCE'
   | 'SCRAPPED';
 
 export interface IndividualPiece {
@@ -55,6 +58,13 @@ export interface IndividualPiece {
 export type ProductProfileType = 'SILVER_JEWELRY' | 'NON_SILVER_RETAIL';
 
 export type SilverPurity = '800' | '900' | '925' | '950' | '999';
+
+export type {
+  SilverRateSource,
+  SilverSpotRateRecord,
+  MetalRateCalculationResult,
+  LineMetalValueCalculation
+} from '../types/catalog';
 
 export interface Product {
   id: string;

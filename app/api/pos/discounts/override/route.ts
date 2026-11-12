@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { assertApiAuth, handleApiAuthError } from '@/lib/auth/apiGuard';
-import { POSDiscountEngine } from '@/lib/services/pos/posDiscountEngine';
+import { POSDiscountEngine, isBranchMatch } from '@/lib/services/pos/posDiscountEngine';
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,12 +32,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Server-Side Branch Scoping Enforcement
+    const sessionBranch = auth.user.branchId;
+    if (body.branchId && sessionBranch && !isBranchMatch(sessionBranch, body.branchId)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Branch mismatch: Requested branch "${body.branchId}" does not match authenticated cashier branch "${sessionBranch}".`,
+          code: 'BRANCH_MISMATCH'
+        },
+        { status: 403 }
+      );
+    }
+    const effectiveBranch = sessionBranch || body.branchId || 'branch_cairo_main';
+
     // 2. Authenticate manager & issue cryptographic override token
-    // Security: organizationId is derived strictly from caller's verified auth context
+    // Security: organizationId and branchId are derived authoritatively from server session
     const overrideResult = await POSDiscountEngine.authenticateAndGenerateOverride({
       managerEmail,
       managerPassword,
       organizationId: auth.organizationId,
+      branchId: effectiveBranch,
       requestedDiscount,
       discountReason,
       subtotal
@@ -47,7 +62,9 @@ export async function POST(req: NextRequest) {
       success: true,
       overrideToken: overrideResult.overrideToken,
       manager: overrideResult.manager,
-      approvedDiscount: overrideResult.approvedDiscount
+      approvedDiscount: overrideResult.approvedDiscount,
+      branchId: overrideResult.branchId,
+      tokenId: overrideResult.tokenId
     });
   } catch (err: unknown) {
     return handleApiAuthError(err);

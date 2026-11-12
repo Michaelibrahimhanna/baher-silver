@@ -4,6 +4,7 @@ import path from 'node:path';
 import { products as initialProducts } from '../products';
 import { categories as initialCategories } from '../categories';
 import type { Product, IndividualPiece, PieceLifecycleStatus, ProductProfileType, SilverPurity } from '../types';
+import type { MetalRateCalculationResult, LineMetalValueCalculation } from '../../types/catalog';
 import type { Category } from '../types';
 import type {
   CanonicalStockMovementType,
@@ -48,6 +49,109 @@ export function assertValidSilverPurity(purity: any): asserts purity is Approved
 }
 
 /**
+ * Explicit money-rounding policy using epsilon-adjusted half-up commercial arithmetic.
+ * Avoids JavaScript binary representation drift (e.g. 1.005 * 100 = 100.49999999999999).
+ */
+export function roundToMoney(amount: number): number {
+  if (!Number.isFinite(amount)) {
+    const err: any = new Error(`Cannot round non-finite monetary value: ${amount}`);
+    err.code = 'INVALID_MONETARY_VALUE';
+    err.status = 422;
+    throw err;
+  }
+  const sign = amount < 0 ? -1 : 1;
+  const absVal = Math.abs(amount);
+  const cents = Math.round((absVal + Number.EPSILON) * 100);
+  return (sign * cents) / 100;
+}
+
+export function roundToMoneyCents(amount: number): number {
+  if (!Number.isFinite(amount)) {
+    const err: any = new Error(`Cannot round non-finite monetary value: ${amount}`);
+    err.code = 'INVALID_MONETARY_VALUE';
+    err.status = 422;
+    throw err;
+  }
+  const sign = amount < 0 ? -1 : 1;
+  const absVal = Math.abs(amount);
+  return sign * Math.round((absVal + Number.EPSILON) * 100);
+}
+
+/**
+ * Pure pricing normalizer helper for silver jewelry.
+ * Calculates unrounded metal rate per gram based strictly on Fine Silver 999 benchmark.
+ * Formula: metalRate = spotRate999 * (purity / 999)
+ * 
+ * Guarantees:
+ * 1. Validates approved purities: 800, 900, 925, 950, 999.
+ * 2. Rejects gold karats, non-precious metals, or negative/zero rates.
+ * 3. Keeps metal value completely decoupled from labor fees, discounts, and taxes.
+ */
+export function calculateSilverMetalRate(
+  purity: any,
+  spotRate999: number
+): MetalRateCalculationResult {
+  assertValidSilverPurity(purity);
+
+  if (!Number.isFinite(spotRate999) || spotRate999 <= 0) {
+    const err: any = new Error(
+      `Invalid Silver 999 benchmark rate "${spotRate999}". Benchmark spot rate must be a finite positive number.`
+    );
+    err.code = 'INVALID_SPOT_RATE';
+    err.status = 422;
+    throw err;
+  }
+
+  const purityNum = Number(purity);
+  const purityRatio = purityNum / 999;
+  const unroundedMetalRate = spotRate999 * purityRatio;
+  const effectiveMetalRate = roundToMoney(unroundedMetalRate);
+
+  return {
+    purity: purity as ApprovedSilverPurity,
+    spotRate999,
+    purityRatio,
+    unroundedMetalRate,
+    effectiveMetalRate,
+    currency: 'EGP'
+  };
+}
+
+/**
+ * Calculates raw and rounded line metal value from net weight and unrounded metal rate.
+ */
+export function calculateLineMetalValue(
+  netWeightGrams: number,
+  unroundedMetalRate: number
+): LineMetalValueCalculation {
+  if (!Number.isFinite(netWeightGrams) || netWeightGrams < 0) {
+    const err: any = new Error(`Invalid piece net weight: "${netWeightGrams}". Net weight must be non-negative.`);
+    err.code = 'INVALID_WEIGHT';
+    err.status = 422;
+    throw err;
+  }
+
+  if (!Number.isFinite(unroundedMetalRate) || unroundedMetalRate <= 0) {
+    const err: any = new Error(`Invalid metal rate: "${unroundedMetalRate}". Rate must be a positive number.`);
+    err.code = 'INVALID_METAL_RATE';
+    err.status = 422;
+    throw err;
+  }
+
+  const rawMetalValue = netWeightGrams * unroundedMetalRate;
+  const roundedMetalValue = roundToMoney(rawMetalValue);
+  const metalValueCents = roundToMoneyCents(rawMetalValue);
+
+  return {
+    netWeightGrams,
+    unroundedMetalRate,
+    rawMetalValue,
+    roundedMetalValue,
+    metalValueCents
+  };
+}
+
+/**
  * Calculates a cryptographic SHA-256 HMAC of a stock ledger event for tamper evidence.
  */
 export function calculateEventHash(data: Record<string, any>): string {
@@ -58,7 +162,8 @@ export function calculateEventHash(data: Record<string, any>): string {
     sortedObj[k] = rest[k];
   }
   const serialized = JSON.stringify(sortedObj);
-  return crypto.createHmac('sha256', 'BAHER_CANONICAL_LEDGER_SALT_2026').update(serialized).digest('hex');
+  const salt = process.env.BAHER_CANONICAL_LEDGER_SALT || 'BAHER_CANONICAL_LEDGER_SALT_2026';
+  return crypto.createHmac('sha256', salt).update(serialized).digest('hex');
 }
 
 /**
@@ -235,6 +340,31 @@ if (typeof window !== 'undefined') {
     }
   } catch (e: any) {
     console.error('Failed to load database from server disk store', e.message);
+  }
+}
+
+let lastProductsMtime = 0;
+
+export function reloadStoreFromDisk(force: boolean = false): void {
+  if (DATA_DIR && typeof fs !== 'undefined' && fs.existsSync && PRODUCTS_FILE) {
+    try {
+      if (fs.existsSync(PRODUCTS_FILE)) {
+        const stats = fs.statSync(PRODUCTS_FILE);
+        if (force || stats.mtimeMs > lastProductsMtime) {
+          const savedProducts = fs.readFileSync(PRODUCTS_FILE, 'utf8');
+          if (savedProducts) {
+            globalProducts = JSON.parse(savedProducts);
+            lastProductsMtime = stats.mtimeMs;
+          }
+        }
+      }
+      if (LEDGER_FILE && fs.existsSync(LEDGER_FILE)) {
+        const savedLedger = fs.readFileSync(LEDGER_FILE, 'utf8');
+        if (savedLedger) globalStockLedger = JSON.parse(savedLedger);
+      }
+    } catch (_) {
+      // quiet fallback
+    }
   }
 }
 
@@ -828,8 +958,8 @@ export function executePieceMovement(params: {
         err.status = 422;
         throw err;
       }
-      newStatus = 'IN_VAULT';
-      targetLoc = params.dest_location_code || 'VAULT-A1';
+      newStatus = (params as any).target_status || 'RETURN_PENDING_INSPECTION';
+      targetLoc = params.dest_location_code || 'VAULT-QC';
       qtyDelta = 1;
       break;
 
@@ -1454,6 +1584,7 @@ export function getPieceBySerial(
   serialNumber: string,
   organizationId?: string
 ): { piece: IndividualPiece; product: Product } | null {
+  reloadStoreFromDisk();
   for (const prod of globalProducts) {
     if (organizationId && prod.organization_id && prod.organization_id !== organizationId) {
       continue;
@@ -1555,6 +1686,7 @@ export function getProducts(options?: {
 }
 
 export function getProductBySlugOrId(idOrSlug: string, organizationId?: string): Product | undefined {
+  reloadStoreFromDisk();
   const prod = globalProducts.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
   if (!prod) return undefined;
   if (organizationId && prod.organization_id && prod.organization_id !== organizationId) {

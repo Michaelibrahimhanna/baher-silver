@@ -36,8 +36,10 @@ export class ZReportEngine {
     const returnSales = transactions.filter((t) => t.is_return);
 
     let silverPiecesSold = 0;
+    let silverPiecesReturned = 0;
     let retailPiecesSold = 0;
     let totalSilverGramsSold = 0;
+    let totalSilverGramsReturned = 0;
 
     const silverGramsByPurity: Record<SilverPurity, number> = {
       '925': 0,
@@ -63,9 +65,26 @@ export class ZReportEngine {
       }
     }
 
+    for (const ret of returnSales) {
+      for (const item of ret.items) {
+        if (item.profile_type === 'SILVER_JEWELRY') {
+          const qty = Math.abs(item.quantity);
+          const weight = Math.abs(item.weight_grams * qty);
+          silverPiecesReturned += qty;
+          totalSilverGramsReturned += weight;
+          const purity: SilverPurity = item.purity || '925';
+          if (silverGramsByPurity[purity] !== undefined) {
+            silverGramsByPurity[purity] = Number(((silverGramsByPurity[purity] || 0) - weight).toFixed(2));
+          }
+        }
+      }
+    }
+
     const totalSales = Number(
       (shift.total_cash_sales + shift.total_card_sales + shift.total_instapay_sales).toFixed(2)
     );
+    const totalRefunds = Number(shift.total_refunds_cash.toFixed(2));
+    const netSales = Number((totalSales - totalRefunds).toFixed(2));
 
     const dateStr = shift.opened_at.slice(0, 10);
     const reportNumber = `ZREP-${dateStr.replace(/-/g, '')}-${shift.terminal_id}`;
@@ -87,6 +106,7 @@ export class ZReportEngine {
         instapay_sales: shift.total_instapay_sales,
         total_sales: totalSales,
         cash_refunds: shift.total_refunds_cash,
+        net_sales: netSales,
         cash_in: shift.total_cash_in,
         cash_out: shift.total_cash_out,
         expenses: shift.total_expenses,
@@ -99,8 +119,12 @@ export class ZReportEngine {
         sales_transactions_count: completedSales.length,
         returns_count: returnSales.length,
         silver_pieces_sold: silverPiecesSold,
+        silver_pieces_returned: silverPiecesReturned,
+        net_silver_pieces_sold: silverPiecesSold - silverPiecesReturned,
         retail_pieces_sold: retailPiecesSold,
         total_silver_grams_sold: Number(totalSilverGramsSold.toFixed(2)),
+        total_silver_grams_returned: Number(totalSilverGramsReturned.toFixed(2)),
+        net_silver_grams_sold: Number((totalSilverGramsSold - totalSilverGramsReturned).toFixed(2)),
         silver_grams_by_purity: silverGramsByPurity
       }
     };

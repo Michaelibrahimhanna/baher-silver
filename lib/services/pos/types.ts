@@ -6,6 +6,7 @@
  */
 
 import { ProductProfileType, SilverPurity } from '@/lib/types';
+import type { SilverRateSource, SilverSpotRateRecord } from '@/types/catalog';
 
 export type POSPaymentMethod = 'CASH' | 'CARD' | 'INSTAPAY' | 'SPLIT';
 
@@ -31,6 +32,7 @@ export interface POSCartItemInput {
   serialNumber?: string;
   quantity: number;
   customWeightGrams?: number;
+  scaleAttestation?: any;
   customSpotPricePerGram?: number;
   discountAmount?: number;
   discountReason?: string;
@@ -52,10 +54,17 @@ export interface POSCheckoutInput {
   discountAmount?: number;
   discountReason?: string;
   managerOverrideToken?: string;
+  weightOverrideToken?: string;
   customerId?: string;
   customerName?: string;
   customerPhone?: string;
   idempotencyKey?: string;
+  benchmarkSpotRate999?: number;
+  spotRateRecord?: SilverSpotRateRecord;
+  requireApprovedSpotRate?: boolean;
+  allowStaleRate?: boolean;
+  rateOverrideToken?: string;
+  rateOverrideReason?: string;
 }
 
 export interface POSSaleItem {
@@ -68,6 +77,8 @@ export interface POSSaleItem {
   product_name: string;
   profile_type: ProductProfileType;
   purity?: SilverPurity;
+  purity_ratio?: number;
+  unrounded_metal_rate?: number;
   quantity: number;
   weight_grams: number;
   spot_price_per_gram: number;
@@ -76,6 +87,25 @@ export interface POSSaleItem {
   unit_price: number;
   discount_amount: number;
   total_price: number;
+  pricing_mode?: 'BY_WEIGHT' | 'FIXED';
+  pricing_policy_mode?: 'PRO_RATA_RATIO' | 'COMMERCIAL_TIER_TABLE';
+  price_source?: string;
+  price_effective_at?: string;
+  gram_rate_at_sale?: number;
+  tax_amount?: number;
+  tax_rate_percent?: number;
+  tax_basis?: string;
+  is_returned?: boolean;
+  returned_quantity?: number;
+  rate_override?: {
+    originalRate: number;
+    overrideRate: number;
+    managerId?: string;
+    managerName?: string;
+    managerRole?: string;
+    reason?: string;
+    timestamp: string;
+  };
 }
 
 export interface POSManagerOverride {
@@ -86,6 +116,9 @@ export interface POSManagerOverride {
   approved_at: string;
   approved_discount_amount: number;
   subtotal: number;
+  token_id?: string;
+  branch_id?: string;
+  action_type?: string;
 }
 
 export interface POSSaleTransaction {
@@ -116,7 +149,31 @@ export interface POSSaleTransaction {
   original_transaction_id?: string;
   idempotency_key?: string;
   created_at: string;
+  benchmark_spot_999?: number;
+  spot_rate_source?: SilverRateSource;
+  spot_rate_effective_at?: string;
+  is_live_market_feed?: boolean;
+  rate_override?: {
+    originalRate: number;
+    overrideRate: number;
+    managerId?: string;
+    managerName?: string;
+    managerRole?: string;
+    reason?: string;
+    timestamp: string;
+  };
   items: POSSaleItem[];
+  pricing_policy_mode?: 'PRO_RATA_RATIO' | 'COMMERCIAL_TIER_TABLE';
+  price_source?: string;
+  price_effective_at?: string;
+  gram_rate_at_sale?: number;
+  tax_amount?: number;
+  tax_source?: string;
+  internal_qr_payload_base64?: string;
+  eta_receipt_uuid?: string;
+  eta_submission_status?: 'DISABLED_LOCAL' | 'QUEUED' | 'SUBMITTED';
+  returned_serials?: string[];
+  returned_amount?: number;
   qr_payload_base64?: string;
   verification_url?: string;
 }
@@ -134,6 +191,9 @@ export interface POSReturnInput {
   returnedPieceSerials?: string[]; // Optional specific pieces for partial return
   refundMethod?: 'CASH' | 'CARD';
   idempotencyKey?: string;
+  scaleAttestations?: Record<string, any> | any[];
+  managerOverrideToken?: string;
+  overrideReason?: string;
 }
 
 export interface POSCashShift {
@@ -203,6 +263,7 @@ export interface POSZReport {
     expected_closing_cash: number;
     declared_closing_cash: number;
     cash_discrepancy: number;
+    net_sales?: number;
   };
   metrics: {
     sales_transactions_count: number;
@@ -211,5 +272,9 @@ export interface POSZReport {
     retail_pieces_sold: number;
     total_silver_grams_sold: number;
     silver_grams_by_purity: Record<SilverPurity, number>;
+    silver_pieces_returned?: number;
+    net_silver_pieces_sold?: number;
+    total_silver_grams_returned?: number;
+    net_silver_grams_sold?: number;
   };
 }
