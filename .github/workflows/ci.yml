@@ -1,0 +1,89 @@
+name: Hardware & Scale Protocol CI
+
+on:
+  push:
+    branches:
+      - feat/silver-os-slice-1
+      - main
+      - develop
+  pull_request:
+    branches:
+      - feat/silver-os-slice-1
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Hardware Protocol Safety & Acceptance Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CI: "true"
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Repository safety & secret guard
+        run: |
+          node << 'EOF'
+          'use strict';
+          const fs = require('fs');
+          const { execFileSync } = require('child_process');
+
+          const trackedFiles = execFileSync('git', ['ls-files'], { encoding: 'utf8' })
+            .split(/\r?\n/)
+            .map(f => f.trim())
+            .filter(Boolean);
+
+          const forbiddenExts = ['.key', '.pem', '.db.json', '.tar.gz', '.bak'];
+          let errors = [];
+
+          for (const file of trackedFiles) {
+            for (const ext of forbiddenExts) {
+              if (file.endsWith(ext) && !file.includes('.example')) {
+                errors.push(`Forbidden tracked file: ${file}`);
+              }
+            }
+          }
+
+          if (errors.length > 0) {
+            console.error('Safety check failed:\n' + errors.join('\n'));
+            process.exit(1);
+          }
+          console.log(`[PASS] Safety check passed for ${trackedFiles.length} tracked files.`);
+          EOF
+
+      - name: Hardware Scale Protocol TypeScript Verification
+        run: npx tsc --noEmit --ignoreConfig --types node lib/hardware/ek1200ScaleProtocol.ts
+
+      - name: EK-1200 Station Address & Hardware Regression Suite
+        run: node scripts/test_station_address_validation.cjs
+
+      - name: Verify clean working tree after tests
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "ERROR: Working directory dirty after test run:"
+            git status --porcelain
+            exit 1
+          fi
+          echo "Working tree is clean."
